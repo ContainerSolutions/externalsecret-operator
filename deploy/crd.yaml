@@ -1,0 +1,13 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: externalconfigs.externalconfig-operator.container-solutions.com
+spec:
+  group: externalconfig-operator.container-solutions.com
+  names:
+    kind: ExternalConfig
+    listKind: ExternalConfigList
+    plural: externalconfigs
+    singular: externalconfig
+  scope: Namespaced
+  version: v1alpha1
