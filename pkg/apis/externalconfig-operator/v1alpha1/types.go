@@ -22,8 +22,9 @@ type ExternalConfig struct {
 }
 
 type ExternalConfigSpec struct {
-	// Fill me
+	Backend string
+	Key     string
 }
 type ExternalConfigStatus struct {
-	// Fill me
+	Injected bool
 }

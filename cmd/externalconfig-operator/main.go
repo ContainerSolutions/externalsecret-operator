@@ -4,6 +4,7 @@ import (
 	"context"
 	"runtime"
 
+	"github.com/ContainerSolutions/externalconfig-operator/pkg/secrets"
 	stub "github.com/ContainerSolutions/externalconfig-operator/pkg/stub"
 	sdk "github.com/operator-framework/operator-sdk/pkg/sdk"
 	k8sutil "github.com/operator-framework/operator-sdk/pkg/util/k8sutil"
@@ -19,6 +20,7 @@ func printVersion() {
 }
 
 func main() {
+	var backendKey secrets.ContextKey = "backend"
 	printVersion()
 
 	sdk.ExposeMetricsPort()
@@ -29,9 +31,14 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Failed to get watch namespace: %v", err)
 	}
+	backend := secrets.NewAWSSecretsManagerBackend()
+	if err != nil {
+		logrus.Fatalf("Failed to initialize the secrets backend: %v", err)
+	}
+	ctx := context.WithValue(context.Background(), backendKey, backend)
 	resyncPeriod := 5
 	logrus.Infof("Watching %s, %s, %s, %d", resource, kind, namespace, resyncPeriod)
 	sdk.Watch(resource, kind, namespace, resyncPeriod)
 	sdk.Handle(stub.NewHandler())
-	sdk.Run(context.TODO())
+	sdk.Run(ctx)
 }
