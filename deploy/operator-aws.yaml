@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: externalconfig-operator
-          image: containersol/externalconfig-operator:0.0.1
+          image: ${DOCKER_IMAGE}:${DOCKER_TAG}
           ports:
           - containerPort: 60000
             name: metrics
