@@ -19,7 +19,7 @@ minikube:
 	envsubst < deploy/operator-aws.yaml | kubectl apply -f -
 
 .PHONY: test
-test:
+test: deps
 	go test -v ./...
 
 .PHONY: deps
