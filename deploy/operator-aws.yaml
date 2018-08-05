@@ -1,0 +1,37 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: externalconfig-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: externalconfig-operator
+  template:
+    metadata:
+      labels:
+        name: externalconfig-operator
+    spec:
+      containers:
+        - name: externalconfig-operator
+          image: containersol/externalconfig-operator:0.0.1
+          ports:
+          - containerPort: 60000
+            name: metrics
+          command:
+          - externalconfig-operator
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: "externalconfig-operator"
+            - name: AWS_ACCESS_KEY_ID
+              value: ${AWS_ACCESS_KEY_ID}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: ${AWS_SECRET_ACCESS_KEY}
+            - name: AWS_REGION
+              value: ${AWS_REGION}

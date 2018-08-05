@@ -1,4 +1,7 @@
 apiVersion: "externalconfig-operator.container-solutions.com/v1alpha1"
 kind: "ExternalConfig"
 metadata:
-  name: "example"
+  name: "asecret"
+spec:
+  Key: "asecret"
+  Backend: "asm"
