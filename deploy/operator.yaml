@@ -20,7 +20,7 @@ spec:
             name: metrics
           command:
           - externalconfig-operator
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               valueFrom:

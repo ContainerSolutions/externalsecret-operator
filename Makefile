@@ -14,7 +14,6 @@ build: deps
 .EXPORT_ALL_VARIABLES: minikube
 minikube: 
 	make build
-	sed -i 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/' ./deploy/operator.yaml
 	kubectl apply -f ./deploy/rbac.yaml
 	kubectl apply -f ./deploy/crd.yaml
 	envsubst < deploy/operator-aws.yaml | kubectl apply -f -
