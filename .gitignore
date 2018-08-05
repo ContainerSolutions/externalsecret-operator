@@ -107,3 +107,6 @@ tags
 
 
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
+
+# Is vendor part of a go project? Never decided, I usually ignore it
+vendor
