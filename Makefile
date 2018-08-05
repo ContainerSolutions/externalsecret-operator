@@ -7,7 +7,7 @@ AWS_SECRET_ACCESS_KEY ?= Secretsecretconfigureme
 AWS_REGION ?= eu-west-1
 
 .PHONY: build
-build:
+build: deps
 	operator-sdk build $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: minikube
