@@ -1,6 +1,5 @@
 # External Config Operator
-
-*This is a PoC*
+[![CircleCI](https://circleci.com/gh/ContainerSolutions/externalconfig-operator.svg?style=svg)](https://circleci.com/gh/ContainerSolutions/externalconfig-operator) [![Go Report Card](https://goreportcard.com/badge/github.com/ContainerSolutions/externalconfig-operator)](https://goreportcard.com/report/github.com/ContainerSolutions/externalconfig-operator)
 
 I wanted to build an operator that reads information from a third party service
 like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and automatically inject the values as [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
