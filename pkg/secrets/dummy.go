@@ -1,9 +1,8 @@
 package secrets
 
-type ContextKey string
-
 // DummySecretsBackend is a fake secrets backend for testing purposes
 type DummySecretsBackend struct {
+	Backend
 	suffix string
 }
 

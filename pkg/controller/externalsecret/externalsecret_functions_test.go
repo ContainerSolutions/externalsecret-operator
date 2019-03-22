@@ -4,16 +4,17 @@ import (
 	"testing"
 
 	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestNewSecretForCR(t *testing.T) {
-
-	suffix := "-value"
 	key := "key"
+	suffix := "-value"
 
-	// TODO: rely on single dummy secret backend until code migration is complete
-	secretsBackend.Init(suffix)
+	dummy := secrets.NewDummySecretsBackend()
+	dummy.Init("-value")
+	secrets.BackendRegister("dummy", dummy)
 
 	Convey("Given an ExternalSecret resource", t, func() {
 		externalSecret := v1alpha1.ExternalSecret{

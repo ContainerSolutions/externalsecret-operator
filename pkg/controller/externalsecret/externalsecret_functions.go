@@ -1,14 +1,35 @@
 package externalsecret
 
 import (
+	"fmt"
+
 	externalsecretoperatorv1alpha1 "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+func initSecretBackends() {
+	// TODO: backends should be created on the fly according to CRDs
+
+	asm := secrets.NewAWSSecretsManagerBackend()
+	if err := asm.Init(); err != nil {
+		log.Error(err, "Failed to initialize AWS Secrets Manager Backend")
+	}
+	secrets.BackendRegister("asm", asm)
+
+	dummy := secrets.NewDummySecretsBackend()
+	dummy.Init("-value")
+	secrets.BackendRegister("dummy", dummy)
+}
+
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {
-	value, err := secretsBackend.Get(cr.Spec.Key)
+	backend, ok := secrets.Backends[cr.Spec.Backend]
+	if !ok {
+		return nil, fmt.Errorf("Cannot find backend: %v", cr.Spec.Backend)
+	}
+	value, err := backend.Get(cr.Spec.Key)
 	secret := map[string][]byte{cr.Spec.Key: []byte(value)}
 
 	secretObject := &corev1.Secret{

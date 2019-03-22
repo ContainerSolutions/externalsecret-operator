@@ -5,7 +5,6 @@ import (
 	"time"
 
 	externalsecretoperatorv1alpha1 "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -22,9 +21,6 @@ import (
 )
 
 var log = logf.Log.WithName("controller_externalsecret")
-
-// FIXME: we are going to use the dummybackend until code migration is complete
-var secretsBackend = secrets.NewDummySecretsBackend()
 
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
@@ -50,8 +46,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Initialize the secret backend
-	secretsBackend.Init("dummy")
+	// Initialize the secret backends
+	initSecretBackends()
 
 	// Watch for changes to primary resource ExternalSecret
 	err = c.Watch(&source.Kind{Type: &externalsecretoperatorv1alpha1.ExternalSecret{}}, &handler.EnqueueRequestForObject{})
