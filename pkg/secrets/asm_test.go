@@ -27,7 +27,8 @@ func TestGet(t *testing.T) {
 	expectedValue := secretValue
 
 	Convey("Given an initialized AWSSecretsManagerBackend", t, func() {
-		backend := AWSSecretsManagerBackend{&mockedSecretsManager{}}
+		backend := NewAWSSecretsManagerBackend()
+		backend.SecretsManager = &mockedSecretsManager{}
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
 			Convey("Then no error is returned", func() {
