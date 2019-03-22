@@ -110,4 +110,4 @@ tags
 
 # Is vendor part of a go project? Never decided, I usually ignore it
 vendor
-externalconfig-operator
+externalsecret-operator

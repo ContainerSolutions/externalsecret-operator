@@ -43,11 +43,11 @@ Given a secret defined in AWS Secrets Manager:
 "secret"
 ```
 
-and an `ExternalConfig` resource definition like this one:
+and an `ExternalSecret` resource definition like this one:
 ```
 % cat deploy/cr.yaml 
-apiVersion: "externalconfig-operator.container-solutions.com/v1alpha1"
-kind: "ExternalConfig"
+apiVersion: "externalsecret-operator.container-solutions.com/v1alpha1"
+kind: "ExternalSecret"
 metadata:
   name: "asecret"
 spec:
@@ -71,5 +71,5 @@ development there are many things to add, for example:
 * proper secrets/configuration backend configuration implementation
 * more secrets/configuration backends
 * helm chart to handle deployment
-* a single ExternalConfig with a list of Secrets
+* a single ExternalSecret with a list of Secrets
 * support ConfigMaps

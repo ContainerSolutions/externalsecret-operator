@@ -1,4 +1,4 @@
-DOCKER_IMAGE ?= containersol/externalconfig-operator
+DOCKER_IMAGE ?= containersol/externalsecret-operator
 DOCKER_TAG ?= $(shell grep -Po 'Version = "\K.*?(?=")' version/version.go)
 
 # export these if you want to use AWS secrets manager

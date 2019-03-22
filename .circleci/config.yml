@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/ContainerSolutions/externalconfig-operator
+    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
     steps:
       - checkout
       - run: make test

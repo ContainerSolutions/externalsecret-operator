@@ -10,7 +10,7 @@ import (
 
 const (
 	version   = "v1alpha1"
-	groupName = "externalconfig-operator.container-solutions.com"
+	groupName = "externalsecret-operator.container-solutions.com"
 )
 
 var (
@@ -27,8 +27,8 @@ func init() {
 // addKnownTypes adds the set of types defined in this package to the supplied scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&ExternalConfig{},
-		&ExternalConfigList{},
+		&ExternalSecret{},
+		&ExternalSecretList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

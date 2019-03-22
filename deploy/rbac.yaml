@@ -1,10 +1,10 @@
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: externalconfig-operator
+  name: externalsecret-operator
 rules:
 - apiGroups:
-  - externalconfig-operator.container-solutions.com
+  - externalsecret-operator.container-solutions.com
   resources:
   - "*"
   verbs:
@@ -36,11 +36,11 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: default-account-externalconfig-operator
+  name: default-account-externalsecret-operator
 subjects:
 - kind: ServiceAccount
   name: default
 roleRef:
   kind: Role
-  name: externalconfig-operator
+  name: externalsecret-operator
   apiGroup: rbac.authorization.k8s.io

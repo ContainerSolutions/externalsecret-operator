@@ -3,8 +3,8 @@ package stub
 import (
 	"context"
 
-	"github.com/ContainerSolutions/externalconfig-operator/pkg/apis/externalconfig-operator/v1alpha1"
-	"github.com/ContainerSolutions/externalconfig-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecret-operator/v1alpha1"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"github.com/sirupsen/logrus"
@@ -24,7 +24,7 @@ type Handler struct {
 
 func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	switch o := event.Object.(type) {
-	case *v1alpha1.ExternalConfig:
+	case *v1alpha1.ExternalSecret:
 		//FIXME: Status doesn't work
 		if o.Status.Injected {
 			return nil
@@ -40,12 +40,12 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 			return err
 		}
 		o.Status.Injected = true
-		logrus.Info("Created secret %v", secret)
+		logrus.Infof("Created secret %v", secret)
 	}
 	return nil
 }
 
-func (h *Handler) makeSecret(ctx context.Context, cr *v1alpha1.ExternalConfig) (*corev1.Secret, error) {
+func (h *Handler) makeSecret(ctx context.Context, cr *v1alpha1.ExternalSecret) (*corev1.Secret, error) {
 	var backendKey secrets.ContextKey = "backend"
 	var backend secrets.SecretsBackend
 	key := cr.Spec.Key
@@ -68,7 +68,7 @@ func (h *Handler) makeSecret(ctx context.Context, cr *v1alpha1.ExternalConfig) (
 				*metav1.NewControllerRef(cr, schema.GroupVersionKind{
 					Group:   v1alpha1.SchemeGroupVersion.Group,
 					Version: v1alpha1.SchemeGroupVersion.Version,
-					Kind:    "ExternalConfig",
+					Kind:    "ExternalSecret",
 				}),
 			},
 		},
