@@ -7,7 +7,7 @@ AWS_SECRET_ACCESS_KEY ?= Secretsecretconfigureme
 AWS_REGION ?= eu-west-1
 
 .PHONY: build
-build: deps
+build:
 	operator-sdk build $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: minikube
@@ -19,14 +19,5 @@ minikube:
 	envsubst < deploy/operator-aws.yaml | kubectl apply -f -
 
 .PHONY: test
-test: deps
+test:
 	go test -v ./...
-
-.PHONY: deps
-deps:
-	dep ensure
-
-.PHONY: install
-install: deps
-	go install -v ./...
-	
