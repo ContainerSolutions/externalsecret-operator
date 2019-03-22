@@ -1,3 +1,0 @@
-apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
-kind: ExternalSecret
-projectName: externalsecret-operator

@@ -1,7 +1,0 @@
-apiVersion: "externalsecret-operator.container-solutions.com/v1alpha1"
-kind: "ExternalSecret"
-metadata:
-  name: "asecret"
-spec:
-  Key: "asecret"
-  Backend: "asm"
