@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ContainerSolutions/externalconfig-operator/pkg/apis/externalconfig-operator/v1alpha1"
-	"github.com/ContainerSolutions/externalconfig-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecret-operator/v1alpha1"
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -20,16 +20,16 @@ func TestMakeSecret(t *testing.T) {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, backendKey, backend)
 
-	Convey("Given an ExternalConfig resource", t, func() {
-		externalConfig := v1alpha1.ExternalConfig{
-			Spec: v1alpha1.ExternalConfigSpec{
+	Convey("Given an ExternalSecret resource", t, func() {
+		externalSecret := v1alpha1.ExternalSecret{
+			Spec: v1alpha1.ExternalSecretSpec{
 				Backend: "dummy",
 				Key:     key,
 			},
 		}
-		externalConfig.Name = "anExternalConfig"
+		externalSecret.Name = "anExternalSecret"
 		Convey("When creating a Secret", func() {
-			theSecret, err := handler.makeSecret(ctx, &externalConfig)
+			theSecret, err := handler.makeSecret(ctx, &externalSecret)
 			Convey("The Secret should have the correct key", func() {
 				So(err, ShouldBeNil)
 				So(theSecret.Data, ShouldContainKey, key)

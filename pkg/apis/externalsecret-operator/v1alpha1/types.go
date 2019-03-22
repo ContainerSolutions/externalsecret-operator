@@ -6,25 +6,25 @@ import (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type ExternalConfigList struct {
+type ExternalSecretList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
-	Items           []ExternalConfig `json:"items"`
+	Items           []ExternalSecret `json:"items"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type ExternalConfig struct {
+type ExternalSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	Spec              ExternalConfigSpec   `json:"spec"`
-	Status            ExternalConfigStatus `json:"status,omitempty"`
+	Spec              ExternalSecretSpec   `json:"spec"`
+	Status            ExternalSecretStatus `json:"status,omitempty"`
 }
 
-type ExternalConfigSpec struct {
+type ExternalSecretSpec struct {
 	Backend string
 	Key     string
 }
-type ExternalConfigStatus struct {
+type ExternalSecretStatus struct {
 	Injected bool
 }

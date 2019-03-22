@@ -1,5 +1,5 @@
-apiVersion: "externalconfig-operator.container-solutions.com/v1alpha1"
-kind: "ExternalConfig"
+apiVersion: "externalsecret-operator.container-solutions.com/v1alpha1"
+kind: "ExternalSecret"
 metadata:
   name: "asecret"
 spec:
