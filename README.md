@@ -10,8 +10,8 @@ supported.
 ## Getting started
 
 This project was kickstarted using the [Operator
-SDK](https://github.com/operator-framework/operator-sdk). It automatically uses
-[dep](https://github.com/golang/dep) to handle dependencies.
+SDK](https://github.com/operator-framework/operator-sdk). It automatically
+uses [dep](https://github.com/golang/dep) to handle dependencies.
 
 To build the project:
 
@@ -21,49 +21,48 @@ make build
 
 This step will build a docker image and a simple deployment manifest.
 
-The whole thing is working on
-[minikube](https://github.com/kubernetes/minikube). You need to export your AWS
-credentials so the operator can access AWS Secrets Manager and target the
-minikube docker instance:
+You need to export your AWS credentials so the operator can access AWS
+Secrets Manager. Variables substitution is done by [`envsubst`](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) so you might need to install it.
+
+This will build the project and deploy the operator and the required rbac roles
+and custom resource definitions:
+
 
 ```shell
-eval $(minikube docker-env)
 export AWS_ACCESS_KEY_ID=AKIACONFIGUREME
-export AWS_SECRET_ACCESS_KEY=Secretsecretconfigureme 
+export AWS_SECRET_ACCESS_KEY=Secretsecretconfigureme
 export AWS_REGION=eu-west-1
-make minikube
+make deploy
 ```
-This will build the project and deploy the operator and the required rbac roles
-and custom resource definitions.
 
 ## What does it do?
+
 Given a secret defined in AWS Secrets Manager:
 
 ```shell
-% aws secretsmanager get-secret-value --secret-id asecret --query SecretString
-"secret"
+% aws secretsmanager create-secret --name=example-externalsecret-key --secret-string='this string is a secret'
 ```
 
 and an `ExternalSecret` resource definition like this one:
 
 ```yaml
-% cat deploy/cr.yaml 
-apiVersion: "externalsecret-operator.container-solutions.com/v1alpha1"
-kind: "ExternalSecret"
+% cat deploy/crds/externalsecret-operator_v1alpha1_externalsecret_cr.yaml
+apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
+kind: ExternalSecret
 metadata:
-  name: "asecret"
+  name: example-externalsecret
 spec:
-  Key: "asecret"
-  Backend: "asm"
+  Key: example-externalsecret-key
+  Backend: asm
 ```
 
 The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
-% kubectl apply -f deploy/cr.yaml
-% kubectl get secret asecret -o=go-template='{{ .data.asecret }}' | base64 -d
-secret
+% kubectl apply -f deploy/crds/externalsecret-operator_v1alpha1_externalsecret_cr.yaml
+% kubectl get secret example-externalsecret -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
+this string is a secret
 ```
 
 ## What's next
