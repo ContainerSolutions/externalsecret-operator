@@ -15,9 +15,9 @@ type ExternalSecretSpec struct {
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// The ExternalSecretBackend to use to retrieve the secret
-	Backend string `json:"backend"`
+	Backend string `json:"Backend"`
 	// The Key of the secret held in the ExternalBackend
-	Key string `json:"key"`
+	Key string `json:"Key"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
@@ -28,9 +28,9 @@ type ExternalSecretStatus struct {
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
 	// The ExternalSecretBackend to use to retrieve the secret
-	Backend string `json:"backend"`
+	Backend string `json:"Backend"`
 	// The Key of the secret held in the ExternalBackend
-	Key string `json:"key"`
+	Key string `json:"Key"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
