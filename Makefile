@@ -6,17 +6,24 @@ AWS_ACCESS_KEY_ID ?= AKIACONFIGUREME
 AWS_SECRET_ACCESS_KEY ?= Secretsecretconfigureme 
 AWS_REGION ?= eu-west-1
 
+NAMESPACE ?= "default"
+
 .PHONY: build
 build:
 	operator-sdk build $(DOCKER_IMAGE):$(DOCKER_TAG)
 
-.PHONY: minikube
-.EXPORT_ALL_VARIABLES: minikube
-minikube: 
-	make build
-	kubectl apply -f ./deploy/rbac.yaml
-	kubectl apply -f ./deploy/crd.yaml
-	envsubst < deploy/operator-aws.yaml | kubectl apply -f -
+.PHONY: push
+push:
+	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+
+.PHONY: deploy
+.EXPORT_ALL_VARIABLES: deploy
+deploy:
+	kubectl apply -n $(NAMESPACE) -f ./deploy/service_account.yaml
+	kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
+	envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
+	kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
+	envsubst < deploy/operator-aws.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: test
 test:

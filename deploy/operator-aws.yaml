@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: externalsecret-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: externalsecret-operator
+  template:
+    metadata:
+      labels:
+        name: externalsecret-operator
+    spec:
+      serviceAccountName: externalsecret-operator
+      containers:
+        - name: externalsecret-operator
+          image: containersol/externalsecret-operator:0.0.1
+          command:
+          - externalsecret-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "externalsecret-operator"
+            - name: AWS_ACCESS_KEY_ID
+              value: ${AWS_ACCESS_KEY_ID}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: ${AWS_SECRET_ACCESS_KEY}
+            - name: AWS_REGION
+              value: ${AWS_REGION}
