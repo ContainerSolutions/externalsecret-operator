@@ -12,16 +12,18 @@ import (
 
 func initSecretBackends() {
 	// TODO: backends should be created on the fly according to CRDs
-
 	asm := secrets.NewAWSSecretsManagerBackend()
 	if err := asm.Init(); err != nil {
 		log.Error(err, "Failed to initialize AWS Secrets Manager Backend")
 	}
-	secrets.BackendRegister("asm", asm)
 
 	dummy := secrets.NewDummySecretsBackend()
 	dummy.Init("-value")
 	secrets.BackendRegister("dummy", dummy)
+	log.Info("Initialized Dummy backend")
+
+	secrets.BackendRegister("asm", asm)
+	log.Info("Initialized Amazon Secret Manager backend")
 }
 
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {
