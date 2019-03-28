@@ -8,6 +8,7 @@ import (
 )
 
 type AWSSecretsManagerBackend struct {
+	Backend
 	SecretsManager secretsmanageriface.SecretsManagerAPI
 }
 
