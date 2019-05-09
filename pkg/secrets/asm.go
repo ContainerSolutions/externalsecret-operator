@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
@@ -10,6 +11,8 @@ import (
 type AWSSecretsManagerBackend struct {
 	Backend
 	SecretsManager secretsmanageriface.SecretsManagerAPI
+	config         aws.Config
+	session        session.Session
 }
 
 func NewAWSSecretsManagerBackend() *AWSSecretsManagerBackend {
@@ -19,6 +22,12 @@ func NewAWSSecretsManagerBackend() *AWSSecretsManagerBackend {
 }
 
 func (s *AWSSecretsManagerBackend) Init(params ...interface{}) error {
+
+	s.config = aws.Config{
+		Region:      aws.String(""),
+		Credentials: credentials.NewStaticCredentials("", "", ""),
+	}
+
 	session, err := session.NewSession()
 	if err != nil {
 		return err

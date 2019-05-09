@@ -13,9 +13,12 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecret":       schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref),
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec":   schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref),
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus": schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecret":              schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackend":       schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackend(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendSpec":   schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackendSpec(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendStatus": schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackendStatus(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec":          schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref),
+		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus":        schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref),
 	}
 }
 
@@ -62,12 +65,95 @@ func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref common.R
 	}
 }
 
+func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackend(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ExternalSecretBackend is the Schema for the externalsecretbackends API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendSpec", "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretBackendStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackendSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ExternalSecretBackendSpec defines the desired state of ExternalSecretBackend",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretBackendStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ExternalSecretBackendStatus defines the observed state of ExternalSecretBackend",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
 func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ExternalSecretSpec defines the desired state of ExternalSecret",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"backend": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The ExternalSecretBackend to use to retrieve the secret",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"key": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Key of the secret held in the ExternalBackend",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"backend", "key"},
 			},
 		},
 		Dependencies: []string{},
@@ -79,7 +165,23 @@ func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref co
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ExternalSecretStatus defines the observed state of ExternalSecret",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"backend": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The ExternalSecretBackend to use to retrieve the secret",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"key": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Key of the secret held in the ExternalBackend",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"backend", "key"},
 			},
 		},
 		Dependencies: []string{},
