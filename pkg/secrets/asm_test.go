@@ -3,6 +3,7 @@ package secrets
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	. "github.com/smartystreets/goconvey/convey"
@@ -34,6 +35,27 @@ func TestGet(t *testing.T) {
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
 				So(actualValue, ShouldEqual, expectedValue)
+			})
+		})
+	})
+}
+
+func TestAWSConfigFromParams(t *testing.T) {
+
+	Convey("Given a set of params", t, func() {
+		expectedAccessKeyID := "AKIABLABLA"
+		expectedSecretAccessKey := "SMAMSLscSercreasdas"
+		expectedRegion := "eu-west-1"
+
+		Convey("When creating AWS Config from them", func() {
+			config, err := AWSConfigFromParams(expectedAccessKeyID, expectedSecretAccessKey, expectedRegion)
+			So(err, ShouldBeNil)
+			Convey("Credentials are created correctly", func() {
+				actualCredentials, err := config.Credentials.Get()
+				So(err, ShouldBeNil)
+				So(aws.StringValue(config.Region), ShouldEqual, expectedRegion)
+				So(actualCredentials.AccessKeyID, ShouldEqual, expectedAccessKeyID)
+				So(actualCredentials.SecretAccessKey, ShouldEqual, expectedSecretAccessKey)
 			})
 		})
 	})
