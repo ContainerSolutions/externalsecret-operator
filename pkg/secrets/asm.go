@@ -94,7 +94,6 @@ func paramsToMap(params ...interface{}) (map[string]string, error) {
 		return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
 	}
 
-	fmt.Println(reflect.TypeOf(params[0]).Kind(), reflect.TypeOf(map[string]string{}).Kind())
 	paramMap := params[0].(map[string]string)
 
 	for _, key := range paramKeys {
