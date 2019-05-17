@@ -1,8 +1,11 @@
 package secrets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os/exec"
 )
 
 type OnePasswordBackend struct {
@@ -10,8 +13,9 @@ type OnePasswordBackend struct {
 	OnePasswordClient
 }
 
-func NewOnePasswordBackend(vault string) *OnePasswordBackend {
+func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordBackend {
 	backend := &OnePasswordBackend{}
+	backend.OnePasswordClient = client
 	backend.Init()
 	return backend
 }
@@ -22,10 +26,7 @@ func (b *OnePasswordBackend) Init(params ...interface{}) error {
 	return nil
 }
 
-// Parse the 'fields' array in the result of the command below. Return the 'v' property of the field object of which the 'n' property matches parameter key.
-//
-// $ op get item "key"
-//
+// Call the 1password client and parse the 'fields' array in the output. Return the 'v' property of the field object of which the 'n' property matches parameter key.
 func (b *OnePasswordBackend) Get(key string) (string, error) {
 	opItemString := b.OnePasswordClient.Get(key)
 
@@ -38,10 +39,33 @@ func (b *OnePasswordBackend) Get(key string) (string, error) {
 	return value, nil
 }
 
-type OnePasswordClient struct {
+type OnePasswordClient interface {
+	Get(key string) string
 }
 
-func (c *OnePasswordClient) Get(key string) string {
+type OnePasswordCliClient struct {
+}
+
+// Invoke $ op get item 'key'
+func (c OnePasswordCliClient) Get(key string) string {
+	cmd := exec.Command("/usr/local/bin/op", "get", "item", key)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(string(stderr.Bytes()))
+		fmt.Println(string(stdout.Bytes()))
+		log.Fatalf("/usr/local/bin/op get item '"+key+"' failed with %s\n", err)
+	}
+	return string(stdout.Bytes())
+}
+
+type StubOnePasswordClient struct {
+}
+
+// Return a static JSON output for $ op get item 'testkey'
+func (c StubOnePasswordClient) Get(key string) string {
 	return `{
 		"uuid": "xyz",
 		"templateUuid": "003",
