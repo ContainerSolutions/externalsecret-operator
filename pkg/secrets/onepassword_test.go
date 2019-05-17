@@ -10,12 +10,12 @@ import (
 func TestGetOnePassword(t *testing.T) {
 	fmt.Println("Hello")
 
-	secretKey := "secret"
-	secretValue := "secretValue"
+	secretKey := "testkey"
+	secretValue := "testvalue"
 	expectedValue := secretValue
 
 	Convey("Given an initialized OnePasswordBackend", t, func() {
-		backend := NewOnePasswordBackend()
+		backend := NewOnePasswordBackend("Personal")
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
