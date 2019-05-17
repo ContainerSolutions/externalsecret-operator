@@ -18,16 +18,19 @@ type AWSSecretsManagerBackend struct {
 	session        *session.Session
 }
 
-func NewAWSSecretsManagerBackend() *AWSSecretsManagerBackend {
+func init() {
+	BackendRegister("asm", NewAWSSecretsManagerBackend)
+}
+
+func NewAWSSecretsManagerBackend() BackendIface {
 	backend := &AWSSecretsManagerBackend{}
-	backend.Init()
 	return backend
 }
 
 func (s *AWSSecretsManagerBackend) Init(params ...interface{}) error {
 	var err error
 
-	s.config, err = AWSConfigFromParams(params)
+	s.config, err = awsConfigFromParams(params)
 	if err != nil {
 		return err
 	}
@@ -58,23 +61,16 @@ func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
 	return *output.SecretString, nil
 }
 
-func AWSConfigFromParams(params ...interface{}) (*aws.Config, error) {
-	nParams := 3
+func awsConfigFromParams(params ...interface{}) (*aws.Config, error) {
 
-	if len(params) < nParams {
-		return nil, fmt.Errorf("Invalid init paramters: aws_access_key_id, aws_secret_access_key, region")
+	paramMap, err := paramsToMap(params...)
+	if err != nil {
+		return nil, err
 	}
 
-	for i := 0; i < nParams; i++ {
-		t := reflect.TypeOf(params[i])
-		if t.Kind() != reflect.String {
-			return nil, fmt.Errorf("Invalid init paramters: expected `string` got `%v`", t)
-		}
-	}
-
-	accessKeyID := params[0].(string)
-	secretAccessKey := params[1].(string)
-	region := params[2].(string)
+	accessKeyID := paramMap["accessKeyID"]
+	secretAccessKey := paramMap["secretAccessKey"]
+	region := paramMap["region"]
 
 	return &aws.Config{
 		Region: aws.String(region),
@@ -83,4 +79,35 @@ func AWSConfigFromParams(params ...interface{}) (*aws.Config, error) {
 			secretAccessKey,
 			region),
 	}, nil
+}
+
+func paramsToMap(params ...interface{}) (map[string]string, error) {
+
+	paramKeys := []string{"accessKeyID", "secretAccessKey", "region"}
+
+	if len(params) < 1 {
+		return nil, fmt.Errorf("Invalid init parameters: not found %v", paramKeys)
+	}
+
+	paramType := reflect.TypeOf(params[0].(map[string]string))
+	if paramType != reflect.TypeOf(map[string]string{}) {
+		return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
+	}
+
+	fmt.Println(reflect.TypeOf(params[0]).Kind(), reflect.TypeOf(map[string]string{}).Kind())
+	paramMap := params[0].(map[string]string)
+
+	for _, key := range paramKeys {
+		paramValue, found := paramMap[key]
+		if !found {
+			return nil, fmt.Errorf("Invalid init paramters: expected `%v` not found", key)
+		}
+
+		paramType := reflect.TypeOf(paramValue)
+		if paramType.Kind() != reflect.String {
+			return nil, fmt.Errorf("Invalid init paramters: expected `%v` of type `string` got `%v`", key, paramType)
+		}
+	}
+
+	return paramMap, nil
 }

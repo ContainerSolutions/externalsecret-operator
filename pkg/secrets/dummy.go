@@ -6,8 +6,12 @@ type DummySecretsBackend struct {
 	suffix string
 }
 
+func init() {
+	BackendRegister("dummy", NewDummySecretsBackend)
+}
+
 // NewDummySecretsBackend gives you an new DummySecretsBackend
-func NewDummySecretsBackend() *DummySecretsBackend {
+func NewDummySecretsBackend() BackendIface {
 	return &DummySecretsBackend{}
 }
 
