@@ -12,9 +12,9 @@ func TestNewSecretForCR(t *testing.T) {
 	key := "key"
 	suffix := "-value"
 
-	dummy := secrets.NewDummySecretsBackend()
-	dummy.Init("-value")
-	secrets.BackendRegister("dummy", dummy)
+	secrets.BackendRegister("dummy", secrets.NewDummySecretsBackend)
+	secrets.BackendInstantiate("dummy", "dummy")
+	secrets.BackendInstances["dummy"].Init(map[string]string{"suffix": "-value"})
 
 	Convey("Given an ExternalSecret resource", t, func() {
 		externalSecret := v1alpha1.ExternalSecret{
