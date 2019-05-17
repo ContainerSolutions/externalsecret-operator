@@ -17,7 +17,8 @@ func NewDummySecretsBackend() BackendIface {
 
 // Init implements SecretsBackend interface, sets the suffix
 func (d *DummySecretsBackend) Init(parameters ...interface{}) error {
-	d.suffix = parameters[0].(string)
+	params := parameters[0].(map[string]string)
+	d.suffix = params["suffix"]
 	return nil
 }
 
