@@ -47,8 +47,14 @@ func TestAWSConfigFromParams(t *testing.T) {
 		expectedSecretAccessKey := "SMAMSLscSercreasdas"
 		expectedRegion := "eu-west-1"
 
+		params := map[string]string{
+			"accessKeyID":     expectedAccessKeyID,
+			"secretAccessKey": expectedSecretAccessKey,
+			"region":          expectedRegion,
+		}
+
 		Convey("When creating AWS Config from them", func() {
-			config, err := AWSConfigFromParams(expectedAccessKeyID, expectedSecretAccessKey, expectedRegion)
+			config, err := awsConfigFromParams(params)
 			So(err, ShouldBeNil)
 			Convey("Credentials are created correctly", func() {
 				actualCredentials, err := config.Credentials.Get()

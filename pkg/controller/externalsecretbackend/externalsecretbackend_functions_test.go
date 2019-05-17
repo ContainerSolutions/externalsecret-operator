@@ -9,7 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestNewExternalSecretBackendForCRDummy(t *testing.T) {
+func TestNewBackendInstanceForCR(t *testing.T) {
 	Convey("Given an ExternalSecretBackend resource", t, func() {
 		externalSecretBackend := v1alpha1.ExternalSecretBackend{
 			Spec: v1alpha1.ExternalSecretBackendSpec{
@@ -21,10 +21,10 @@ func TestNewExternalSecretBackendForCRDummy(t *testing.T) {
 		}
 		externalSecretBackend.Name = "dummy1"
 		Convey("When creating the new Backend", func() {
-			err := newExternalSecretBackendForCR(&externalSecretBackend)
+			err := newBackendInstanceForCR(&externalSecretBackend)
 			So(err, ShouldBeNil)
 			Convey("The backend is present in the backend list", func() {
-				foundBackend, ok := secrets.Backends["dummy1"]
+				foundBackend, ok := secrets.BackendInstances["dummy1"]
 				So(ok, ShouldBeTrue)
 				So(reflect.TypeOf(foundBackend), ShouldEqual, reflect.TypeOf(secrets.NewDummySecretsBackend()))
 			})
