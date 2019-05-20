@@ -30,7 +30,7 @@ func NewAWSSecretsManagerBackend() BackendIface {
 func (s *AWSSecretsManagerBackend) Init(params ...interface{}) error {
 	var err error
 
-	s.config, err = awsConfigFromParams(params)
+	s.config, err = awsConfigFromParams(params...)
 	if err != nil {
 		return err
 	}

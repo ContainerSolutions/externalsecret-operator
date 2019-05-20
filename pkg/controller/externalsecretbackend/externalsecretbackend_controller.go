@@ -2,6 +2,7 @@ package externalsecretbackend
 
 import (
 	"context"
+	"fmt"
 
 	externalsecretoperatorv1alpha1 "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
 
@@ -83,6 +84,13 @@ func (r *ReconcileExternalSecretBackend) Reconcile(request reconcile.Request) (r
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	log.Info(fmt.Sprintf("Backend added: %v", instance.Name))
+
 	err = initBackendInstanceForCR(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	log.Info(fmt.Sprintf("Backend instantiated: %v", instance.Name))
+
 	return reconcile.Result{}, err
 }
