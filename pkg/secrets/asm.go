@@ -53,6 +53,10 @@ func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
 		return "", err
 	}
 
+	if s.SecretsManager == nil {
+		return "", fmt.Errorf("backend not initialized")
+	}
+
 	output, err := s.SecretsManager.GetSecretValue(input)
 	if err != nil {
 		return "", err
