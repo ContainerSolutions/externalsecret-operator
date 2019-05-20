@@ -81,7 +81,7 @@ func awsConfigFromParams(params ...interface{}) (*aws.Config, error) {
 		Credentials: credentials.NewStaticCredentials(
 			accessKeyID,
 			secretAccessKey,
-			region),
+			""),
 	}, nil
 }
 
