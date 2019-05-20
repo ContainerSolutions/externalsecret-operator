@@ -21,8 +21,6 @@ func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordB
 }
 
 func (b *OnePasswordBackend) Init(params ...interface{}) error {
-	fmt.Println("Initializing 1password backend.")
-
 	return nil
 }
 
