@@ -15,6 +15,7 @@ func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.
 	if !ok {
 		return nil, fmt.Errorf("Cannot find backend: %v", cr.Spec.Backend)
 	}
+
 	value, err := backend.Get(cr.Spec.Key)
 	secret := map[string][]byte{cr.Spec.Key: []byte(value)}
 
