@@ -93,7 +93,7 @@ func paramsToMap(params ...interface{}) (map[string]string, error) {
 		return nil, fmt.Errorf("Invalid init parameters: not found %v", paramKeys)
 	}
 
-	paramType := reflect.TypeOf(params[0].(map[string]string))
+	paramType := reflect.TypeOf(params[0])
 	if paramType != reflect.TypeOf(map[string]string{}) {
 		return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
 	}
