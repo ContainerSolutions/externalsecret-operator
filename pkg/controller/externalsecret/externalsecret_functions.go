@@ -28,6 +28,7 @@ func initSecretBackends() {
 	onepasswordClient := secrets.OnePasswordCliClient{}
 	vault := "Personal"
 	onepassword := secrets.NewOnePasswordBackend(vault, onepasswordClient)
+	onepassword.Init()
 	secrets.BackendRegister("onepassword", onepassword)
 	log.Info("Initialized 1password backend")
 }

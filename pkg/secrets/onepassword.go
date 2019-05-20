@@ -9,14 +9,13 @@ import (
 )
 
 type OnePasswordBackend struct {
-	Backend
 	OnePasswordClient
 }
 
 func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordBackend {
 	backend := &OnePasswordBackend{}
 	backend.OnePasswordClient = client
-	backend.Init()
+
 	return backend
 }
 
