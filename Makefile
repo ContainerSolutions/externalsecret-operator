@@ -23,7 +23,8 @@ deploy:
 	kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
 	envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
 	kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
-	envsubst < deploy/operator-aws.yaml | kubectl apply -n $(NAMESPACE) -f -
+	kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecretbackend_crd.yaml
+	envsubst < deploy/operator.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: test
 test:
