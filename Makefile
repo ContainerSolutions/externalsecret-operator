@@ -1,5 +1,5 @@
 DOCKER_IMAGE ?= containersol/externalsecret-operator
-DOCKER_TAG ?= $(shell grep -Po 'Version = "\K.*?(?=")' version/version.go)
+DOCKER_TAG ?= $(shell go run version/version.go)
 
 # export these if you want to use AWS secrets manager
 AWS_ACCESS_KEY_ID ?= AKIACONFIGUREME
