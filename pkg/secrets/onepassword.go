@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -19,8 +20,24 @@ func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordB
 	return backend
 }
 
+// Read secrets from the environment, sign in to 1password and clear the environment variables
 func (b *OnePasswordBackend) Init(params ...interface{}) error {
-	return nil
+	url := os.Getenv("ONEPASSWORD_DOMAIN")
+	email := os.Getenv("ONEPASSWORD_EMAIL")
+	secretKey := os.Getenv("ONEPASSWORD_SECRET_KEY")
+	masterPassword := os.Getenv("ONEPASSWORD_MASTER_PASSWORD")
+
+	err := b.OnePasswordClient.SignIn(url, email, secretKey, masterPassword)
+
+	os.Unsetenv("ONEPASSWORD_DOMAIN")
+	os.Unsetenv("ONEPASSWORD_EMAIL")
+	os.Unsetenv("ONEPASSWORD_SECRET_KEY")
+	os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
+
+	if err != nil {
+		return nil
+	}
+	return err
 }
 
 // Call the 1password client and parse the 'fields' array in the output. Return the 'v' property of the field object of which the 'n' property matches parameter key.
@@ -38,9 +55,14 @@ func (b *OnePasswordBackend) Get(key string) (string, error) {
 
 type OnePasswordClient interface {
 	Get(key string) string
+	SignIn(domain string, email string, secretKey string, masterPassword string) error
 }
 
 type OnePasswordCliClient struct {
+}
+
+func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+	return nil
 }
 
 // Invoke $ op get item 'key'
@@ -56,52 +78,6 @@ func (c OnePasswordCliClient) Get(key string) string {
 		log.Fatalf("/usr/local/bin/op get item '"+key+"' failed with %s\n", err)
 	}
 	return string(stdout.Bytes())
-}
-
-type StubOnePasswordClient struct {
-}
-
-// Return a static JSON output for $ op get item 'testkey'
-func (c StubOnePasswordClient) Get(key string) string {
-	return `{
-		"uuid": "xyz",
-		"templateUuid": "003",
-		"trashed": "N",
-		"createdAt": "2019-05-17T12:40:36Z",
-		"updatedAt": "2019-05-17T12:40:58Z",
-		"changerUuid": "uvw",
-		"itemVersion": 1,
-		"vaultUuid": "abc",
-		"details": {
-		  "fields": [],
-		  "notesPlain": "",
-		  "sections": [
-			{
-			  "fields": [
-				{
-				  "k": "string",
-				  "n": "efg",
-				  "t": "",
-				  "v": "testvalue"
-				}
-			  ],
-			  "name": "Section_hij",
-			  "title": ""
-			}
-		  ]
-		},
-		"overview": {
-		  "URLs": [],
-		  "ainfo": "",
-		  "pbe": 0,
-		  "pgrng": false,
-		  "ps": 0,
-		  "tags": [],
-		  "title": "testkey",
-		  "url": ""
-		}
-	  }
-	`
 }
 
 type OpItem struct {
