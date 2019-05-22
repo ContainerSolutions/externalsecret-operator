@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/kr/pty"
 )
 
 type OnePasswordBackend struct {
@@ -67,22 +69,34 @@ type OnePasswordCliClient struct {
 }
 
 func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
-	cmd := exec.Command("/usr/local/bin/op", "signin", domain, email)
-	var stdin, stdout, stderr bytes.Buffer
-	cmd.Stdin = &stdin
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err := cmd.Run()
+	log.Println("Signing into 1password via '/usr/local/bin/op'.")
 
+	cmd := exec.Command("op", "signin", domain, email)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	b, err := pty.Start(cmd)
 	if err != nil {
-		fmt.Println(string(stderr.Bytes()))
-		fmt.Println(string(stdout.Bytes()))
-		log.Fatalf("/usr/local/bin/op signin failed with %s\n", err)
+		log.Fatalf("/usr/local/bin/op signin failed with %s.\n", err)
 		return err
 	}
 
-	io.WriteString(os.Stdin, secretKey+"\n")
-	io.WriteString(os.Stdin, masterPassword+"\n")
+	go func() {
+		b.Write([]byte(secretKey + "\n"))
+		b.Write([]byte{4})
+		b.Write([]byte{4})
+		b.Write([]byte(masterPassword + "\n"))
+		b.Write([]byte{4})
+		b.Write([]byte{4})
+	}()
+	io.Copy(os.Stdout, b)
+
+	log.Println("Started '/usr/local/bin/op'.")
+
+	cmd.Wait()
+
+	log.Println("Signed into 1password successfully.")
 
 	return nil
 }
