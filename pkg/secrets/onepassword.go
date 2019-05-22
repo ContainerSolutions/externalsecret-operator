@@ -35,9 +35,9 @@ func (b *OnePasswordBackend) Init(params ...interface{}) error {
 	os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
 
 	if err != nil {
-		return nil
+		return err
 	}
-	return err
+	return nil
 }
 
 // Call the 1password client and parse the 'fields' array in the output. Return the 'v' property of the field object of which the 'n' property matches parameter key.
