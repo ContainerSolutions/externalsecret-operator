@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -26,6 +27,10 @@ func (b *OnePasswordBackend) Init(params ...interface{}) error {
 	email := os.Getenv("ONEPASSWORD_EMAIL")
 	secretKey := os.Getenv("ONEPASSWORD_SECRET_KEY")
 	masterPassword := os.Getenv("ONEPASSWORD_MASTER_PASSWORD")
+
+	if url == "" || email == "" || secretKey == "" || masterPassword == "" {
+		return fmt.Errorf("Missing one or more ONEPASSWORD environment variables.")
+	}
 
 	err := b.OnePasswordClient.SignIn(url, email, secretKey, masterPassword)
 
@@ -62,6 +67,23 @@ type OnePasswordCliClient struct {
 }
 
 func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+	cmd := exec.Command("/usr/local/bin/op", "signin", domain, email)
+	var stdin, stdout, stderr bytes.Buffer
+	cmd.Stdin = &stdin
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+
+	if err != nil {
+		fmt.Println(string(stderr.Bytes()))
+		fmt.Println(string(stdout.Bytes()))
+		log.Fatalf("/usr/local/bin/op signin failed with %s\n", err)
+		return err
+	}
+
+	io.WriteString(os.Stdin, secretKey+"\n")
+	io.WriteString(os.Stdin, masterPassword+"\n")
+
 	return nil
 }
 

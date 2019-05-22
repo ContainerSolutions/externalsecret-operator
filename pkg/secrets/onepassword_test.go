@@ -109,3 +109,20 @@ func TestInitOnePassword(t *testing.T) {
 		})
 	})
 }
+
+func TestInitOnePassword_MissingEnvVars(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+		os.Unsetenv("ONEPASSWORD_DOMAIN")
+		os.Unsetenv("ONEPASSWORD_EMAIL")
+		os.Unsetenv("ONEPASSWORD_SECRET_KEY")
+		os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
+
+		client := MockOnePasswordClient{}
+
+		backend := NewOnePasswordBackend("Personal", client)
+
+		Convey("When initializing", func() {
+			So(backend.Init().Error(), ShouldEqual, "Missing one or more ONEPASSWORD environment variables.")
+		})
+	})
+}
