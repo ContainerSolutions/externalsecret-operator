@@ -19,6 +19,8 @@ push:
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy
 deploy:
+	envsubst < ./deploy/onepassword-namespace.yaml | kubectl apply -f -
+	envsubst < ./deploy/onepassword-configmap.yaml | kubectl apply -n ${NAMESPACE} -f -
 	kubectl apply -n $(NAMESPACE) -f ./deploy/service_account.yaml
 	kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
 	envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
