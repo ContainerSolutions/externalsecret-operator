@@ -66,6 +66,10 @@ required = [
   branch = "master" #osdk_branch_annotation
   # version = "=v0.6.0" #osdk_version_annotation
 
+[[constraint]]
+  name = "gopkg.in/src-d/go-git.v4"
+  version = "v4.11.0"
+
 [prune]
   go-tests = true
   non-go = true
