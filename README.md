@@ -40,22 +40,6 @@ Given a secret defined in AWS Secrets Manager:
 % aws secretsmanager create-secret --name=example-externalsecret-key --secret-string='this string is a secret'
 ```
 
-and a `ExternalSecretBackend` resource as follows:
-
-```yaml
-% cat ./deploy/crds/examples/externalsecretbackend-asm.yaml
-apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
-kind: ExternalSecretBackend
-metadata:
-  name: asm-example
-spec:
-  Type: asm
-  Parameters:
-    accessKeyID: AKIA...
-    secretAccessKey: KSKSe4cret...
-    region: eu-west-1
-```
-
 and an `ExternalSecret` resource definition like this one:
 
 ```yaml
@@ -73,7 +57,6 @@ The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
-% kubectl apply -f ./deploy/crds/examples/externalsecretbackend-asm.yaml
 % kubectl apply -f ./deploy/crds/examples/externalsecret-asm.yaml
 % kubectl get secret example-externalsecret -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret

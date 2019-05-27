@@ -50,6 +50,5 @@ rules:
   - externalsecret-operator.container-solutions.com
   resources:
   - '*'
-  - externalsecretbackends
   verbs:
   - '*'
