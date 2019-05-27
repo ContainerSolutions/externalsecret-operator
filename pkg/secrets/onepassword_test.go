@@ -110,11 +110,62 @@ func TestInitOnePassword(t *testing.T) {
 	})
 }
 
-func TestInitOnePassword_MissingEnvVars(t *testing.T) {
+func TestInitOnePassword_MissingDomain(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		os.Unsetenv("ONEPASSWORD_DOMAIN")
+
+		client := MockOnePasswordClient{}
+
+		backend := NewOnePasswordBackend("Personal", client)
+
+		Convey("When initializing", func() {
+			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_DOMAIN environment variable.")
+		})
+	})
+}
+
+func TestInitOnePassword_MissingEmail(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+
+		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
+
 		os.Unsetenv("ONEPASSWORD_EMAIL")
+
+		client := MockOnePasswordClient{}
+
+		backend := NewOnePasswordBackend("Personal", client)
+
+		Convey("When initializing", func() {
+			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_EMAIL environment variable.")
+		})
+	})
+}
+
+func TestInitOnePassword_MissingSecretKey(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+
+		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
+		os.Setenv("ONEPASSWORD_EMAIL", "externalsecretoperator@example.com")
+
 		os.Unsetenv("ONEPASSWORD_SECRET_KEY")
+
+		client := MockOnePasswordClient{}
+
+		backend := NewOnePasswordBackend("Personal", client)
+
+		Convey("When initializing", func() {
+			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_SECRET_KEY environment variable.")
+		})
+	})
+}
+
+func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+
+		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
+		os.Setenv("ONEPASSWORD_EMAIL", "externalsecretoperator@example.com")
+		os.Setenv("ONEPASSWORD_SECRET_KEY", "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ")
+
 		os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
 
 		client := MockOnePasswordClient{}
@@ -122,7 +173,7 @@ func TestInitOnePassword_MissingEnvVars(t *testing.T) {
 		backend := NewOnePasswordBackend("Personal", client)
 
 		Convey("When initializing", func() {
-			So(backend.Init().Error(), ShouldEqual, "Missing one or more ONEPASSWORD environment variables.")
+			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_MASTER_PASSWORD environment variable.")
 		})
 	})
 }
