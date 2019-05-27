@@ -7,6 +7,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
@@ -60,6 +62,12 @@ func main() {
 	logf.SetLogger(zap.Logger())
 
 	printVersion()
+
+	err := secrets.BackendInitFromEnv()
+	if err != nil {
+		log.Error(err, "Failed to initialize backends")
+		os.Exit(1)
+	}
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {

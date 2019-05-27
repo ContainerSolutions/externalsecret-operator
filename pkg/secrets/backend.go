@@ -1,6 +1,9 @@
 package secrets
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 //Backend is a secret store backend
 type Backend struct{}
@@ -16,6 +19,8 @@ var BackendInstances map[string]BackendIface
 
 // BackendFunctions is a map of functions that return Backends
 var BackendFunctions map[string]func() BackendIface
+
+var initLock sync.Mutex
 
 // BackendInstantiate instantiates a Backend of type `backendType`
 func BackendInstantiate(name string, backendType string) error {
@@ -41,4 +46,24 @@ func BackendRegister(name string, function func() BackendIface) {
 	}
 
 	BackendFunctions[name] = function
+}
+
+// BackendInitFromEnv initializes a backend looking into Env for config data
+func BackendInitFromEnv() error {
+	initLock.Lock()
+	defer initLock.Unlock()
+
+	config, err := BackendConfigFromEnv()
+	if err != nil {
+		return err
+	}
+
+	err = BackendInstantiate(config.Name, config.Type)
+	if err != nil {
+		return err
+	}
+
+	err = BackendInstances[config.Name].Init(config.Parameters)
+
+	return err
 }
