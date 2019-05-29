@@ -7,7 +7,7 @@ import (
 )
 
 //ConfigEnvVar holds the name of the Environment Variable scanned for config
-const ConfigEnvVar string = "BACKEND_CONFIG"
+const ConfigEnvVar string = "OPERATOR_CONFIG"
 
 //BackendConfig represent configuration information for secret backend
 type BackendConfig struct {

@@ -28,3 +28,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "externalsecret-operator"
+            - name: OPERATOR_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: operator-config
+                  key: operator-config.json
