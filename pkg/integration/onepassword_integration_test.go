@@ -24,6 +24,7 @@ func TestOnePasswordBackend(t *testing.T) {
 		err := backend.Init(vault)
 		if err != nil {
 			fmt.Println("Init: " + err.Error())
+			t.Fail()
 		}
 
 		Convey("When retrieving a secret", func() {
