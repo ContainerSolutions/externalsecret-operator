@@ -20,40 +20,40 @@ func (m MockOnePasswordClient) SignIn(domain string, email string, secretKey str
 // Return a static JSON output for $ op get item 'testkey'
 func (m MockOnePasswordClient) Get(key string) string {
 	return `{
-		"uuid": "xyz",
-		"templateUuid": "003",
+		"uuid": "r4qk25ahjrurehsejazi3tz57e",
+		"templateUuid": "001",
 		"trashed": "N",
-		"createdAt": "2019-05-17T12:40:36Z",
-		"updatedAt": "2019-05-17T12:40:58Z",
-		"changerUuid": "uvw",
-		"itemVersion": 1,
-		"vaultUuid": "abc",
+		"createdAt": "2019-05-29T09:13:12Z",
+		"updatedAt": "2019-05-29T10:53:49Z",
+		"changerUuid": "GI2HNNU3OBEBDJUO6IOBA4EEOY",
+		"itemVersion": 2,
+		"vaultUuid": "s63lunnfg3pgoiuvq7bcl6taju",
 		"details": {
-		  "fields": [],
-		  "notesPlain": "",
-		  "sections": [
+		  "fields": [
 			{
-			  "fields": [
-				{
-				  "k": "string",
-				  "n": "efg",
-				  "t": "",
-				  "v": "testvalue"
-				}
-			  ],
-			  "name": "Section_hij",
-			  "title": ""
+			  "designation": "username",
+			  "name": "username",
+			  "type": "T",
+			  "value": ""
+			},
+			{
+			  "designation": "password",
+			  "name": "password",
+			  "type": "P",
+			  "value": "testvalue"
 			}
-		  ]
+		  ],
+		  "notesPlain": "",
+		  "sections": []
 		},
 		"overview": {
 		  "URLs": [],
 		  "ainfo": "",
 		  "pbe": 0,
 		  "pgrng": false,
-		  "ps": 0,
+		  "ps": 40,
 		  "tags": [],
-		  "title": "testkey",
+		  "title": "TestItem",
 		  "url": ""
 		}
 	  }

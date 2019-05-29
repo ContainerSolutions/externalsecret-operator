@@ -2,13 +2,13 @@ package secrets
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
+	"regexp"
 
 	"github.com/kr/pty"
+	"github.com/tidwall/gjson"
 )
 
 type OnePasswordBackend struct {
@@ -48,8 +48,6 @@ func (b *OnePasswordBackend) Init(params ...interface{}) error {
 		return fmt.Errorf("Missing ONEPASSWORD_MASTER_PASSWORD environment variable.")
 	}
 
-	fmt.Println("Signing in to 1password with email " + email + " and domain " + domain)
-
 	err := b.OnePasswordClient.SignIn(domain, email, secretKey, masterPassword)
 
 	os.Unsetenv("ONEPASSWORD_DOMAIN")
@@ -61,26 +59,28 @@ func (b *OnePasswordBackend) Init(params ...interface{}) error {
 		return err
 	}
 
-	fmt.Println("Signed in to 1password successfully.")
+	fmt.Println("Signed into 1password successfully.")
 
 	return nil
 }
 
-// Call the 1password client and parse the 'fields' array in the output. Return the 'v' property of the field object of which the 'n' property matches parameter key.
+// Retrieve the 1password item whose name matches the key and return the value of the 'password' field.
 func (b *OnePasswordBackend) Get(key string) (string, error) {
-	fmt.Println("Retrieving key " + key + " from 1password")
+	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	opItemString := b.OnePasswordClient.Get(key)
+	item := b.OnePasswordClient.Get(key)
+	if item == "" {
+		return "", fmt.Errorf("Could not retrieve 1password item '" + key + "'.")
+	}
 
-	var opItem OpItem
+	value := gjson.Get(item, "details.fields.#[name==\"password\"].value")
+	if !value.Exists() {
+		return "", fmt.Errorf("1password item '" + key + "' does not have a 'password' field.")
+	}
 
-	json.Unmarshal([]byte(opItemString), &opItem)
+	fmt.Println("1password item '" + key + "' value of 'password' field retrieved successfully.")
 
-	var value = opItem.Details.Sections[0].Fields[0].V
-
-	fmt.Println("Retrieved value from 1password")
-
-	return value, nil
+	return value.String(), nil
 }
 
 type OnePasswordClient interface {
@@ -92,11 +92,11 @@ type OnePasswordCliClient struct {
 }
 
 func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
-	fmt.Println("Signing into 1password via '/usr/local/bin/op'.")
+	fmt.Println("Signing into 1password.")
 
 	cmd := exec.Command("/usr/local/bin/op", "signin", domain, email)
-
-	cmd.Stdout = os.Stdout
+	var outb bytes.Buffer
+	cmd.Stdout = &outb
 	cmd.Stderr = os.Stderr
 
 	b, err := pty.Start(cmd)
@@ -113,13 +113,22 @@ func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey stri
 		b.Write([]byte{4})
 		b.Write([]byte{4})
 	}()
-	io.Copy(os.Stdout, b)
 
 	fmt.Println("Started '/usr/local/bin/op'.")
 
 	cmd.Wait()
 
-	fmt.Println("Signed into 1password successfully.")
+	r, _ := regexp.Compile("export OP_SESSION_externalsecretoperator=\"(.+)\"")
+	matches := r.FindAllStringSubmatch(outb.String(), -1)
+
+	if len(matches) == 0 {
+		fmt.Println("Could not retrieve token from 1password.")
+		return nil
+	}
+
+	token := matches[0][1]
+	fmt.Println("\nUpdated 'OP_SESSION_externalsecretoperator' environment variable.")
+	os.Setenv("OP_SESSION_externalsecretoperator", token)
 
 	return nil
 }
@@ -135,22 +144,7 @@ func (c OnePasswordCliClient) Get(key string) string {
 		fmt.Println(string(stderr.Bytes()))
 		fmt.Println(string(stdout.Bytes()))
 		fmt.Println(err, "/usr/local/bin/op get item '%s' failed: (%v)", key, err)
+		return ""
 	}
 	return string(stdout.Bytes())
-}
-
-type OpItem struct {
-	Details Details
-}
-
-type Details struct {
-	Sections []Section
-}
-
-type Section struct {
-	Fields []Field
-}
-type Field struct {
-	N string
-	V string
 }

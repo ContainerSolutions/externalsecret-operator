@@ -12,6 +12,10 @@ required = [
 ]
 
 [[override]]
+  name = "github.com/tidwall/gjson"
+  version = "=v1.1.4"
+
+[[override]]
   name = "github.com/kr/pty"
   version = "=v1.1.4"
 

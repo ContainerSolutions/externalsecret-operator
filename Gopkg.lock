@@ -613,6 +613,22 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:6343bc31d451dd4747480e1d5827ff75a4408908bcf817fe3799407576d67c11"
+  name = "github.com/tidwall/gjson"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "081192fa2e471ddff3ec98a3cc04fecfd031ed57"
+  version = "v1.1.4"
+
+[[projects]]
+  digest = "1:20d232e544cf67770287960b1a5e8bee6a58a86fd71f77dfad60a9d903b9f2ed"
+  name = "github.com/tidwall/match"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "33827db735fff6510490d69a8622612558a557ed"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:2e9a15fd59188e110409eca9d356fe97b3c57e3cbb9ddcfa3616b16d282d7529"
   name = "go.opencensus.io"
   packages = [
@@ -1199,6 +1215,7 @@
     "github.com/smartystreets/goconvey/convey",
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/mock",
+    "github.com/tidwall/gjson",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",

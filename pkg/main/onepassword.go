@@ -12,8 +12,15 @@ func main() {
 	backend := secrets.NewOnePasswordBackend(vault, client)
 
 	err := backend.Init(vault)
-
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Init: " + err.Error())
 	}
+
+	key := "testkey"
+	value, err := backend.Get(key)
+	if err != nil {
+		fmt.Println("Get: " + err.Error())
+	}
+
+	fmt.Println("Get '" + key + "' from vault '" + vault + "' = '" + value + "'")
 }
