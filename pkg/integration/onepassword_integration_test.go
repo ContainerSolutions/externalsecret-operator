@@ -9,6 +9,10 @@ import (
 )
 
 func TestOnePasswordBackend(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	Convey("Given an initialized OnePasswordBackend", t, func() {
 		vault := "Personal"
 		key := "testkey"
