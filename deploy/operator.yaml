@@ -15,11 +15,10 @@ spec:
       serviceAccountName: externalsecret-operator
       containers:
         - name: externalsecret-operator
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: containersol/externalsecret-operator:0.0.2
           command:
           - externalsecret-operator
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           env:
             - name: WATCH_NAMESPACE
               value: ""
@@ -29,3 +28,8 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "externalsecret-operator"
+            - name: OPERATOR_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: operator-config
+                  key: operator-config.json

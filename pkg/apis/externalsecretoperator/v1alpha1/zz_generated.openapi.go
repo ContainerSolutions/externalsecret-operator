@@ -67,7 +67,23 @@ func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref comm
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ExternalSecretSpec defines the desired state of ExternalSecret",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"backend": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Backend to use to retrieve the secret",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"key": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Key of the secret held in the ExternalBackend",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"backend", "key"},
 			},
 		},
 		Dependencies: []string{},
@@ -79,7 +95,23 @@ func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref co
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ExternalSecretStatus defines the observed state of ExternalSecret",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"backend": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Backend to use to retrieve the secret",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"key": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The Key of the secret held in the ExternalBackend",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"backend", "key"},
 			},
 		},
 		Dependencies: []string{},

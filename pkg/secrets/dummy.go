@@ -6,14 +6,19 @@ type DummySecretsBackend struct {
 	suffix string
 }
 
+func init() {
+	BackendRegister("dummy", NewDummySecretsBackend)
+}
+
 // NewDummySecretsBackend gives you an new DummySecretsBackend
-func NewDummySecretsBackend() *DummySecretsBackend {
+func NewDummySecretsBackend() BackendIface {
 	return &DummySecretsBackend{}
 }
 
 // Init implements SecretsBackend interface, sets the suffix
 func (d *DummySecretsBackend) Init(parameters ...interface{}) error {
-	d.suffix = parameters[0].(string)
+	params := parameters[0].(map[string]string)
+	d.suffix = params["suffix"]
 	return nil
 }
 

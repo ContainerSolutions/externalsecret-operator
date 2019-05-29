@@ -46,9 +46,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Initialize the secret backends
-	initSecretBackends()
-
 	// Watch for changes to primary resource ExternalSecret
 	err = c.Watch(&source.Kind{Type: &externalsecretoperatorv1alpha1.ExternalSecret{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {

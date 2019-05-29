@@ -29,9 +29,6 @@ and custom resource definitions:
 
 
 ```shell
-export AWS_ACCESS_KEY_ID=AKIACONFIGUREME
-export AWS_SECRET_ACCESS_KEY=Secretsecretconfigureme
-export AWS_REGION=eu-west-1
 make deploy
 ```
 
@@ -46,7 +43,7 @@ Given a secret defined in AWS Secrets Manager:
 and an `ExternalSecret` resource definition like this one:
 
 ```yaml
-% cat deploy/crds/externalsecret-operator_v1alpha1_externalsecret_cr.yaml
+% cat ./deploy/crds/examples/externalsecret-asm.yaml
 apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
@@ -60,7 +57,7 @@ The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
-% kubectl apply -f deploy/crds/externalsecret-operator_v1alpha1_externalsecret_cr.yaml
+% kubectl apply -f ./deploy/crds/examples/externalsecret-asm.yaml
 % kubectl get secret example-externalsecret -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret
 ```

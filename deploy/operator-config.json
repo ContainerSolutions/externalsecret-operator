@@ -1,0 +1,9 @@
+{
+  "Name": "asm-example",
+  "Type": "asm",
+  "Parameters": {
+    "accessKeyID": "$AWS_ACCESS_KEY_ID",
+    "region": "$AWS_REGION",
+    "secretAccessKey": "$AWS_SECRET_ACCESS_KEY"
+  }
+}

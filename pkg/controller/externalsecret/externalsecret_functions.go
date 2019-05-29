@@ -10,34 +10,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func initSecretBackends() {
-	// TODO: backends should be created on the fly according to CRDs
-	asm := secrets.NewAWSSecretsManagerBackend()
-	if err := asm.Init(); err != nil {
-		log.Error(err, "Failed to initialize AWS Secrets Manager Backend")
-	}
-
-	dummy := secrets.NewDummySecretsBackend()
-	dummy.Init("-value")
-	secrets.BackendRegister("dummy", dummy)
-	log.Info("Initialized Dummy backend")
-
-	secrets.BackendRegister("asm", asm)
-	log.Info("Initialized Amazon Secret Manager backend")
-
-	onepasswordClient := secrets.OnePasswordCliClient{}
-	vault := "Personal"
-	onepassword := secrets.NewOnePasswordBackend(vault, onepasswordClient)
-	onepassword.Init()
-	secrets.BackendRegister("onepassword", onepassword)
-	log.Info("Initialized 1password backend")
-}
-
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {
-	backend, ok := secrets.Backends[cr.Spec.Backend]
+	backend, ok := secrets.BackendInstances[cr.Spec.Backend]
 	if !ok {
 		return nil, fmt.Errorf("Cannot find backend: %v", cr.Spec.Backend)
 	}
+
 	value, err := backend.Get(cr.Spec.Key)
 	secret := map[string][]byte{cr.Spec.Key: []byte(value)}
 
