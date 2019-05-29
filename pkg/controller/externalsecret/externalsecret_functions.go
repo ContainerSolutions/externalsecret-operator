@@ -24,6 +24,13 @@ func initSecretBackends() {
 
 	secrets.BackendRegister("asm", asm)
 	log.Info("Initialized Amazon Secret Manager backend")
+
+	onepasswordClient := secrets.OnePasswordCliClient{}
+	vault := "Personal"
+	onepassword := secrets.NewOnePasswordBackend(vault, onepasswordClient)
+	onepassword.Init()
+	secrets.BackendRegister("onepassword", onepassword)
+	log.Info("Initialized 1password backend")
 }
 
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {

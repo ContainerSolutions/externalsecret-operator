@@ -12,6 +12,10 @@ required = [
 ]
 
 [[override]]
+  name = "github.com/kr/pty"
+  version = "=v1.1.4"
+
+[[override]]
   name = "k8s.io/code-generator"
   # revision for tag "kubernetes-1.13.1"
   revision = "c2090bec4d9b1fb25de3812f868accc2bc9ecbae"
