@@ -19,22 +19,33 @@ spec:
         app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 80
-              protocol: TCP
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WATCH_NAMESPACE
+              value: {{ .Values.watchNamespace }}
+            - name: OPERATOR_NAME
+              value: {{ .Values.operatorName }}
+            - name: OPERATOR_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.operatorConfigSecretName }}
+                  key: {{ .Values.operatorConfigSecretKey }}
+        {{- with .Values.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+{{ toYaml . | indent 16 }}
+        {{- end }}
+        {{- with .Values.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+{{ toYaml . | indent 16 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}

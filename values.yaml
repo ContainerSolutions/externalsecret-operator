@@ -5,29 +5,22 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  repository: containersol/externalsecret-operator
+  tag: 0.0.2
   pullPolicy: IfNotPresent
 
 nameOverride: ""
 fullnameOverride: ""
 
-service:
-  type: ClusterIP
-  port: 80
+watchNamespace: ""
+operatorName: externalsecret-operator
+operatorConfigSecretName: operator-config
+operatorConfigSecretKey: operator-config.json
 
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts:
-    - chart-example.local
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  # The operator doesn't expose any endpoint, so liveness and readiness probes are
+  # not implemented by default until we find a meaningful way to do so
+livenessProbe: {}
+readinessProbe: {}
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
