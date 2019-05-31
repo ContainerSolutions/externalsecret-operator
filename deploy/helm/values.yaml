@@ -18,6 +18,13 @@ operatorName: externalsecret-operator
 operatorConfigSecretName: operator-config
 operatorConfigSecretKey: operator-config.json
 
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
   # The operator doesn't expose any endpoint, so liveness and readiness probes are
   # not implemented by default until we find a meaningful way to do so
 livenessProbe: {}

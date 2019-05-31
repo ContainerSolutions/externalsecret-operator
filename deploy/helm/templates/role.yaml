@@ -1,0 +1,42 @@
+{{- if and .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "externalsecret-operator.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
+    helm.sh/chart: {{ include "externalsecret-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  namespace: {{ .Values.watchNamespace }}
+rules:
+
+# Allow External Secrets Operator to create/delete/watch/list/update Secrets
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - "*"
+
+# Allow External Secrets Operator to update finalizers
+- apiGroups:
+  - apps
+  resourceNames:
+  - {{ include "externalsecret-operator.name" . }}
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+
+# Allow External Secret Operator to get/list/watch ExternalSecret resources 
+- apiGroups:
+  - externalsecret-operator.container-solutions.com
+  resources:
+  - externalsecrets
+  verbs:
+  - get
+  - list
+  - watch
+
+  {{- end -}}
