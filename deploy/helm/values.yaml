@@ -13,6 +13,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 watchNamespace: ""
+serviceAccountName: externalsecret-operator
 operatorName: externalsecret-operator
 operatorConfigSecretName: operator-config
 operatorConfigSecretKey: operator-config.json
