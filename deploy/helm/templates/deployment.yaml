@@ -30,7 +30,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: WATCH_NAMESPACE
-              value: {{ .Values.watchNamespace }}
+              value: {{ template "externalsecret-operator.watchNamespace" . }}
             - name: OPERATOR_NAME
               value: {{ .Values.operatorName }}
             - name: OPERATOR_CONFIG

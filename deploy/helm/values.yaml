@@ -25,6 +25,10 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name:
 
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
   # The operator doesn't expose any endpoint, so liveness and readiness probes are
   # not implemented by default until we find a meaningful way to do so
 livenessProbe: {}

@@ -8,7 +8,7 @@ metadata:
     helm.sh/chart: {{ include "externalsecret-operator.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-  namespace: {{ .Values.watchNamespace }}
+  namespace: {{ template "externalsecret-operator.watchNamespace" . }}
 rules:
 
 # Allow External Secrets Operator to create/delete/watch/list/update Secrets

@@ -8,13 +8,13 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   name: {{ include "externalsecret-operator.fullname" . }}
-  namespace: {{ .Values.watchNamespace }}
+  namespace: {{ template "externalsecret-operator.watchNamespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: {{ include "externalsecret-operator.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ template "kubernetes-dashboard.serviceAccountName" . }}
+    name: {{ template "externalsecret-operator.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end -}}

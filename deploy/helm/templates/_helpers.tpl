@@ -41,3 +41,14 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create watchNamespace: if not specified assume is release namespace
+*/}}
+{{- define "externalsecret-operator.watchNamespace" -}}
+{{- if .Values.watchNamespace -}}
+    {{ default .Values.watchNamespace }}
+{{- else -}}
+    {{ default .Release.Namespace }}
+{{- end -}}
+{{- end -}}
