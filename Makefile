@@ -29,3 +29,10 @@ deploy:
 .PHONY: test
 test:
 	go test -v -short ./...
+
+.PHONY: test-helm
+RELEASE := test$(shell echo $$$$)
+test-helm:
+	helm upgrade --install --wait $(RELEASE) ./deploy/helm
+	helm test --cleanup $(RELEASE)
+	helm delete --purge $(RELEASE)
