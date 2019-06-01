@@ -15,6 +15,10 @@ fullnameOverride: ""
 watchNamespace: ""
 operatorName: externalsecret-operator
 
+crds:
+  # Specifies wether the ExternalSecret CRD should be created
+  create: true
+
 secret:
   # Specifies wether the secret containing the operator configuration should be created
   create: true
