@@ -32,12 +32,12 @@ spec:
             - name: WATCH_NAMESPACE
               value: {{ template "externalsecret-operator.watchNamespace" . }}
             - name: OPERATOR_NAME
-              value: {{ .Values.operatorName }}
+              value: {{ template "externalsecret-operator.fullname" . }}
             - name: OPERATOR_CONFIG
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.operatorConfigSecretName }}
-                  key: {{ .Values.operatorConfigSecretKey }}
+                  name: {{ template "externalsecret-operator.secretName" . }}
+                  key: {{ .Values.secret.key }}
         {{- with .Values.livenessProbe }}
           livenessProbe:
 {{ toYaml . | indent 16 }}

@@ -7,12 +7,12 @@ metadata:
     helm.sh/chart: {{ include "externalsecret-operator.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-  name: {{ include "externalsecret-operator.fullname" . }}
+  name: {{ include "externalsecret-operator.fullname" . }}-watch
   namespace: {{ template "externalsecret-operator.watchNamespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "externalsecret-operator.fullname" . }}
+  name: {{ include "externalsecret-operator.fullname" . }}-watch
 subjects:
   - kind: ServiceAccount
     name: {{ template "externalsecret-operator.serviceAccountName" . }}

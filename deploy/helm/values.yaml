@@ -13,10 +13,22 @@ nameOverride: ""
 fullnameOverride: ""
 
 watchNamespace: ""
-serviceAccountName: externalsecret-operator
 operatorName: externalsecret-operator
-operatorConfigSecretName: operator-config
-operatorConfigSecretKey: operator-config.json
+
+secret:
+  # Specifies wether the secret containing the operator configuration should be created
+  create: true
+  # The name of the secret holding the configuration for the operator
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+  key: config.json
+  # The content of the secret.
+  # If create is true, is going to be converted to JSON and added to the secret
+  data:
+    Name: "dummy-example"
+    Type: "dummy"
+    Parameters:
+      suffix: "-externalsecretsoperatorwashere"
 
 serviceAccount:
   # Specifies whether a service account should be created

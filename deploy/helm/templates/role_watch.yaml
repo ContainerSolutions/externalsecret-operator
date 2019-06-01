@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "externalsecret-operator.fullname" . }}
+  name: {{ include "externalsecret-operator.fullname" . }}-watch
   labels:
     app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
     helm.sh/chart: {{ include "externalsecret-operator.chart" . }}
@@ -23,7 +23,7 @@ rules:
 - apiGroups:
   - apps
   resourceNames:
-  - {{ include "externalsecret-operator.name" . }}
+  - {{ include "externalsecret-operator.fullname" . }}
   resources:
   - deployments/finalizers
   verbs:
@@ -38,5 +38,4 @@ rules:
   - get
   - list
   - watch
-
-  {{- end -}}
+{{- end -}}

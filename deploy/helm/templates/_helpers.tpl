@@ -43,6 +43,17 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
+Create the name of the secret that will hold the config
+*/}}
+{{- define "externalsecret-operator.secretName" -}}
+{{- if .Values.secret.create -}}
+    {{ default (include "externalsecret-operator.fullname" .) .Values.secret.name }}
+{{- else -}}
+    {{ default "default" .Values.secret.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create watchNamespace: if not specified assume is release namespace
 */}}
 {{- define "externalsecret-operator.watchNamespace" -}}
