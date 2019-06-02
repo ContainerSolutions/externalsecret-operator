@@ -9,9 +9,6 @@ image:
   tag: 0.0.2
   pullPolicy: IfNotPresent
 
-nameOverride: ""
-fullnameOverride: ""
-
 watchNamespace: ""
 operatorName: externalsecret-operator
 
