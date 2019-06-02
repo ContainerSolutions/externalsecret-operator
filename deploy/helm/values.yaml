@@ -45,6 +45,10 @@ rbac:
   # Specifies whether RBAC resources should be created
   create: true
 
+test:
+  # Specifies whether test resources should be created, used only for CI/CD
+  create: false
+
   # The operator doesn't expose any endpoint, so liveness and readiness probes are
   # not implemented by default until we find a meaningful way to do so
 livenessProbe: {}
