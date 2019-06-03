@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"reflect"
 	"regexp"
 
 	"github.com/kr/pty"
@@ -22,39 +23,15 @@ func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordB
 	return backend
 }
 
-// Read secrets from the environment, sign in to 1password and clear the environment variables
+// Read secrets from the parameters and sign in to 1password.
 func (b *OnePasswordBackend) Init(params ...interface{}) error {
-	domain := os.Getenv("ONEPASSWORD_DOMAIN")
-	if domain == "" {
-		fmt.Println("Missing ONEPASSWORD_DOMAIN environment variable.")
-		return fmt.Errorf("Missing ONEPASSWORD_DOMAIN environment variable.")
+	paramMap, err := convertToMap(params...)
+	if err != nil {
+		fmt.Println("Error reading 1password backend parameters: " + err.Error())
+		return err
 	}
 
-	email := os.Getenv("ONEPASSWORD_EMAIL")
-	if email == "" {
-		fmt.Println("Missing ONEPASSWORD_EMAIL environment variable.")
-		return fmt.Errorf("Missing ONEPASSWORD_EMAIL environment variable.")
-	}
-
-	secretKey := os.Getenv("ONEPASSWORD_SECRET_KEY")
-	if secretKey == "" {
-		fmt.Println("Missing one or more ONEPASSWORD_SECRET_KEY environment variable.")
-		return fmt.Errorf("Missing ONEPASSWORD_SECRET_KEY environment variable.")
-	}
-
-	masterPassword := os.Getenv("ONEPASSWORD_MASTER_PASSWORD")
-	if masterPassword == "" {
-		fmt.Println("Missing one or more ONEPASSWORD_MASTER_PASSWORD environment variable.")
-		return fmt.Errorf("Missing ONEPASSWORD_MASTER_PASSWORD environment variable.")
-	}
-
-	err := b.OnePasswordClient.SignIn(domain, email, secretKey, masterPassword)
-
-	os.Unsetenv("ONEPASSWORD_DOMAIN")
-	os.Unsetenv("ONEPASSWORD_EMAIL")
-	os.Unsetenv("ONEPASSWORD_SECRET_KEY")
-	os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
-
+	err = b.OnePasswordClient.SignIn(paramMap["domain"], paramMap["email"], paramMap["secretKey"], paramMap["masterPassword"])
 	if err != nil {
 		return err
 	}
@@ -81,6 +58,32 @@ func (b *OnePasswordBackend) Get(key string) (string, error) {
 	fmt.Println("1password item '" + key + "' value of 'password' field retrieved successfully.")
 
 	return value.String(), nil
+}
+
+func convertToMap(params ...interface{}) (map[string]string, error) {
+
+	paramKeys := []string{"domain", "email", "secretKey", "masterPassword"}
+
+	// paramType := reflect.TypeOf(params[0])
+	// if paramType != reflect.TypeOf(map[string]string{}) {
+	// 	return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
+	// }
+
+	paramMap := params[0].(map[string]string)
+
+	for _, key := range paramKeys {
+		paramValue, found := paramMap[key]
+		if !found {
+			return nil, fmt.Errorf("Invalid init parameters: expected `%v` not found.", key)
+		}
+
+		paramType := reflect.TypeOf(paramValue)
+		if paramType.Kind() != reflect.String {
+			return nil, fmt.Errorf("Invalid init parameters: expected `%v` of type `string` got `%v`", key, paramType)
+		}
+	}
+
+	return paramMap, nil
 }
 
 type OnePasswordClient interface {

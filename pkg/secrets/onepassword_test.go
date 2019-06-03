@@ -1,7 +1,6 @@
 package secrets
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -86,11 +85,6 @@ func TestInitOnePassword(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		os.Setenv("ONEPASSWORD_DOMAIN", domain)
-		os.Setenv("ONEPASSWORD_EMAIL", email)
-		os.Setenv("ONEPASSWORD_SECRET_KEY", secretKey)
-		os.Setenv("ONEPASSWORD_MASTER_PASSWORD", masterPassword)
-
 		client := MockOnePasswordClient{}
 
 		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
@@ -98,82 +92,106 @@ func TestInitOnePassword(t *testing.T) {
 		backend := NewOnePasswordBackend("Personal", client)
 
 		Convey("When initializing", func() {
-			backend.Init()
+			params := map[string]string{
+				"domain":         domain,
+				"email":          email,
+				"secretKey":      secretKey,
+				"masterPassword": masterPassword,
+			}
+
+			backend.Init(params)
+
 			Convey("Backend signs in via 1password client", func() {
 				client.AssertExpectations(t)
-				So(os.Getenv("ONEPASSWORD_DOMAIN"), ShouldEqual, "")
-				So(os.Getenv("ONEPASSWORD_EMAIL"), ShouldEqual, "")
-				So(os.Getenv("ONEPASSWORD_SECRET_KEY"), ShouldEqual, "")
-				So(os.Getenv("ONEPASSWORD_MASTER_PASSWORD"), ShouldEqual, "")
 			})
-		})
-	})
-}
-
-func TestInitOnePassword_MissingDomain(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		os.Unsetenv("ONEPASSWORD_DOMAIN")
-
-		client := MockOnePasswordClient{}
-
-		backend := NewOnePasswordBackend("Personal", client)
-
-		Convey("When initializing", func() {
-			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_DOMAIN environment variable.")
 		})
 	})
 }
 
 func TestInitOnePassword_MissingEmail(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
-
-		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
-
-		os.Unsetenv("ONEPASSWORD_EMAIL")
+		domain := "https://externalsecretoperator.1password.com"
+		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+		masterPassword := "MasterPassword12346!"
 
 		client := MockOnePasswordClient{}
 
 		backend := NewOnePasswordBackend("Personal", client)
 
 		Convey("When initializing", func() {
-			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_EMAIL environment variable.")
+			params := map[string]string{
+				"domain":         domain,
+				"secretKey":      secretKey,
+				"masterPassword": masterPassword,
+			}
+
+			So(backend.Init(params).Error(), ShouldEqual, "Invalid init parameters: expected `email` not found.")
+		})
+	})
+}
+
+func TestInitOnePassword_MissingDomain(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+		email := "externalsecretoperator@example.com"
+		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+		masterPassword := "MasterPassword12346!"
+
+		client := MockOnePasswordClient{}
+
+		backend := NewOnePasswordBackend("Personal", client)
+
+		Convey("When initializing", func() {
+			params := map[string]string{
+				"email":          email,
+				"secretKey":      secretKey,
+				"masterPassword": masterPassword,
+			}
+
+			So(backend.Init(params).Error(), ShouldEqual, "Invalid init parameters: expected `domain` not found.")
 		})
 	})
 }
 
 func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
-
-		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
-		os.Setenv("ONEPASSWORD_EMAIL", "externalsecretoperator@example.com")
-
-		os.Unsetenv("ONEPASSWORD_SECRET_KEY")
+		domain := "https://externalsecretoperator.1password.com"
+		email := "externalsecretoperator@example.com"
+		masterPassword := "MasterPassword12346!"
 
 		client := MockOnePasswordClient{}
 
 		backend := NewOnePasswordBackend("Personal", client)
 
 		Convey("When initializing", func() {
-			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_SECRET_KEY environment variable.")
+			params := map[string]string{
+				"email":          email,
+				"domain":         domain,
+				"masterPassword": masterPassword,
+			}
+
+			So(backend.Init(params).Error(), ShouldEqual, "Invalid init parameters: expected `secretKey` not found.")
 		})
 	})
 }
 
 func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
-
-		os.Setenv("ONEPASSWORD_DOMAIN", "https://externalsecretoperator.1password.com")
-		os.Setenv("ONEPASSWORD_EMAIL", "externalsecretoperator@example.com")
-		os.Setenv("ONEPASSWORD_SECRET_KEY", "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ")
-
-		os.Unsetenv("ONEPASSWORD_MASTER_PASSWORD")
+		domain := "https://externalsecretoperator.1password.com"
+		email := "externalsecretoperator@example.com"
+		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 
 		client := MockOnePasswordClient{}
 
 		backend := NewOnePasswordBackend("Personal", client)
 
 		Convey("When initializing", func() {
-			So(backend.Init().Error(), ShouldEqual, "Missing ONEPASSWORD_MASTER_PASSWORD environment variable.")
+			params := map[string]string{
+				"email":     email,
+				"domain":    domain,
+				"secretKey": secretKey,
+			}
+
+			So(backend.Init(params).Error(), ShouldEqual, "Invalid init parameters: expected `masterPassword` not found.")
 		})
 	})
 }

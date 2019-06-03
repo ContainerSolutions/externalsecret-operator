@@ -21,7 +21,15 @@ func TestOnePasswordBackend(t *testing.T) {
 		client := secrets.OnePasswordCliClient{}
 		backend := secrets.NewOnePasswordBackend(vault, client)
 
-		err := backend.Init(vault)
+		backendConfig, err := secrets.BackendConfigFromEnv()
+		if err != nil {
+			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
+			t.Fail()
+		}
+
+		fmt.Println(backendConfig.Parameters)
+
+		err = backend.Init(backendConfig.Parameters)
 		if err != nil {
 			fmt.Println("Init: " + err.Error())
 			t.Fail()
