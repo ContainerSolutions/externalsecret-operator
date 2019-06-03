@@ -65,7 +65,7 @@ func main() {
 
 	err := secrets.BackendInitFromEnv()
 	if err != nil {
-		log.Error(err, "Failed to initialize backends")
+		log.Error(err, "Failed to initialize backend")
 		os.Exit(1)
 	}
 
