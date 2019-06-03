@@ -64,8 +64,9 @@ func TestGetOnePassword(t *testing.T) {
 	secretValue := "testvalue"
 	expectedValue := secretValue
 
-	Convey("Given an initialized OnePasswordBackend", t, func() {
-		backend := NewOnePasswordBackend("Personal", MockOnePasswordClient{})
+	Convey("Given an OPERATOR_CONFIG env var", t, func() {
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = &MockOnePasswordClient{}
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
@@ -85,11 +86,11 @@ func TestInitOnePassword(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := MockOnePasswordClient{}
-
+		client := &MockOnePasswordClient{}
 		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
 
-		backend := NewOnePasswordBackend("Personal", client)
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -114,9 +115,9 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := MockOnePasswordClient{}
-
-		backend := NewOnePasswordBackend("Personal", client)
+		client := &MockOnePasswordClient{}
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -136,9 +137,9 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := MockOnePasswordClient{}
-
-		backend := NewOnePasswordBackend("Personal", client)
+		client := &MockOnePasswordClient{}
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -158,9 +159,9 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 		email := "externalsecretoperator@example.com"
 		masterPassword := "MasterPassword12346!"
 
-		client := MockOnePasswordClient{}
-
-		backend := NewOnePasswordBackend("Personal", client)
+		client := &MockOnePasswordClient{}
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -180,9 +181,9 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 		email := "externalsecretoperator@example.com"
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 
-		client := MockOnePasswordClient{}
-
-		backend := NewOnePasswordBackend("Personal", client)
+		client := &MockOnePasswordClient{}
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
