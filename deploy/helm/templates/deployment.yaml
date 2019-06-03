@@ -1,0 +1,62 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "externalsecret-operator.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
+    helm.sh/chart: {{ include "externalsecret-operator.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "externalsecret-operator.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "externalsecret-operator.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: WATCH_NAMESPACE
+              value: {{ template "externalsecret-operator.watchNamespace" . }}
+            - name: OPERATOR_NAME
+              value: {{ template "externalsecret-operator.fullname" . }}
+            - name: OPERATOR_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "externalsecret-operator.secretName" . }}
+                  key: {{ .Values.secret.key }}
+        {{- with .Values.livenessProbe }}
+          livenessProbe:
+{{ toYaml . | indent 16 }}
+        {{- end }}
+        {{- with .Values.readinessProbe }}
+          readinessProbe:
+{{ toYaml . | indent 16 }}
+        {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
