@@ -13,14 +13,17 @@ import (
 )
 
 type OnePasswordBackend struct {
-	OnePasswordClient
+	Client OnePasswordClient
 }
 
-func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordBackend {
+func NewOnePasswordBackend() Backend {
 	backend := &OnePasswordBackend{}
-	backend.OnePasswordClient = client
-
+	backend.Client = OnePasswordCliClient{}
 	return backend
+}
+
+func init() {
+	BackendRegister("onepassword", NewOnePasswordBackend)
 }
 
 // Read secrets from the parameters and sign in to 1password.
@@ -30,7 +33,7 @@ func (b *OnePasswordBackend) Init(parameters map[string]string) error {
 		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
 	}
 
-	err = b.OnePasswordClient.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
+	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
 		return err
 	}
@@ -44,7 +47,7 @@ func (b *OnePasswordBackend) Init(parameters map[string]string) error {
 func (b *OnePasswordBackend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	item := b.OnePasswordClient.Get(key)
+	item := b.Client.Get(key)
 	if item == "" {
 		return "", fmt.Errorf("Could not retrieve 1password item '" + key + "'.")
 	}

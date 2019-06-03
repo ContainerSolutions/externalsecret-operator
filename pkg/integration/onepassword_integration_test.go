@@ -14,26 +14,16 @@ func TestOnePasswordBackend(t *testing.T) {
 	}
 
 	Convey("Given an initialized OnePasswordBackend", t, func() {
-		vault := "Personal"
 		key := "testkey"
 		expectedValue := "testvalue"
 
-		client := secrets.OnePasswordCliClient{}
-		backend := secrets.NewOnePasswordBackend(vault, client)
-
-		backendConfig, err := secrets.BackendConfigFromEnv()
+		err := secrets.BackendInitFromEnv()
 		if err != nil {
 			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
 			t.Fail()
 		}
 
-		fmt.Println(backendConfig.Parameters)
-
-		err = backend.Init(backendConfig.Parameters)
-		if err != nil {
-			fmt.Println("Init: " + err.Error())
-			t.Fail()
-		}
+		backend := secrets.BackendInstances["onepassword"]
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(key)
