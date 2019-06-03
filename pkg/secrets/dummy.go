@@ -2,7 +2,6 @@ package secrets
 
 // DummySecretsBackend is a fake secrets backend for testing purposes
 type DummySecretsBackend struct {
-	Backend
 	suffix string
 }
 
@@ -11,7 +10,7 @@ func init() {
 }
 
 // NewDummySecretsBackend gives you an new DummySecretsBackend
-func NewDummySecretsBackend() BackendIface {
+func NewDummySecretsBackend() Backend {
 	return &DummySecretsBackend{}
 }
 

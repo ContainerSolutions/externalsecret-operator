@@ -12,7 +12,6 @@ import (
 )
 
 type AWSSecretsManagerBackend struct {
-	Backend
 	SecretsManager secretsmanageriface.SecretsManagerAPI
 	config         *aws.Config
 	session        *session.Session
@@ -22,7 +21,7 @@ func init() {
 	BackendRegister("asm", NewAWSSecretsManagerBackend)
 }
 
-func NewAWSSecretsManagerBackend() BackendIface {
+func NewAWSSecretsManagerBackend() Backend {
 	backend := &AWSSecretsManagerBackend{}
 	return backend
 }
