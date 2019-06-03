@@ -64,9 +64,9 @@ func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
 	return *output.SecretString, nil
 }
 
-func awsConfigFromParams(params ...interface{}) (*aws.Config, error) {
+func awsConfigFromParams(params map[string]string) (*aws.Config, error) {
 
-	paramMap, err := paramsToMap(params...)
+	paramMap, err := paramsToMap(params)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func awsConfigFromParams(params ...interface{}) (*aws.Config, error) {
 	}, nil
 }
 
-func paramsToMap(params ...interface{}) (map[string]string, error) {
+func paramsToMap(params map[string]string) (map[string]string, error) {
 
 	paramKeys := []string{"accessKeyID", "secretAccessKey", "region"}
 
@@ -92,15 +92,8 @@ func paramsToMap(params ...interface{}) (map[string]string, error) {
 		return nil, fmt.Errorf("Invalid init parameters: not found %v", paramKeys)
 	}
 
-	paramType := reflect.TypeOf(params[0])
-	if paramType != reflect.TypeOf(map[string]string{}) {
-		return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
-	}
-
-	paramMap := params[0].(map[string]string)
-
 	for _, key := range paramKeys {
-		paramValue, found := paramMap[key]
+		paramValue, found := params[key]
 		if !found {
 			return nil, fmt.Errorf("Invalid init paramters: expected `%v` not found", key)
 		}
@@ -111,5 +104,5 @@ func paramsToMap(params ...interface{}) (map[string]string, error) {
 		}
 	}
 
-	return paramMap, nil
+	return params, nil
 }
