@@ -2,7 +2,6 @@ package secrets
 
 // DummySecretsBackend is a fake secrets backend for testing purposes
 type DummySecretsBackend struct {
-	Backend
 	suffix string
 }
 
@@ -11,14 +10,13 @@ func init() {
 }
 
 // NewDummySecretsBackend gives you an new DummySecretsBackend
-func NewDummySecretsBackend() BackendIface {
+func NewDummySecretsBackend() Backend {
 	return &DummySecretsBackend{}
 }
 
 // Init implements SecretsBackend interface, sets the suffix
-func (d *DummySecretsBackend) Init(parameters ...interface{}) error {
-	params := parameters[0].(map[string]string)
-	d.suffix = params["suffix"]
+func (d *DummySecretsBackend) Init(parameters map[string]string) error {
+	d.suffix = parameters["suffix"]
 	return nil
 }
 

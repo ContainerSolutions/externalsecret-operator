@@ -24,14 +24,13 @@ func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordB
 }
 
 // Read secrets from the parameters and sign in to 1password.
-func (b *OnePasswordBackend) Init(params ...interface{}) error {
-	paramMap, err := convertToMap(params...)
+func (b *OnePasswordBackend) Init(parameters map[string]string) error {
+	err := validateParameters(parameters)
 	if err != nil {
-		fmt.Println("Error reading 1password backend parameters: " + err.Error())
-		return err
+		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
 	}
 
-	err = b.OnePasswordClient.SignIn(paramMap["domain"], paramMap["email"], paramMap["secretKey"], paramMap["masterPassword"])
+	err = b.OnePasswordClient.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
 		return err
 	}
@@ -60,30 +59,23 @@ func (b *OnePasswordBackend) Get(key string) (string, error) {
 	return value.String(), nil
 }
 
-func convertToMap(params ...interface{}) (map[string]string, error) {
+func validateParameters(parameters map[string]string) error {
 
 	paramKeys := []string{"domain", "email", "secretKey", "masterPassword"}
 
-	// paramType := reflect.TypeOf(params[0])
-	// if paramType != reflect.TypeOf(map[string]string{}) {
-	// 	return nil, fmt.Errorf("Invalid init parameters: expected `map[string]string` found `%v", paramType)
-	// }
-
-	paramMap := params[0].(map[string]string)
-
 	for _, key := range paramKeys {
-		paramValue, found := paramMap[key]
+		paramValue, found := parameters[key]
 		if !found {
-			return nil, fmt.Errorf("Invalid init parameters: expected `%v` not found.", key)
+			return fmt.Errorf("Invalid init parameters: expected `%v` not found.", key)
 		}
 
 		paramType := reflect.TypeOf(paramValue)
 		if paramType.Kind() != reflect.String {
-			return nil, fmt.Errorf("Invalid init parameters: expected `%v` of type `string` got `%v`", key, paramType)
+			return fmt.Errorf("Invalid init parameters: expected `%v` of type `string` got `%v`", key, paramType)
 		}
 	}
 
-	return paramMap, nil
+	return nil
 }
 
 type OnePasswordClient interface {
