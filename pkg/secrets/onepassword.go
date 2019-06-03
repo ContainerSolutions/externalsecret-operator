@@ -27,8 +27,7 @@ func NewOnePasswordBackend(vault string, client OnePasswordClient) *OnePasswordB
 func (b *OnePasswordBackend) Init(params ...interface{}) error {
 	paramMap, err := convertToMap(params...)
 	if err != nil {
-		fmt.Println("Error reading 1password backend parameters: " + err.Error())
-		return err
+		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
 	}
 
 	err = b.OnePasswordClient.SignIn(paramMap["domain"], paramMap["email"], paramMap["secretKey"], paramMap["masterPassword"])
