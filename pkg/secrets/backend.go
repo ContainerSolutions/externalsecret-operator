@@ -10,7 +10,7 @@ type Backend struct{}
 
 //BackendIface is an interface to a Backend
 type BackendIface interface {
-	Init(...interface{}) error
+	Init(map[string]string) error
 	Get(string) (string, error)
 }
 
