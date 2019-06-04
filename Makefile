@@ -30,6 +30,13 @@ deploy:
 test:
 	go test -v -short ./...
 
+.PHONY: coverage
+# include only code we write in coverage report, not generated
+COVERAGE=./pkg/controller/externalsecret... ./pkg/secrets/...
+coverage:
+	go test -short -race -coverprofile=coverage.txt -covermode=atomic $(COVERAGE)
+	curl -s https://codecov.io/bash | bash
+
 .PHONY: test-helm
 RELEASE := test$(shell echo $$$$)
 test-helm:
