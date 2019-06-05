@@ -20,6 +20,7 @@ type OnePasswordBackend struct {
 func NewOnePasswordBackend() Backend {
 	backend := &OnePasswordBackend{}
 	backend.Client = OnePasswordCliClient{}
+	backend.Vault = "Personal"
 	return backend
 }
 
