@@ -14,6 +14,7 @@ import (
 
 type OnePasswordBackend struct {
 	Client OnePasswordClient
+	Vault  string
 }
 
 func NewOnePasswordBackend() Backend {
@@ -32,6 +33,8 @@ func (b *OnePasswordBackend) Init(parameters map[string]string) error {
 	if err != nil {
 		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
 	}
+
+	b.Vault = parameters["vault"]
 
 	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
@@ -64,7 +67,7 @@ func (b *OnePasswordBackend) Get(key string) (string, error) {
 
 func validateParameters(parameters map[string]string) error {
 
-	paramKeys := []string{"domain", "email", "secretKey", "masterPassword"}
+	paramKeys := []string{"domain", "email", "secretKey", "masterPassword", "vault"}
 
 	for _, key := range paramKeys {
 		paramValue, found := parameters[key]

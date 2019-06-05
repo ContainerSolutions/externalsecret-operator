@@ -109,6 +109,41 @@ func TestInitOnePassword(t *testing.T) {
 	})
 }
 
+func TestInitOnePassword_ConfigureVault(t *testing.T) {
+	Convey("Given a OnePasswordBackend with a configured vault", t, func() {
+
+		vault := "production"
+
+		domain := "https://externalsecretoperator.1password.com"
+		email := "externalsecretoperator@example.com"
+		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+		masterPassword := "MasterPassword12346!"
+
+		client := &MockOnePasswordClient{}
+		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
+
+		backend := NewOnePasswordBackend()
+		(backend).(*OnePasswordBackend).Client = client
+
+		Convey("When initializing", func() {
+			params := map[string]string{
+				"domain":         domain,
+				"email":          email,
+				"secretKey":      secretKey,
+				"masterPassword": masterPassword,
+				"vault":          vault,
+			}
+
+			backend.Init(params)
+
+			Convey("Backend has the correct vault configured", func() {
+				client.AssertExpectations(t)
+				So((backend).(*OnePasswordBackend).Vault, ShouldEqual, vault)
+			})
+		})
+	})
+}
+
 func TestInitOnePassword_MissingEmail(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		domain := "https://externalsecretoperator.1password.com"
