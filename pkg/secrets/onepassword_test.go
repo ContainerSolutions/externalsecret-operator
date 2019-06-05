@@ -78,6 +78,16 @@ func TestGetOnePassword(t *testing.T) {
 	})
 }
 
+func TestOnePasswordBackend_DefaultVault(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+		backend := NewOnePasswordBackend()
+
+		Convey("The default vault should be 'Personal'", func() {
+			So((backend).(*OnePasswordBackend).Vault, ShouldEqual, "Personal")
+		})
+	})
+}
+
 func TestInitOnePassword(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 
