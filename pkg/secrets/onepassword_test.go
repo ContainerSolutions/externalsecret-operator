@@ -78,8 +78,20 @@ func TestGetOnePassword(t *testing.T) {
 	})
 }
 
+func TestOnePasswordBackend_DefaultVault(t *testing.T) {
+	Convey("Given a OnePasswordBackend", t, func() {
+		backend := NewOnePasswordBackend()
+
+		Convey("The default vault should be 'Personal'", func() {
+			So((backend).(*OnePasswordBackend).Vault, ShouldEqual, "Personal")
+		})
+	})
+}
+
 func TestInitOnePassword(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
+
+		vault := "production"
 
 		domain := "https://externalsecretoperator.1password.com"
 		email := "externalsecretoperator@example.com"
@@ -98,12 +110,14 @@ func TestInitOnePassword(t *testing.T) {
 				"email":          email,
 				"secretKey":      secretKey,
 				"masterPassword": masterPassword,
+				"vault":          vault,
 			}
 
 			backend.Init(params)
 
-			Convey("Backend signs in via 1password client", func() {
+			Convey("Backend has the correct vault configured", func() {
 				client.AssertExpectations(t)
+				So((backend).(*OnePasswordBackend).Vault, ShouldEqual, vault)
 			})
 		})
 	})
