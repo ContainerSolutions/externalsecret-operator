@@ -2,7 +2,6 @@ package secrets
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -11,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 )
 
+// AWSSecretsManagerBackend represents a backend for AWS Secrets Manager
 type AWSSecretsManagerBackend struct {
 	SecretsManager secretsmanageriface.SecretsManagerAPI
 	config         *aws.Config
@@ -21,11 +21,12 @@ func init() {
 	BackendRegister("asm", NewAWSSecretsManagerBackend)
 }
 
+// NewAWSSecretsManagerBackend returns an uninitialized AWSSecretsManagerBackend
 func NewAWSSecretsManagerBackend() Backend {
-	backend := &AWSSecretsManagerBackend{}
-	return backend
+	return &AWSSecretsManagerBackend{}
 }
 
+// Init initializes the AWSSecretsManagerBackend
 func (s *AWSSecretsManagerBackend) Init(parameters map[string]string) error {
 	var err error
 
@@ -43,6 +44,7 @@ func (s *AWSSecretsManagerBackend) Init(parameters map[string]string) error {
 	return nil
 }
 
+// Get retrieves the secret associated with key from AWSSecretsManagerBackend
 func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(key),
@@ -64,45 +66,23 @@ func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
 	return *output.SecretString, nil
 }
 
-func awsConfigFromParams(params map[string]string) (*aws.Config, error) {
+// awsConfigFromParams returns an aws.Config based on the parameters
+func awsConfigFromParams(parameters map[string]string) (*aws.Config, error) {
 
-	paramMap, err := paramsToMap(params)
-	if err != nil {
-		return nil, err
-	}
+	keys := []string{"accessKeyID", "secretAccessKey", "region"}
 
-	accessKeyID := paramMap["accessKeyID"]
-	secretAccessKey := paramMap["secretAccessKey"]
-	region := paramMap["region"]
-
-	return &aws.Config{
-		Region: aws.String(region),
-		Credentials: credentials.NewStaticCredentials(
-			accessKeyID,
-			secretAccessKey,
-			""),
-	}, nil
-}
-
-func paramsToMap(params map[string]string) (map[string]string, error) {
-
-	paramKeys := []string{"accessKeyID", "secretAccessKey", "region"}
-
-	if len(params) < 1 {
-		return nil, fmt.Errorf("Invalid init parameters: not found %v", paramKeys)
-	}
-
-	for _, key := range paramKeys {
-		paramValue, found := params[key]
+	for _, key := range keys {
+		_, found := parameters[key]
 		if !found {
 			return nil, fmt.Errorf("Invalid init paramters: expected `%v` not found", key)
 		}
-
-		paramType := reflect.TypeOf(paramValue)
-		if paramType.Kind() != reflect.String {
-			return nil, fmt.Errorf("Invalid init paramters: expected `%v` of type `string` got `%v`", key, paramType)
-		}
 	}
 
-	return params, nil
+	return &aws.Config{
+		Region: aws.String(parameters["region"]),
+		Credentials: credentials.NewStaticCredentials(
+			parameters["accessKeyID"],
+			parameters["secretAccessKey"],
+			""),
+	}, nil
 }
