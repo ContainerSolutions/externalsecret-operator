@@ -40,29 +40,87 @@ func TestGet(t *testing.T) {
 	})
 }
 
+type parametersTest struct {
+	parameters              map[string]string
+	expectedAccessKeyID     string
+	expectedRegion          string
+	expectedSecretAccessKey string
+	expectedErrorAssertion  func(interface{}, ...interface{}) string
+	expectedErrorString     string
+}
+
 func TestAWSConfigFromParams(t *testing.T) {
+	expectedAccessKeyID := "AKIABLABLA"
+	expectedSecretAccessKey := "SMAMSLscSercreasdas"
+	expectedRegion := "eu-west-1"
 
-	Convey("Given a set of params", t, func() {
-		expectedAccessKeyID := "AKIABLABLA"
-		expectedSecretAccessKey := "SMAMSLscSercreasdas"
-		expectedRegion := "eu-west-1"
+	tests := []parametersTest{
+		parametersTest{
+			parameters: map[string]string{
+				"accessKeyID":     expectedAccessKeyID,
+				"region":          expectedRegion,
+				"secretAccessKey": expectedSecretAccessKey,
+			},
+			expectedAccessKeyID:     expectedAccessKeyID,
+			expectedRegion:          expectedRegion,
+			expectedSecretAccessKey: expectedSecretAccessKey,
+			expectedErrorAssertion:  ShouldBeNil,
+		},
 
-		params := map[string]string{
-			"accessKeyID":     expectedAccessKeyID,
-			"secretAccessKey": expectedSecretAccessKey,
-			"region":          expectedRegion,
-		}
+		parametersTest{
+			parameters: map[string]string{
+				"accessKeyID":     expectedAccessKeyID,
+				"secretAccessKey": expectedSecretAccessKey,
+			},
+			expectedAccessKeyID:     expectedAccessKeyID,
+			expectedRegion:          expectedRegion,
+			expectedSecretAccessKey: expectedSecretAccessKey,
+			expectedErrorAssertion:  ShouldNotBeNil,
+			expectedErrorString:     "Invalid init paramters: expected `region` not found",
+		},
+		parametersTest{
+			parameters: map[string]string{
+				"region":          expectedRegion,
+				"secretAccessKey": expectedSecretAccessKey,
+			},
+			expectedAccessKeyID:     expectedAccessKeyID,
+			expectedRegion:          expectedRegion,
+			expectedSecretAccessKey: expectedSecretAccessKey,
+			expectedErrorAssertion:  ShouldNotBeNil,
+			expectedErrorString:     "Invalid init paramters: expected `accessKeyID` not found",
+		},
 
-		Convey("When creating AWS Config from them", func() {
-			config, err := awsConfigFromParams(params)
-			So(err, ShouldBeNil)
-			Convey("Credentials are created correctly", func() {
-				actualCredentials, err := config.Credentials.Get()
-				So(err, ShouldBeNil)
-				So(aws.StringValue(config.Region), ShouldEqual, expectedRegion)
-				So(actualCredentials.AccessKeyID, ShouldEqual, expectedAccessKeyID)
-				So(actualCredentials.SecretAccessKey, ShouldEqual, expectedSecretAccessKey)
+		parametersTest{
+			parameters: map[string]string{
+				"accessKeyID": expectedAccessKeyID,
+				"region":      expectedRegion,
+			},
+			expectedAccessKeyID:     expectedAccessKeyID,
+			expectedRegion:          expectedRegion,
+			expectedSecretAccessKey: expectedSecretAccessKey,
+			expectedErrorAssertion:  ShouldNotBeNil,
+			expectedErrorString:     "Invalid init paramters: expected `secretAccessKey` not found",
+		},
+	}
+
+	for _, test := range tests {
+		Convey("Given a set of params", t, func() {
+			Convey("When creating AWS Config from them", func() {
+				config, err := awsConfigFromParams(test.parameters)
+				So(err, test.expectedErrorAssertion)
+				if err != nil {
+					So(err.Error(), ShouldEqual, test.expectedErrorString)
+				} else {
+					Convey("Credentials are created correctly", func() {
+						actualCredentials, err := config.Credentials.Get()
+						So(err, ShouldBeNil)
+						So(aws.StringValue(config.Region), ShouldEqual, test.expectedRegion)
+						So(actualCredentials.AccessKeyID, ShouldEqual, test.expectedAccessKeyID)
+						So(actualCredentials.SecretAccessKey, ShouldEqual, test.expectedSecretAccessKey)
+					})
+				}
 			})
 		})
-	})
+	}
+
 }
