@@ -1,4 +1,4 @@
-package secrets
+package onepassword
 
 import (
 	"testing"
@@ -65,8 +65,8 @@ func TestGetOnePassword(t *testing.T) {
 	expectedValue := secretValue
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = &MockOnePasswordClient{}
+		backend := New()
+		(backend).(*Backend).Client = &MockOnePasswordClient{}
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
@@ -80,10 +80,10 @@ func TestGetOnePassword(t *testing.T) {
 
 func TestOnePasswordBackend_DefaultVault(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
-		backend := NewOnePasswordBackend()
+		backend := New()
 
 		Convey("The default vault should be 'Personal'", func() {
-			So((backend).(*OnePasswordBackend).Vault, ShouldEqual, "Personal")
+			So((backend).(*Backend).Vault, ShouldEqual, "Personal")
 		})
 	})
 }
@@ -101,8 +101,8 @@ func TestInitOnePassword(t *testing.T) {
 		client := &MockOnePasswordClient{}
 		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
 
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = client
+		backend := New()
+		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -117,7 +117,7 @@ func TestInitOnePassword(t *testing.T) {
 
 			Convey("Backend has the correct vault configured", func() {
 				client.AssertExpectations(t)
-				So((backend).(*OnePasswordBackend).Vault, ShouldEqual, vault)
+				So((backend).(*Backend).Vault, ShouldEqual, vault)
 			})
 		})
 	})
@@ -130,8 +130,8 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = client
+		backend := New()
+		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -140,7 +140,7 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: Invalid init parameters: expected `email` not found.")
+			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `email` not found")
 		})
 	})
 }
@@ -152,8 +152,8 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = client
+		backend := New()
+		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -162,7 +162,7 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: Invalid init parameters: expected `domain` not found.")
+			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `domain` not found")
 		})
 	})
 }
@@ -174,8 +174,8 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = client
+		backend := New()
+		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -184,7 +184,7 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: Invalid init parameters: expected `secretKey` not found.")
+			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `secretKey` not found")
 		})
 	})
 }
@@ -196,8 +196,8 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 
 		client := &MockOnePasswordClient{}
-		backend := NewOnePasswordBackend()
-		(backend).(*OnePasswordBackend).Client = client
+		backend := New()
+		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -206,7 +206,7 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 				"secretKey": secretKey,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: Invalid init parameters: expected `masterPassword` not found.")
+			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `masterPassword` not found")
 		})
 	})
 }

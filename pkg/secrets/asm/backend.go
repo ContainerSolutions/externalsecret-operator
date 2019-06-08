@@ -1,8 +1,9 @@
-package secrets
+package asm
 
 import (
 	"fmt"
 
+	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,24 +11,24 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 )
 
-// AWSSecretsManagerBackend represents a backend for AWS Secrets Manager
-type AWSSecretsManagerBackend struct {
+// Backend represents a backend for AWS Secrets Manager
+type Backend struct {
 	SecretsManager secretsmanageriface.SecretsManagerAPI
 	config         *aws.Config
 	session        *session.Session
 }
 
 func init() {
-	BackendRegister("asm", NewAWSSecretsManagerBackend)
+	secrets.Register("asm", New)
 }
 
-// NewAWSSecretsManagerBackend returns an uninitialized AWSSecretsManagerBackend
-func NewAWSSecretsManagerBackend() Backend {
-	return &AWSSecretsManagerBackend{}
+// New returns an uninitialized Backend for AWS Secret Manager
+func New() secrets.Backend {
+	return &Backend{}
 }
 
 // Init initializes the AWSSecretsManagerBackend
-func (s *AWSSecretsManagerBackend) Init(parameters map[string]string) error {
+func (s *Backend) Init(parameters map[string]string) error {
 	var err error
 
 	s.config, err = awsConfigFromParams(parameters)
@@ -45,7 +46,7 @@ func (s *AWSSecretsManagerBackend) Init(parameters map[string]string) error {
 }
 
 // Get retrieves the secret associated with key from AWSSecretsManagerBackend
-func (s *AWSSecretsManagerBackend) Get(key string) (string, error) {
+func (s *Backend) Get(key string) (string, error) {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(key),
 	}

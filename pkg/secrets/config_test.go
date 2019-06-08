@@ -16,10 +16,10 @@ func TestBackendConfigFromJSON(t *testing.T) {
 			  }
 		}`
 
-		Convey("When creating a BackendConfig object", func() {
-			backendConfig, err := BackendConfigFromJSON(configData)
+		Convey("When creating a Config object", func() {
+			backendConfig, err := ConfigFromJSON(configData)
 			So(err, ShouldBeNil)
-			Convey("The data in BackendConfig is as expected", func() {
+			Convey("The data in Config is as expected", func() {
 				So(backendConfig.Name, ShouldEqual, "dummy-example")
 				So(backendConfig.Type, ShouldEqual, "dummy")
 				So(backendConfig.Parameters, ShouldResemble, map[string]string{"Suffix": "-ohlord"})

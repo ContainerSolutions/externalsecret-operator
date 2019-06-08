@@ -5,61 +5,62 @@ import (
 	"sync"
 )
 
+// Backend is an abstract backend
 type Backend interface {
 	Init(map[string]string) error
 	Get(string) (string, error)
 }
 
-// BackendInstances are instantiated backends
-var BackendInstances map[string]Backend
+// Instances are instantiated secrets
+var Instances map[string]Backend
 
-// BackendFunctions is a map of functions that return Backends
-var BackendFunctions map[string]func() Backend
+// Functions is a map of functions that return secrets
+var Functions map[string]func() Backend
 
 var initLock sync.Mutex
 
-// BackendInstantiate instantiates a Backend of type `backendType`
-func BackendInstantiate(name string, backendType string) error {
-	if BackendInstances == nil {
-		BackendInstances = make(map[string]Backend)
+// Instantiate instantiates a Backend of type `backendType`
+func Instantiate(name string, backendType string) error {
+	if Instances == nil {
+		Instances = make(map[string]Backend)
 	}
 
-	function, found := BackendFunctions[backendType]
+	function, found := Functions[backendType]
 	if !found {
-		return fmt.Errorf("Unkown backend type: %v", backendType)
+		return fmt.Errorf("unknown backend type: '%v'", backendType)
 	}
 
-	BackendInstances[name] = function()
+	Instances[name] = function()
 
 	return nil
 }
 
-// BackendRegister registers a new backend type with name `name`
+// Register registers a new backend type with name `name`
 // function is a function that returns a backend of that type
-func BackendRegister(name string, function func() Backend) {
-	if BackendFunctions == nil {
-		BackendFunctions = make(map[string]func() Backend)
+func Register(name string, function func() Backend) {
+	if Functions == nil {
+		Functions = make(map[string]func() Backend)
 	}
 
-	BackendFunctions[name] = function
+	Functions[name] = function
 }
 
-// BackendInitFromEnv initializes a backend looking into Env for config data
-func BackendInitFromEnv() error {
+// InitFromEnv initializes a backend looking into Env for config data
+func InitFromEnv() error {
 	initLock.Lock()
 	defer initLock.Unlock()
 
-	config, err := BackendConfigFromEnv()
+	config, err := ConfigFromEnv()
 	if err != nil {
 		return err
 	}
 
-	err = BackendInstantiate(config.Name, config.Type)
+	err = Instantiate(config.Name, config.Type)
 	if err != nil {
 		return err
 	}
 
-	err = BackendInstances[config.Name].Init(config.Parameters)
+	err = Instances[config.Name].Init(config.Parameters)
 
 	return err
 }

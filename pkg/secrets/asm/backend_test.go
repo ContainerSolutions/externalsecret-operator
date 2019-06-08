@@ -1,4 +1,4 @@
-package secrets
+package asm
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func TestGet(t *testing.T) {
 	expectedValue := secretValue
 
 	Convey("Given an initialized AWSSecretsManagerBackend", t, func() {
-		backend := AWSSecretsManagerBackend{}
+		backend := Backend{}
 		backend.SecretsManager = &mockedSecretsManager{}
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)

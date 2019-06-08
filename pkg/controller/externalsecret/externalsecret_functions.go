@@ -11,7 +11,7 @@ import (
 )
 
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {
-	backend, ok := secrets.BackendInstances[cr.Spec.Backend]
+	backend, ok := secrets.Instances[cr.Spec.Backend]
 	if !ok {
 		return nil, fmt.Errorf("Cannot find backend: %v", cr.Spec.Backend)
 	}

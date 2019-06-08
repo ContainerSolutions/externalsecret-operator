@@ -1,4 +1,4 @@
-package integration
+package onepassword
 
 import (
 	"fmt"
@@ -17,13 +17,13 @@ func TestOnePasswordBackend(t *testing.T) {
 		key := "testkey"
 		expectedValue := "testvalue"
 
-		err := secrets.BackendInitFromEnv()
+		err := secrets.InitFromEnv()
 		if err != nil {
 			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
 			t.Fail()
 		}
 
-		backend := secrets.BackendInstances["onepassword"]
+		backend := secrets.Instances["onepassword"]
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(key)
