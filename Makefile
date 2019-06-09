@@ -28,11 +28,11 @@ deploy:
 
 .PHONY: test
 test:
-	go test -v -short ./...
+	go test -v -short ./... -count=1
 
 .PHONY: coverage
 # include only code we write in coverage report, not generated
-COVERAGE=./pkg/controller/externalsecret... ./pkg/secrets/...
+COVERAGE=./pkg/controller/externalsecret... ./secrets/...
 coverage:
 	go test -short -race -coverprofile=coverage.txt -covermode=atomic $(COVERAGE)
 	curl -s https://codecov.io/bash | bash

@@ -9,14 +9,14 @@ import (
 //ConfigEnvVar holds the name of the Environment Variable scanned for config
 const ConfigEnvVar string = "OPERATOR_CONFIG"
 
-//Config represent configuration information for secret backend
+//Config represent configuration information for the secrets backend
 type Config struct {
 	Name       string
 	Type       string
 	Parameters map[string]string
 }
 
-// ConfigFromJSON returns a BackendConfig object based on the string data passed as parameter
+// ConfigFromJSON returns a Config object based on the string data passed as parameter
 func ConfigFromJSON(data string) (*Config, error) {
 	backendConfig := &Config{}
 	err := json.Unmarshal([]byte(data), backendConfig)
@@ -26,7 +26,7 @@ func ConfigFromJSON(data string) (*Config, error) {
 	return backendConfig, nil
 }
 
-//ConfigFromEnv parse BackendConfiguration from environment variable
+//ConfigFromEnv parses Config from environment variable
 func ConfigFromEnv() (*Config, error) {
 	data := os.Getenv(ConfigEnvVar)
 	if len(data) == 0 {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

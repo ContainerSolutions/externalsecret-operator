@@ -65,7 +65,7 @@ func TestGetOnePassword(t *testing.T) {
 	expectedValue := secretValue
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = &MockOnePasswordClient{}
 
 		Convey("When retrieving a secret", func() {
@@ -80,7 +80,7 @@ func TestGetOnePassword(t *testing.T) {
 
 func TestOnePasswordBackend_DefaultVault(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
-		backend := New()
+		backend := NewBackend()
 
 		Convey("The default vault should be 'Personal'", func() {
 			So((backend).(*Backend).Vault, ShouldEqual, "Personal")
@@ -101,7 +101,7 @@ func TestInitOnePassword(t *testing.T) {
 		client := &MockOnePasswordClient{}
 		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
 
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
@@ -130,7 +130,7 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
@@ -152,7 +152,7 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
@@ -174,7 +174,7 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
@@ -196,7 +196,7 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 
 		client := &MockOnePasswordClient{}
-		backend := New()
+		backend := NewBackend()
 		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {

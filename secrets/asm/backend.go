@@ -1,9 +1,10 @@
+// Package asm implements an external secret backend for AWS Secrets Manager.
 package asm
 
 import (
 	"fmt"
 
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -19,15 +20,15 @@ type Backend struct {
 }
 
 func init() {
-	secrets.Register("asm", New)
+	secrets.Register("asm", NewBackend)
 }
 
-// New returns an uninitialized Backend for AWS Secret Manager
-func New() secrets.Backend {
+// NewBackend returns an uninitialized Backend for AWS Secret Manager
+func NewBackend() secrets.Backend {
 	return &Backend{}
 }
 
-// Init initializes the AWSSecretsManagerBackend
+// Init initializes the Backend for AWS Secret Manager
 func (s *Backend) Init(parameters map[string]string) error {
 	var err error
 
@@ -45,7 +46,7 @@ func (s *Backend) Init(parameters map[string]string) error {
 	return nil
 }
 
-// Get retrieves the secret associated with key from AWSSecretsManagerBackend
+// Get retrieves the secret associated with key from AWS Secrets Manager
 func (s *Backend) Get(key string) (string, error) {
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(key),

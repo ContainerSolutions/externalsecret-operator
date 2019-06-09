@@ -1,7 +1,10 @@
+// Package dummy implements an example backend that can be used for testing
+// purposes. It acceps a "suffix" as a parameter that will be appended to the
+// key passed to the Get function.
 package dummy
 
 import (
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets"
 )
 
 // Backend is a fake secrets backend for testing purposes
@@ -10,11 +13,11 @@ type Backend struct {
 }
 
 func init() {
-	secrets.Register("dummy", New)
+	secrets.Register("dummy", NewBackend)
 }
 
-// New gives you an new Dummy Backend
-func New() secrets.Backend {
+// NewBackend gives you an NewBackend Dummy Backend
+func NewBackend() secrets.Backend {
 	return &Backend{}
 }
 

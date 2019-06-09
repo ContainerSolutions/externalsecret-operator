@@ -5,16 +5,16 @@ import (
 	"sync"
 )
 
-// Backend is an abstract backend
+// Backend is an abstract backend interface
 type Backend interface {
 	Init(map[string]string) error
 	Get(string) (string, error)
 }
 
-// Instances are instantiated secrets
+// Instances are instantiated secret backends
 var Instances map[string]Backend
 
-// Functions is a map of functions that return secrets
+// Functions is a map of labelled functions that return secret backend instances
 var Functions map[string]func() Backend
 
 var initLock sync.Mutex

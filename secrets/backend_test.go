@@ -13,7 +13,7 @@ type MockBackend struct {
 	Param1 string
 }
 
-func New() Backend {
+func NewBackend() Backend {
 	return &MockBackend{}
 }
 
@@ -29,11 +29,11 @@ func (m *MockBackend) Get(key string) (string, error) {
 func TestRegister(t *testing.T) {
 	Convey("Given a mocked backend", t, func() {
 		Convey("When registering it as a backend type", func() {
-			Register("mock", New)
+			Register("mock", NewBackend)
 			Convey("Then the instantiation function is registered with the correct label", func() {
 				function, found := Functions["mock"]
 				So(found, ShouldBeTrue)
-				So(function, ShouldEqual, New)
+				So(function, ShouldEqual, NewBackend)
 			})
 		})
 	})
@@ -41,7 +41,7 @@ func TestRegister(t *testing.T) {
 
 func TestInstantiate(t *testing.T) {
 	Convey("Given a registered backend type", t, func() {
-		Register("mock", New)
+		Register("mock", NewBackend)
 		Convey("When Instantiating it using the right label", func() {
 			err := Instantiate("mock-backend", "mock")
 			So(err, ShouldBeNil)
@@ -72,7 +72,7 @@ func TestInitFromEnv(t *testing.T) {
 	}
 
 	Convey("Given a registered backend type", t, func() {
-		Register("mock", New)
+		Register("mock", NewBackend)
 		Convey("Given a valid config", func() {
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))

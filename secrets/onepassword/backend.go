@@ -1,10 +1,11 @@
+// Package onepassword implements a secrets backend for One Password.
 package onepassword
 
 import (
 	"fmt"
 	"reflect"
 
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets"
 	"github.com/tidwall/gjson"
 )
 
@@ -14,8 +15,8 @@ type Backend struct {
 	Vault  string
 }
 
-// New returns a Backend for onepassword
-func New() secrets.Backend {
+// NewBackend returns a Backend for onepassword
+func NewBackend() secrets.Backend {
 	backend := &Backend{}
 	backend.Client = OnePasswordCliClient{}
 	backend.Vault = "Personal"
@@ -23,7 +24,7 @@ func New() secrets.Backend {
 }
 
 func init() {
-	secrets.Register("onepassword", New)
+	secrets.Register("onepassword", NewBackend)
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
