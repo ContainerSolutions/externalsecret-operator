@@ -7,6 +7,7 @@ AWS_SECRET_ACCESS_KEY ?= Secretsecretconfigureme
 AWS_DEFAULT_REGION ?= eu-west-1
 
 NAMESPACE ?= "default"
+BACKEND ?= "asm"
 
 .PHONY: build
 build:
@@ -23,8 +24,8 @@ deploy:
 	kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
 	envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
 	kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
-	envsubst < deploy/operator-config.yaml | kubectl apply -n $(NAMESPACE) -f -
-	envsubst < deploy/operator.yaml | kubectl apply -n $(NAMESPACE) -f -
+	envsubst < deploy/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
+	envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: test
 test:

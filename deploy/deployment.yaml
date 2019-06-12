@@ -31,5 +31,5 @@ spec:
             - name: OPERATOR_CONFIG
               valueFrom:
                 secretKeyRef:
-                  name: operator-config
+                  name: externalsecret-operator-config
                   key: operator-config.json

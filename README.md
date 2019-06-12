@@ -6,13 +6,11 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 ## Quick start
 
-If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deploy/helm/README.md) or [manifests](./deploy/).
-
-The following examples are specific to the AWS Secret Manager backend.
+If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deploy/helm/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
 
 ### Helm
 
-The following command deploys the External Secret Operator in the `default` namespace.
+Here's how you can deploy the External Secret Operator in the `default` namespace.
 
 ```shell
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
@@ -33,25 +31,27 @@ Look for more deployment options in the [README.md](./deploy/helm/README.md) of 
 
 ### Manifests
 
-For convenience this repository contains a set of deployment manifests in the `./deploy` directory. You can deploy them using the `deploy` make target:
+The `deploy` target in the Makefile will substiute variables and deploy the
+manifests for you. The following command will deploy the operator in the
+`default` namespace:
 
 ```shell
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
 export AWS_DEFAULT_REGION="eu-west-1"
 export AWS_SECRET_ACCESS_KEY="OoXie5Mai6Qu3fakemeezoo4ahfoo6IHahch0rai"
+export BACKENDS=asm
 make deploy
 ```
-
-The operator will be deployed in the `default` namespace and it will listen for `ExternalSecret` resources with `Backend: asm-example` in the whole cluster.
-
-Check the manifests and the Makefile target for more details.
+It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
 ## What does it do?
 
 Given a secret defined in AWS Secrets Manager:
 
 ```shell
-% aws secretsmanager create-secret --name=example-externalsecret-key --secret-string='this string is a secret'
+% aws secretsmanager create-secret \
+  --name=example-externalsecret-key \
+  --secret-string='this string is a secret'
 ```
 
 and an `ExternalSecret` resource definition like this one:
@@ -72,7 +72,8 @@ secret:
 
 ```shell
 % kubectl apply -f ./deploy/crds/examples/externalsecret-asm.yaml
-% kubectl get secret example-externalsecret -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
+% kubectl get secret example-externalsecret \
+  -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret
 ```
 
