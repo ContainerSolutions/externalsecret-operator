@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets/dummy"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -12,9 +13,9 @@ func TestNewSecretForCR(t *testing.T) {
 	key := "key"
 	suffix := "-value"
 
-	secrets.BackendRegister("dummy", secrets.NewDummySecretsBackend)
-	secrets.BackendInstantiate("dummy", "dummy")
-	secrets.BackendInstances["dummy"].Init(map[string]string{"suffix": "-value"})
+	secrets.Register("dummy", dummy.NewBackend)
+	secrets.Instantiate("dummy", "dummy")
+	secrets.Instances["dummy"].Init(map[string]string{"suffix": "-value"})
 
 	Convey("Given an ExternalSecret resource", t, func() {
 		externalSecret := v1alpha1.ExternalSecret{
