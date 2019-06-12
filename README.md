@@ -6,9 +6,11 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 ## Quick start
 
-If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deploy/helm/README.md).
+If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deploy/helm/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
 
-The following examples are specific to the AWS Secret Manager backend. Here's how you can deploy the External Secret Operator in the `default` namespace.
+### Helm
+
+Here's how you can deploy the External Secret Operator in the `default` namespace.
 
 ```shell
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
@@ -26,6 +28,21 @@ helm upgrade --install asm1 --wait \
 It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
 Look for more deployment options in the [README.md](./deploy/helm/README.md) of the helm chart.
+
+### Manifests
+
+The `deploy` target in the Makefile will substiute variables and deploy the
+manifests for you. The following command will deploy the operator in the
+`default` namespace:
+
+```shell
+export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
+export AWS_DEFAULT_REGION="eu-west-1"
+export AWS_SECRET_ACCESS_KEY="OoXie5Mai6Qu3fakemeezoo4ahfoo6IHahch0rai"
+export BACKENDS=asm
+make deploy
+```
+It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
 ## What does it do?
 
