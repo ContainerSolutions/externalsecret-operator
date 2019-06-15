@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ContainerSolutions/externalsecret-operator/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -17,13 +17,13 @@ func TestOnePasswordBackend(t *testing.T) {
 		key := "testkey"
 		expectedValue := "testvalue"
 
-		err := secrets.InitFromEnv()
+		err := backend.InitFromEnv()
 		if err != nil {
 			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
 			t.Fail()
 		}
 
-		backend := secrets.Instances["onepassword"]
+		backend := backend.Instances["onepassword"]
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(key)

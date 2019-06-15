@@ -7,13 +7,12 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/ContainerSolutions/externalsecret-operator/secrets"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis"
 	"github.com/ContainerSolutions/externalsecret-operator/pkg/controller"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
@@ -63,7 +62,7 @@ func main() {
 
 	printVersion()
 
-	err := secrets.InitFromEnv()
+	err := backend.InitFromEnv()
 	if err != nil {
 		log.Error(err, "Failed to initialize backend")
 		os.Exit(1)
