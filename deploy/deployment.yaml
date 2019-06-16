@@ -15,10 +15,10 @@ spec:
       serviceAccountName: externalsecret-operator
       containers:
         - name: externalsecret-operator
-          image: containersol/externalsecret-operator:0.0.2
+          image: containersol/externalsecret-operator:${DOCKER_TAG}
           command:
           - externalsecret-operator
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               value: ""
