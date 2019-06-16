@@ -2,8 +2,13 @@ package backend
 
 import (
 	"fmt"
+	"strings"
 	"sync"
+
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("backend")
 
 // Backend is an abstract backend interface
 type Backend interface {
@@ -30,6 +35,7 @@ func Instantiate(name string, backendType string) error {
 		return fmt.Errorf("unknown backend type: '%v'", backendType)
 	}
 
+	log.Info("instantiate", "name", name, "type", backendType)
 	Instances[name] = function()
 
 	return nil
@@ -42,6 +48,7 @@ func Register(name string, function func() Backend) {
 		Functions = make(map[string]func() Backend)
 	}
 
+	log.Info("register", "type", name)
 	Functions[name] = function
 }
 
@@ -49,6 +56,7 @@ func Register(name string, function func() Backend) {
 func InitFromEnv() error {
 	initLock.Lock()
 	defer initLock.Unlock()
+	log.Info("initFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
 
 	config, err := ConfigFromEnv()
 	if err != nil {
@@ -60,7 +68,16 @@ func InitFromEnv() error {
 		return err
 	}
 
+	log.Info("initialize", "name", config.Name)
 	err = Instances[config.Name].Init(config.Parameters)
 
-	return err
+	return nil
+}
+
+func availableBackends() []string {
+	backends := []string{}
+	for k := range Functions {
+		backends = append(backends, k)
+	}
+	return backends
 }
