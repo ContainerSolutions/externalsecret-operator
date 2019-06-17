@@ -88,6 +88,39 @@ We would like to support as many backend as possible and it should be rather eas
 
 A contributing guide is coming soon!
 
+## Deploying the 1Password Backend
+
+0. Prerequisites
+  
+* An existing 1Password account.
+* A new 1Password account specifically for the operator.
+* Store the secret key, master password, email and url of the new 1Password account in your existing 1Password account.
+* See deploy/source-onepassword-secrets.sh on which fields to use to store this information in.
+
+1. Sign in to your _existing_ 1password
+
+```
+$ eval $(op signin)
+```
+
+2. Load the 1Password credentials of your new account into the environment
+
+```
+$ . deploy/source-onepassword-secrets.sh
+```
+
+3. Set the 1password vault
+
+```
+$ export OP_VAULT="myvault"
+```
+
+4.  Deploy the operator
+
+```
+$ make deploy
+```
+
 ## What's next
 
 This project is just at its beginning. See
