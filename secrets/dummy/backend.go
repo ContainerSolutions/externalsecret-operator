@@ -3,9 +3,7 @@
 // key passed to the Get function.
 package dummy
 
-import (
-	"github.com/ContainerSolutions/externalsecret-operator/secrets"
-)
+import "github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
 
 // Backend is a fake secrets backend for testing purposes
 type Backend struct {
@@ -13,11 +11,11 @@ type Backend struct {
 }
 
 func init() {
-	secrets.Register("dummy", NewBackend)
+	backend.Register("dummy", NewBackend)
 }
 
 // NewBackend gives you an NewBackend Dummy Backend
-func NewBackend() secrets.Backend {
+func NewBackend() backend.Backend {
 	return &Backend{}
 }
 

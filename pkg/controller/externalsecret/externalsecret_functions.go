@@ -4,14 +4,17 @@ import (
 	"fmt"
 
 	externalsecretoperatorv1alpha1 "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
-	"github.com/ContainerSolutions/externalsecret-operator/secrets"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	// Trigger secrets backend registration
+	_ "github.com/ContainerSolutions/externalsecret-operator/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
 )
 
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {
-	backend, ok := secrets.Instances[cr.Spec.Backend]
+	backend, ok := backend.Instances[cr.Spec.Backend]
 	if !ok {
 		return nil, fmt.Errorf("Cannot find backend: %v", cr.Spec.Backend)
 	}

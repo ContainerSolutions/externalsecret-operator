@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ContainerSolutions/externalsecret-operator/secrets"
+	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
 	"github.com/tidwall/gjson"
 )
 
@@ -15,16 +15,16 @@ type Backend struct {
 	Vault  string
 }
 
+func init() {
+	backend.Register("onepassword", NewBackend)
+}
+
 // NewBackend returns a Backend for onepassword
-func NewBackend() secrets.Backend {
+func NewBackend() backend.Backend {
 	backend := &Backend{}
 	backend.Client = OnePasswordCliClient{}
 	backend.Vault = "Personal"
 	return backend
-}
-
-func init() {
-	secrets.Register("onepassword", NewBackend)
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
