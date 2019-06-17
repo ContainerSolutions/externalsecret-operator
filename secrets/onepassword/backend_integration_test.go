@@ -17,6 +17,7 @@ func TestOnePasswordBackend(t *testing.T) {
 		key := "testkey"
 		expectedValue := "testvalue"
 
+		backend.Register("onepassword", NewBackend)
 		err := backend.InitFromEnv()
 		if err != nil {
 			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
