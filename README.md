@@ -97,7 +97,7 @@ A contributing guide is coming soon!
 * Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
   
 
-![1Password operator account]((https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-operator-account.png)
+![1Password operator account](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-operator-account.png)
 
 #### Integration Test 
 
@@ -105,7 +105,7 @@ The integration `secrets/onepassword/backend_integration_test.go` test checks wh
 
 Create a secret in 1Password as follow. Create a vault called `test vault one`. Now add a new `Login` item with name `testkey`. Set its `password` field to `testvalue`. See the screenshot below.
 
-![1Password secret]((https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-secret.png)
+![1Password secret](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-secret.png)
 
 To run the integration test do the following.
 
