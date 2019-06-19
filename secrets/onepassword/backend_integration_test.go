@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
-	"github.com/ContainerSolutions/externalsecret-operator/secrets/onepassword"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -24,7 +23,7 @@ func TestOnePasswordBackend(t *testing.T) {
 			t.Fail()
 		}
 
-		backend.Register("onepassword", onepassword.NewBackend)
+		backend.Register("onepassword", NewBackend)
 		backend := backend.Instances["onepassword"]
 
 		Convey("When retrieving a secret", func() {
