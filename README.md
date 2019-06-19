@@ -82,20 +82,32 @@ this string is a secret
 We would like to support as many backend as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
 
 * AWS Secrets Manager
-* One Password
+* 1Password
 * Keybase
 * Git
 
 A contributing guide is coming soon!
 
-## Deploying the 1Password Backend
+### 1Password
 
-0. Prerequisites
+#### Prerequisites
+
+* An existing 1Password team account.
+* A 1Password account specifically for the operator. Tip: Setup an email with the `+` convention: `john.doe+operator@example.org`
+* Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
   
-* An existing 1Password account.
-* A new 1Password account specifically for the operator.
-* Store the secret key, master password, email and url of the new 1Password account in your existing 1Password account.
-* See deploy/source-onepassword-secrets.sh on which fields to use to store this information in.
+
+![1Password operator account]((https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-operator-account.png)
+
+#### Integration Test 
+
+The integration `secrets/onepassword/backend_integration_test.go` test checks whether a secret stored in 1Password can be read via the operator.
+
+Create a secret in 1Password as follow. Create a vault called `test vault one`. Now add a new `Login` item with name `testkey`. Set its `password` field to `testvalue`. See the screenshot below.
+
+![1Password secret]((https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-secret.png)
+
+To run the integration test do the following.
 
 1. Sign in to your _existing_ 1password
 
@@ -103,16 +115,32 @@ A contributing guide is coming soon!
 $ eval $(op signin)
 ```
 
-2. Load the 1Password credentials of your new account into the environment
+2. Load the 1Password credentials of your _operator_ account into the environment
 
 ```
 $ . deploy/source-onepassword-secrets.sh
 ```
 
-3. Set the 1password vault
+Run the tests including the integration test with
 
 ```
-$ export OP_VAULT="myvault"
+$ go test -v ./secrets/onepassword/
+```
+
+#### Operator Deployment
+
+To deploy the operator do the following.
+
+1. Sign in to your _existing_ 1password
+
+```
+$ eval $(op signin)
+```
+
+2. Load the 1Password credentials of your _operator_ account into the environment
+
+```
+$ . deploy/source-onepassword-secrets.sh
 ```
 
 4.  Deploy the operator

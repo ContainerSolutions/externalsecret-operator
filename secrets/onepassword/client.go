@@ -45,7 +45,7 @@ func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey stri
 
 	cmd.Wait()
 
-	r, _ := regexp.Compile("export OP_SESSION_externalsecretoperator=\"(.+)\"")
+	r, _ := regexp.Compile("export OP_SESSION_(.+)=\"(.+)\"")
 	matches := r.FindAllStringSubmatch(outb.String(), -1)
 
 	if len(matches) == 0 {
@@ -53,9 +53,10 @@ func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey stri
 		return nil
 	}
 
-	token := matches[0][1]
+	session := matches[0][1]
+	token := matches[0][2]
 	fmt.Println("\nUpdated 'OP_SESSION_externalsecretoperator' environment variable.")
-	os.Setenv("OP_SESSION_externalsecretoperator", token)
+	os.Setenv("OP_SESSION_"+session, token)
 
 	return nil
 }
