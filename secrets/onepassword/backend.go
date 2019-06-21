@@ -41,8 +41,6 @@ func (b *Backend) Init(parameters map[string]string) error {
 		return err
 	}
 
-	fmt.Println("Signed into 1password successfully.")
-
 	return nil
 }
 
