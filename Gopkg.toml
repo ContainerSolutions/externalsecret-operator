@@ -20,6 +20,10 @@ required = [
   version = "=v1.1.4"
 
 [[override]]
+  name = "github.com/ameier38/onepassword"
+  revision = "e03d3c5c7592b1a3aaca0ca75409ce75f88d7369"  
+
+[[override]]
   name = "k8s.io/code-generator"
   # revision for tag "kubernetes-1.13.1"
   revision = "c2090bec4d9b1fb25de3812f868accc2bc9ecbae"

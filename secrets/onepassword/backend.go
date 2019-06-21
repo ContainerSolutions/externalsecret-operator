@@ -3,16 +3,15 @@ package onepassword
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
-	"github.com/tidwall/gjson"
+	op "github.com/ameier38/onepassword"
 )
 
 // Backend represents a Backend for onepassword
 type Backend struct {
-	Client Client
+	Client *op.Client
 	Vault  string
 }
 
@@ -28,17 +27,13 @@ func init() {
 // NewBackend returns a Backend for onepassword
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-
-	client := CliClient{}
-	client.Executable = &OP{}
-
-	backend.Client = client
 	backend.Vault = "Personal"
 	return backend
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
 func (b *Backend) Init(parameters map[string]string) error {
+
 	err := validateParameters(parameters)
 	if err != nil {
 		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
@@ -46,12 +41,11 @@ func (b *Backend) Init(parameters map[string]string) error {
 
 	b.Vault = parameters["vault"]
 
-	session, err := b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
+	client, err := op.NewClient("/usr/local/bin/op", parameters["domain"], parameters["email"], parameters["masterPassword"], parameters["secretKey"])
 	if err != nil {
-		return err
-	} else {
-		os.Setenv(session.Key, session.Value)
+		fmt.Println(fmt.Sprintf("could not sign in to 1password %s", err))
 	}
+	b.Client = client
 
 	return nil
 }
@@ -61,19 +55,15 @@ func (b *Backend) Init(parameters map[string]string) error {
 func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	item := b.Client.Get(key)
-	if item == "" {
-		return "", fmt.Errorf("Could not retrieve 1password item '" + key + "'.")
+	itemMap, err := b.Client.GetItem(op.VaultName(b.Vault), op.ItemName(key))
+	if itemMap != nil {
+		return "", fmt.Errorf("could not retrieve 1password item '" + key + "'.")
+	}
+	if err != nil {
+		return "", fmt.Errorf("error retrieving 1password item '" + key + "'.")
 	}
 
-	value := gjson.Get(item, "details.fields.#[name==\"password\"].value")
-	if !value.Exists() {
-		return "", fmt.Errorf("1password item '" + key + "' does not have a 'password' field.")
-	}
-
-	fmt.Println("1password item '" + key + "' value of 'password' field retrieved successfully.")
-
-	return value.String(), nil
+	return string(itemMap["externalsecretoperator"]["testkey"]), nil
 }
 
 func validateParameters(parameters map[string]string) error {

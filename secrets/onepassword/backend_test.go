@@ -8,17 +8,17 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockOnePasswordClient struct {
+type MockClient struct {
 	mock.Mock
 }
 
-func (m MockOnePasswordClient) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
+func (m MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
 	args := m.Called(domain, email, secretKey, masterPassword)
 	return Session{"OP_SESSION_externalsecretoperator", "123456"}, args.Error(0)
 }
 
 // Return a static JSON output for $ op get item 'testkey'
-func (m MockOnePasswordClient) Get(key string) string {
+func (m MockClient) Get(key string) string {
 	return `{
 		"uuid": "r4qk25ahjrurehsejazi3tz57e",
 		"templateUuid": "001",
