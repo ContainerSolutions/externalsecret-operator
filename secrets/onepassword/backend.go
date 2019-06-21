@@ -12,7 +12,7 @@ import (
 
 // Backend represents a Backend for onepassword
 type Backend struct {
-	Client OnePasswordClient
+	Client Client
 	Vault  string
 }
 
@@ -28,7 +28,11 @@ func init() {
 // NewBackend returns a Backend for onepassword
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-	backend.Client = OnePasswordCliClient{}
+
+	client := CliClient{}
+	client.Executable = &OP{}
+
+	backend.Client = client
 	backend.Vault = "Personal"
 	return backend
 }

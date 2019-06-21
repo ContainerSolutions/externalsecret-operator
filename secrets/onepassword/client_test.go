@@ -1,40 +1,42 @@
 package onepassword
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/mock"
 )
 
-type MockOp struct {
+type MockExecutable struct {
 	mock.Mock
 }
 
-func (m *MockOp) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
-	return Session{"OP_SESSION_externalsecretoperator", "123456"}, nil
+func (m *MockExecutable) SignIn(domain string, email string, secretKey string, masterPassword string) (string, error) {
+	return `export OP_SESSION_externalsecretoperator="gXKhaUdTwsmM1ESz4Q6cakpvtXMAEom7AAw04_xB39s"
+	# This command is meant to be used with your shell's eval function.
+	# Run 'eval $(op signin cs)' to sign into your 1Password account.
+	# If you wish to use the session token itself, pass the --output=raw flag value.`, nil
 }
 
 func TestSignIn(t *testing.T) {
 
-	Convey("Given a OnePasswordCliClient", t, func() {
-		op := &MockOp{}
-
-		client := OnePasswordCliClient{}
-		client.Op = op
+	Convey("The session token is parsed after entering credentials", t, func() {
 
 		domain := "https://externalsecretoperator.1password.com"
 		email := "externalsecretoperator@example.com"
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		Convey("Session token should be set as an environment var after signing in", func() {
-			client.SignIn(domain, email, secretKey, masterPassword)
+		executable := &MockExecutable{}
 
-			So(os.Getenv("OP_SESSION_externalsecretoperator"), ShouldEqual, "123456")
+		client := CliClient{}
+		client.Executable = executable
 
-			op.AssertExpectations(t)
-		})
+		session, _ := client.SignIn(domain, email, secretKey, masterPassword)
+
+		executable.AssertExpectations(t)
+
+		So(session.Key, ShouldEqual, "OP_SESSION_externalsecretoperator")
+		So(session.Value, ShouldEqual, "gXKhaUdTwsmM1ESz4Q6cakpvtXMAEom7AAw04_xB39s")
 	})
 }
