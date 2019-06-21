@@ -9,19 +9,19 @@ import (
 
 type OnePasswordClient interface {
 	Get(key string) string
-	SignIn(domain string, email string, secretKey string, masterPassword string) error
+	SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error)
 }
 
 type OnePasswordCliClient struct {
 	Op OP
 }
 
-func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (c OnePasswordCliClient) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
 	session, _ := c.Op.SignIn(domain, email, secretKey, masterPassword)
 
 	os.Setenv(session.Key, session.Value)
 
-	return nil
+	return session, nil
 }
 
 // Invoke $ op get item 'key'

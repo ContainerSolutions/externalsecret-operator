@@ -13,11 +13,6 @@ type OPProcess struct {
 	Command OPCommand
 }
 
-type Session struct {
-	Key   string
-	Value string
-}
-
 func (op *OPProcess) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
 	stdout, _ := op.Command.EnterCredentials(secretKey, masterPassword)
 

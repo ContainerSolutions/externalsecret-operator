@@ -3,6 +3,7 @@ package onepassword
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
@@ -13,6 +14,11 @@ import (
 type Backend struct {
 	Client OnePasswordClient
 	Vault  string
+}
+
+type Session struct {
+	Key   string
+	Value string
 }
 
 func init() {
@@ -36,9 +42,11 @@ func (b *Backend) Init(parameters map[string]string) error {
 
 	b.Vault = parameters["vault"]
 
-	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
+	session, err := b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
 		return err
+	} else {
+		os.Setenv(session.Key, session.Value)
 	}
 
 	return nil

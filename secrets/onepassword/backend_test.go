@@ -1,6 +1,7 @@
 package onepassword
 
 import (
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -11,9 +12,9 @@ type MockOnePasswordClient struct {
 	mock.Mock
 }
 
-func (m MockOnePasswordClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (m MockOnePasswordClient) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
 	args := m.Called(domain, email, secretKey, masterPassword)
-	return args.Error(0)
+	return Session{"OP_SESSION_externalsecretoperator", "123456"}, args.Error(0)
 }
 
 // Return a static JSON output for $ op get item 'testkey'
@@ -99,7 +100,7 @@ func TestInitOnePassword(t *testing.T) {
 		masterPassword := "MasterPassword12346!"
 
 		client := &MockOnePasswordClient{}
-		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
+		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil, nil)
 
 		backend := NewBackend()
 		(backend).(*Backend).Client = client
@@ -118,6 +119,10 @@ func TestInitOnePassword(t *testing.T) {
 			Convey("Backend has the correct vault configured", func() {
 				client.AssertExpectations(t)
 				So((backend).(*Backend).Vault, ShouldEqual, vault)
+			})
+
+			Convey("Session token should be set as an environment variable after initialization", func() {
+				So(os.Getenv("OP_SESSION_externalsecretoperator"), ShouldEqual, "123456")
 			})
 		})
 	})
