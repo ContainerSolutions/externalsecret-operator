@@ -1,4 +1,8 @@
 #!/bin/sh
+
+USER_ID=1001
+HOME=/home/${USER_NAME}
+
 set -x
 
 # ensure $HOME exists and is accessible by group 0 (we don't know what the runtime UID will be)

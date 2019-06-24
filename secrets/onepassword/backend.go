@@ -6,18 +6,12 @@ import (
 	"reflect"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
-	op "github.com/ameier38/onepassword"
 )
 
 // Backend represents a Backend for onepassword
 type Backend struct {
-	Client *op.Client
+	Client Client
 	Vault  string
-}
-
-type Session struct {
-	Key   string
-	Value string
 }
 
 func init() {
@@ -27,25 +21,24 @@ func init() {
 // NewBackend returns a Backend for onepassword
 func NewBackend() backend.Backend {
 	backend := &Backend{}
+	backend.Client = &OP{}
 	backend.Vault = "Personal"
 	return backend
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
 func (b *Backend) Init(parameters map[string]string) error {
-
 	err := validateParameters(parameters)
 	if err != nil {
 		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
 	}
-
 	b.Vault = parameters["vault"]
 
-	client, err := op.NewClient("/usr/local/bin/op", parameters["domain"], parameters["email"], parameters["masterPassword"], parameters["secretKey"])
+	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
 		fmt.Println(fmt.Sprintf("could not sign in to 1password %s", err))
 	}
-	b.Client = client
+	fmt.Println(fmt.Sprintf("Signed into 1password successfully"))
 
 	return nil
 }
@@ -55,15 +48,15 @@ func (b *Backend) Init(parameters map[string]string) error {
 func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	itemMap, err := b.Client.GetItem(op.VaultName(b.Vault), op.ItemName(key))
-	if itemMap != nil {
+	value, err := b.Client.Get(b.Vault, key)
+	if value == "" {
 		return "", fmt.Errorf("could not retrieve 1password item '" + key + "'.")
 	}
 	if err != nil {
 		return "", fmt.Errorf("error retrieving 1password item '" + key + "'.")
 	}
 
-	return string(itemMap["externalsecretoperator"]["testkey"]), nil
+	return value, nil
 }
 
 func validateParameters(parameters map[string]string) error {

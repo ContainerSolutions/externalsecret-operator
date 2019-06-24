@@ -1,7 +1,6 @@
 package onepassword
 
 import (
-	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -12,52 +11,14 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) (Session, error) {
+func (m MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
 	args := m.Called(domain, email, secretKey, masterPassword)
-	return Session{"OP_SESSION_externalsecretoperator", "123456"}, args.Error(0)
+	return args.Error(0)
 }
 
 // Return a static JSON output for $ op get item 'testkey'
-func (m MockClient) Get(key string) string {
-	return `{
-		"uuid": "r4qk25ahjrurehsejazi3tz57e",
-		"templateUuid": "001",
-		"trashed": "N",
-		"createdAt": "2019-05-29T09:13:12Z",
-		"updatedAt": "2019-05-29T10:53:49Z",
-		"changerUuid": "GI2HNNU3OBEBDJUO6IOBA4EEOY",
-		"itemVersion": 2,
-		"vaultUuid": "s63lunnfg3pgoiuvq7bcl6taju",
-		"details": {
-		  "fields": [
-			{
-			  "designation": "username",
-			  "name": "username",
-			  "type": "T",
-			  "value": ""
-			},
-			{
-			  "designation": "password",
-			  "name": "password",
-			  "type": "P",
-			  "value": "testvalue"
-			}
-		  ],
-		  "notesPlain": "",
-		  "sections": []
-		},
-		"overview": {
-		  "URLs": [],
-		  "ainfo": "",
-		  "pbe": 0,
-		  "pgrng": false,
-		  "ps": 40,
-		  "tags": [],
-		  "title": "TestItem",
-		  "url": ""
-		}
-	  }
-	`
+func (m MockClient) Get(value string, key string) (string, error) {
+	return "testvalue", nil
 }
 
 func TestGetOnePassword(t *testing.T) {
@@ -67,7 +28,7 @@ func TestGetOnePassword(t *testing.T) {
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
 		backend := NewBackend()
-		(backend).(*Backend).Client = &MockOnePasswordClient{}
+		(backend).(*Backend).Client = &MockClient{}
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
@@ -99,8 +60,8 @@ func TestInitOnePassword(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := &MockOnePasswordClient{}
-		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil, nil)
+		client := &MockClient{}
+		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
 
 		backend := NewBackend()
 		(backend).(*Backend).Client = client
@@ -116,13 +77,8 @@ func TestInitOnePassword(t *testing.T) {
 
 			backend.Init(params)
 
-			Convey("Backend has the correct vault configured", func() {
+			Convey("Client should have signed in", func() {
 				client.AssertExpectations(t)
-				So((backend).(*Backend).Vault, ShouldEqual, vault)
-			})
-
-			Convey("Session token should be set as an environment variable after initialization", func() {
-				So(os.Getenv("OP_SESSION_externalsecretoperator"), ShouldEqual, "123456")
 			})
 		})
 	})
@@ -134,9 +90,7 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := &MockOnePasswordClient{}
 		backend := NewBackend()
-		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -156,9 +110,7 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 		masterPassword := "MasterPassword12346!"
 
-		client := &MockOnePasswordClient{}
 		backend := NewBackend()
-		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -178,9 +130,7 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 		email := "externalsecretoperator@example.com"
 		masterPassword := "MasterPassword12346!"
 
-		client := &MockOnePasswordClient{}
 		backend := NewBackend()
-		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
@@ -200,9 +150,7 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 		email := "externalsecretoperator@example.com"
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 
-		client := &MockOnePasswordClient{}
 		backend := NewBackend()
-		(backend).(*Backend).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{
