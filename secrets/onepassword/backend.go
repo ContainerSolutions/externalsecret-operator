@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
+	"github.com/pkg/errors"
 )
 
 // Backend represents a Backend for onepassword
@@ -30,15 +31,15 @@ func NewBackend() backend.Backend {
 func (b *Backend) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
-		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
+		return errors.Wrap(err, "error reading 1password backend parameters")
 	}
 	b.Vault = parameters["vault"]
 
 	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
-		fmt.Println(fmt.Sprintf("could not sign in to 1password %s", err))
+		return errors.Wrap(err, "could not sign in to 1password")
 	}
-	fmt.Println(fmt.Sprintf("Signed into 1password successfully"))
+	fmt.Println(fmt.Sprintf("signed into 1password successfully"))
 
 	return nil
 }
