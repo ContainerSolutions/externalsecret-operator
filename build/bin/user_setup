@@ -2,6 +2,7 @@
 
 USER_ID=1001
 HOME=/home/${USER_NAME}
+echo "${USER_NAME:-externalsecret-operator}:x:$(id -u):$(id -g):${USER_NAME:-externalsecret-operator} user:${HOME}:/sbin/nologin" >> /etc/passwd
 
 set -x
 
