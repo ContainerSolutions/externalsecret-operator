@@ -39,7 +39,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 	if err != nil {
 		return errors.Wrap(err, "could not sign in to 1password")
 	}
-	fmt.Println(fmt.Sprintf("signed into 1password successfully"))
+	fmt.Println("signed into 1password successfully")
 
 	return nil
 }
@@ -50,11 +50,8 @@ func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
 	value, err := b.Client.Get(b.Vault, key)
-	if value == "" {
-		return "", fmt.Errorf("could not retrieve 1password item '" + key + "'.")
-	}
 	if err != nil {
-		return "", fmt.Errorf("error retrieving 1password item '" + key + "'.")
+		return "", fmt.Errorf("error retrieving 1password item '%s'", key)
 	}
 
 	return value, nil

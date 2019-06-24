@@ -99,7 +99,7 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `email` not found")
+			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `email` not found")
 		})
 	})
 }
@@ -119,7 +119,7 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `domain` not found")
+			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `domain` not found")
 		})
 	})
 }
@@ -139,7 +139,7 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 				"masterPassword": masterPassword,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `secretKey` not found")
+			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `secretKey` not found")
 		})
 	})
 }
@@ -159,7 +159,7 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 				"secretKey": secretKey,
 			}
 
-			So(backend.Init(params).Error(), ShouldEqual, "Error reading 1password backend parameters: invalid init parameters: expected `masterPassword` not found")
+			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `masterPassword` not found")
 		})
 	})
 }
