@@ -16,8 +16,6 @@ spec:
       containers:
         - name: externalsecret-operator
           image: containersol/externalsecret-operator:${DOCKER_TAG}
-          command:
-          - externalsecret-operator
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
