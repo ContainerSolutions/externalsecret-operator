@@ -30,10 +30,10 @@ func (client *OP) SignIn(domain string, email string, secretKey string, masterPa
 func (client *OP) Get(vault string, key string) (string, error) {
 	itemMap, err := client.OP.GetItem(op.VaultName(vault), op.ItemName(key))
 	if itemMap == nil {
-		return "", fmt.Errorf("could not retrieve 1password item '" + key + "'.")
+		return "", fmt.Errorf("could not retrieve 1password item '%s'", key)
 	}
 	if err != nil {
-		return "", errors.Wrap(err, "could not retrieve 1password item '"+key+"'.")
+		return "", errors.Wrap(err, fmt.Sprintf("could not retrieve 1password item '%s'", key))
 	}
 
 	return string(itemMap["externalsecretoperator"][op.FieldName(key)]), nil
