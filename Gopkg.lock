@@ -49,6 +49,13 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  digest = "1:3890c563f23bca06232f612f72850619690126636be3ee69a9f5db7d76eb7a9f"
+  name = "github.com/ameier38/onepassword"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "e03d3c5c7592b1a3aaca0ca75409ce75f88d7369"
+
+[[projects]]
   digest = "1:680b63a131506e668818d630d3ca36123ff290afa0afc9f4be21940adca3f27d"
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
@@ -1201,7 +1208,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/ameier38/onepassword",
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/credentials",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/secretsmanager",
     "github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface",

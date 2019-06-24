@@ -6,12 +6,12 @@ import (
 	"reflect"
 
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
-	"github.com/tidwall/gjson"
+	"github.com/pkg/errors"
 )
 
 // Backend represents a Backend for onepassword
 type Backend struct {
-	Client OnePasswordClient
+	Client Client
 	Vault  string
 }
 
@@ -22,7 +22,7 @@ func init() {
 // NewBackend returns a Backend for onepassword
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-	backend.Client = OnePasswordCliClient{}
+	backend.Client = &OP{}
 	backend.Vault = "Personal"
 	return backend
 }
@@ -31,17 +31,15 @@ func NewBackend() backend.Backend {
 func (b *Backend) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
-		return fmt.Errorf("Error reading 1password backend parameters: %v", err)
+		return errors.Wrap(err, "error reading 1password backend parameters")
 	}
-
 	b.Vault = parameters["vault"]
 
 	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not sign in to 1password")
 	}
-
-	fmt.Println("Signed into 1password successfully.")
+	fmt.Println("signed into 1password successfully")
 
 	return nil
 }
@@ -51,19 +49,12 @@ func (b *Backend) Init(parameters map[string]string) error {
 func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	item := b.Client.Get(key)
-	if item == "" {
-		return "", fmt.Errorf("Could not retrieve 1password item '" + key + "'.")
+	value, err := b.Client.Get(b.Vault, key)
+	if err != nil {
+		return "", fmt.Errorf("error retrieving 1password item '%s'", key)
 	}
 
-	value := gjson.Get(item, "details.fields.#[name==\"password\"].value")
-	if !value.Exists() {
-		return "", fmt.Errorf("1password item '" + key + "' does not have a 'password' field.")
-	}
-
-	fmt.Println("1password item '" + key + "' value of 'password' field retrieved successfully.")
-
-	return value.String(), nil
+	return value, nil
 }
 
 func validateParameters(parameters map[string]string) error {
