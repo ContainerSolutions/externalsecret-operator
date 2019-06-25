@@ -27,6 +27,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
+const (
+	operatorDefaultName = "externalsecret-operator"
+)
+
 // Change below variables to serve metrics on different host or port.
 var (
 	metricsHost       = "0.0.0.0"
@@ -86,7 +90,11 @@ func main() {
 	ctx := context.TODO()
 
 	// Become the leader before proceeding
-	err = leader.Become(ctx, "externalsecret-operator-lock")
+	operatorName := os.Getenv("OPERATOR_NAME")
+	if len(operatorName) == 0 {
+		operatorName = operatorDefaultName
+	}
+	err = leader.Become(ctx, operatorName+"-lock")
 	if err != nil {
 		log.Error(err, "")
 		os.Exit(1)
