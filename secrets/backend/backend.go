@@ -71,7 +71,7 @@ func InitFromEnv() error {
 	log.Info("initialize", "name", config.Name)
 	err = Instances[config.Name].Init(config.Parameters)
 
-	return nil
+	return err
 }
 
 func availableBackends() []string {
