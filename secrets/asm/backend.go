@@ -76,7 +76,7 @@ func awsConfigFromParams(parameters map[string]string) (*aws.Config, error) {
 	for _, key := range keys {
 		_, found := parameters[key]
 		if !found {
-			return nil, fmt.Errorf("Invalid init paramters: expected `%v` not found", key)
+			return nil, fmt.Errorf("Invalid init parameters: expected `%v` not found", key)
 		}
 	}
 

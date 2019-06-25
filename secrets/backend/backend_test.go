@@ -89,7 +89,7 @@ func TestInitFromEnv(t *testing.T) {
 			})
 		})
 
-		Convey("Given a valid config with unkown backend type ", func() {
+		Convey("Given a valid config with unknown backend type ", func() {
 			configStruct.Type = "unknown"
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))

@@ -76,7 +76,7 @@ func TestAWSConfigFromParams(t *testing.T) {
 			expectedRegion:          expectedRegion,
 			expectedSecretAccessKey: expectedSecretAccessKey,
 			expectedErrorAssertion:  ShouldNotBeNil,
-			expectedErrorString:     "Invalid init paramters: expected `region` not found",
+			expectedErrorString:     "Invalid init parameters: expected `region` not found",
 		},
 		{
 			parameters: map[string]string{
@@ -87,7 +87,7 @@ func TestAWSConfigFromParams(t *testing.T) {
 			expectedRegion:          expectedRegion,
 			expectedSecretAccessKey: expectedSecretAccessKey,
 			expectedErrorAssertion:  ShouldNotBeNil,
-			expectedErrorString:     "Invalid init paramters: expected `accessKeyID` not found",
+			expectedErrorString:     "Invalid init parameters: expected `accessKeyID` not found",
 		},
 
 		{
@@ -99,7 +99,7 @@ func TestAWSConfigFromParams(t *testing.T) {
 			expectedRegion:          expectedRegion,
 			expectedSecretAccessKey: expectedSecretAccessKey,
 			expectedErrorAssertion:  ShouldNotBeNil,
-			expectedErrorString:     "Invalid init paramters: expected `secretAccessKey` not found",
+			expectedErrorString:     "Invalid init parameters: expected `secretAccessKey` not found",
 		},
 	}
 
