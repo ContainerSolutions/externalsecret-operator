@@ -95,8 +95,8 @@ A contributing guide is coming soon!
 * An existing 1Password team account.
 * A 1Password account specifically for the operator. Tip: Setup an email with the `+` convention: `john.doe+operator@example.org`
 * Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
+* Our naming convention for the item account is 'External Secret Operator' concatenated with name of the Kubernetes cluster for instance 'External Secret Operator minikube'. This item name is also used for development.
   
-
 ![1Password operator account](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-operator-account.png)
 
 #### Integration Test 
@@ -115,9 +115,15 @@ To run the integration test do the following.
 $ eval $(op signin)
 ```
 
-2. Load the 1Password credentials of your _operator_ account into the environment
+2. Set the `ITEM_VAULT` and `ITEM_NAME` environment variables to select the right 1Password item that contains credentials fo your _operator_ 1Password account.
 
 ```
+$ export ITEM_NAME=External Secret Operator mykubernetescluster
+$ export ITEM_VAULT=myvault
+```
+
+Now load the 1Password credentials of your _operator_ account into the environment
+
 $ . deploy/source-onepassword-secrets.sh
 ```
 
