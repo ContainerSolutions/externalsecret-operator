@@ -12,6 +12,7 @@ build: operator-sdk
 
 .PHONY: push
 push:
+	docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(DOCKER_IMAGE):$(GIT_HASH)
 	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: deploy
