@@ -1,19 +1,16 @@
 DOCKER_IMAGE ?= containersol/externalsecret-operator
-VERSION ?= $(shell awk '/Version = /{ gsub("\"",""); print $$3 }' version/version.go)
-GIT_HASH ?= $(shell git rev-parse --short HEAD) 
-DOCKER_TAG ?= $(VERSION)
 
 NAMESPACE ?= "default"
 BACKEND ?= "asm"
 
 .PHONY: build
 build: operator-sdk
-	./operator-sdk build $(DOCKER_IMAGE):$(DOCKER_TAG)
+	./operator-sdk build $(DOCKER_IMAGE)
 
 .PHONY: push
+.EXPORT_ALL_VARIABLES: push
 push:
-	docker tag $(DOCKER_IMAGE):$(DOCKER_TAG) $(DOCKER_IMAGE):$(GIT_HASH)
-	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+	./build/scripts/push.sh
 
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy

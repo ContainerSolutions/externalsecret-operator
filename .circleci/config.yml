@@ -10,12 +10,10 @@ jobs:
       - run: make test
       - run: make coverage
 
-  push-latest:
+  push:
     docker:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
-    environment:
-      DOCKER_TAG: latest
     steps:
       - checkout
       - setup_remote_docker
@@ -29,9 +27,6 @@ workflows:
   build:
     jobs:
       - test
-      - push-latest:
+      - push:
           requires:
             - test
-          filters:
-            branches:
-              only: push
