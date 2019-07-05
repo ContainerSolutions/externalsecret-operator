@@ -15,7 +15,7 @@ tag_and_push() {
 tag_and_push $DOCKER_IMAGE $GIT_HASH
 
 # if we are on master, tag and push with latest
-if [[ "$GIT_BRANCH" == "push" ]] ; then
+if [[ "$GIT_BRANCH" == "master" ]] ; then
     tag_and_push $DOCKER_IMAGE latest
 
     # if we are on master, and there's a tag, tag and push with the version tag
