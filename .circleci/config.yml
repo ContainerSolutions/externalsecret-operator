@@ -1,21 +1,19 @@
 version: 2
 
-executors:
-  go:
+jobs:
+  test:
     docker:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
-
-jobs:
-  test:
-    executor: go
     steps:
       - checkout
       - run: make test
       - run: make coverage
 
   push:
-    executor: go
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
     steps:
       - checkout
       - setup_remote_docker
