@@ -8,6 +8,7 @@ AWS_DEFAULT_REGION ?= eu-west-1
 
 NAMESPACE ?= "default"
 BACKEND ?= "asm"
+OPERATOR_NAME ?= "asm-example"
 
 .PHONY: build
 build:
