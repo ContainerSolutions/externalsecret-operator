@@ -5,6 +5,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -63,13 +65,18 @@ func InitFromEnv() error {
 		return err
 	}
 
-	err = Instantiate(config.Name, config.Type)
+	operatorName, err := k8sutil.GetOperatorName()
 	if err != nil {
 		return err
 	}
 
-	log.Info("initialize", "name", config.Name)
-	err = Instances[config.Name].Init(config.Parameters)
+	err = Instantiate(operatorName, config.Type)
+	if err != nil {
+		return err
+	}
+
+	log.Info("initialize", "name", operatorName)
+	err = Instances[operatorName].Init(config.Parameters)
 
 	return err
 }

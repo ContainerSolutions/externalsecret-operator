@@ -15,7 +15,7 @@ spec:
       serviceAccountName: externalsecret-operator
       containers:
         - name: externalsecret-operator
-          image: containersol/externalsecret-operator:${DOCKER_TAG}
+          image: ${DOCKER_IMAGE}
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
@@ -25,7 +25,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
-              value: "externalsecret-operator"
+              value: ${OPERATOR_NAME}
             - name: OPERATOR_CONFIG
               valueFrom:
                 secretKeyRef:
