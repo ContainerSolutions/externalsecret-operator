@@ -1,22 +1,17 @@
 DOCKER_IMAGE ?= containersol/externalsecret-operator
-DOCKER_TAG ?= $(shell grep -Po 'Version = "\K.*?(?=")' version/version.go)
-
-# export these if you want to use AWS secrets manager
-AWS_ACCESS_KEY_ID ?= AKIACONFIGUREME
-AWS_SECRET_ACCESS_KEY ?= Secretsecretconfigureme 
-AWS_DEFAULT_REGION ?= eu-west-1
 
 NAMESPACE ?= "default"
 BACKEND ?= "asm"
 OPERATOR_NAME ?= "asm-example"
 
 .PHONY: build
-build:
-	operator-sdk build $(DOCKER_IMAGE):$(DOCKER_TAG)
+build: operator-sdk
+	./operator-sdk build $(DOCKER_IMAGE)
 
 .PHONY: push
+.EXPORT_ALL_VARIABLES: push
 push:
-	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+	./build/scripts/push.sh
 
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy
@@ -34,7 +29,7 @@ test:
 
 .PHONY: coverage
 # include only code we write in coverage report, not generated
-COVERAGE=./pkg/controller/externalsecret... ./secrets/...
+COVERAGE := ./pkg/controller/externalsecret... ./secrets/...
 coverage:
 	go test -short -race -coverprofile=coverage.txt -covermode=atomic $(COVERAGE)
 	curl -s https://codecov.io/bash | bash
@@ -47,3 +42,10 @@ test-helm:
 		./deploy/helm
 	helm test --cleanup $(RELEASE)
 	helm delete --purge $(RELEASE)
+
+PLATFORM := $(shell bash -c '[ "$$(uname -s)" = "Linux" ] && echo linux-gnu || echo apple-darwin')
+OPERATOR_SDK_VERSION := v0.8.1
+OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-$(PLATFORM)
+operator-sdk:
+	curl -LJ -o $@ $(OPERATOR_SDK_URL)
+	chmod +x $@

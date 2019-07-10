@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: containersol/externalsecret-operator
-  tag: 0.0.2
+  tag: 0.0.3
   pullPolicy: IfNotPresent
 
 # The namespace that will be watched for ExternalSecret resources
