@@ -13,8 +13,9 @@ image:
 watchNamespace: ""
 
 # The name for this operator, must be referenced by ExternalSecret resources
-# as the Backend field
-operatorName: externalsecret-operator
+# as the Backend field.
+# If not set will default to release name.
+operatorName: ""
 
 crds:
   # Specifies wether the ExternalSecret CRD should be created

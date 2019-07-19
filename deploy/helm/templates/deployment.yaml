@@ -32,7 +32,7 @@ spec:
             - name: WATCH_NAMESPACE
               value: {{ template "externalsecret-operator.watchNamespace" . }}
             - name: OPERATOR_NAME
-              value: {{ template "externalsecret-operator.fullname" . }}
+              value: {{ template "externalsecret-operator.operatorName" . }}
             - name: OPERATOR_CONFIG
               valueFrom:
                 secretKeyRef:

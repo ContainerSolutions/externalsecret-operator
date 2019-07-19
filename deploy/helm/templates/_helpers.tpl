@@ -63,3 +63,10 @@ Create watchNamespace: if not specified assume is release namespace
     {{ default .Release.Namespace }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create operatorName if not specified assume is release name
+*/}}
+{{- define "externalsecret-operator.operatorName" -}}
+    {{ default .Release.Name .Values.operatorName }}
+{{- end -}}
