@@ -11,7 +11,6 @@ const ConfigEnvVar string = "OPERATOR_CONFIG"
 
 //Config represent configuration information for the secrets backend
 type Config struct {
-	Name       string
 	Type       string
 	Parameters map[string]string
 }

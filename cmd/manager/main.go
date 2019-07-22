@@ -90,10 +90,7 @@ func main() {
 	ctx := context.TODO()
 
 	// Become the leader before proceeding
-	operatorName := os.Getenv("OPERATOR_NAME")
-	if len(operatorName) == 0 {
-		operatorName = operatorDefaultName
-	}
+	operatorName, _ := k8sutil.GetOperatorName()
 	err = leader.Become(ctx, operatorName+"-lock")
 	if err != nil {
 		log.Error(err, "")

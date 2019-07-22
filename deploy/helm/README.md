@@ -18,7 +18,7 @@ This chart will create:
 
 4. A [ServiceAccount](https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/) (optional) which will be used by the External Secret Operator
 
-5. Two [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole)/[RoleBinding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) pairs (optional), one to restrict the actions the External Secret Operator caniperform in the namespace in which is running and the other to restrict the operations it can perform in the namespace which is watching  
+5. Two [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole)/[RoleBinding](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) pairs (optional), one to restrict the actions the External Secret Operator caniperform in the namespace in which is running and the other to restrict the operations it can perform in the namespace which is watching
 
 ### Installation
 
@@ -26,7 +26,7 @@ The following command will install the Exernal Secret Operator using the AWS Sec
 
 ```shell
 helm upgrade --install asm1 --wait \
-    --set secret.data.Name="asm-example" \
+    --set operatorName="asm-example" \
     --set secret.data.Type="asm" \
     --set secret.data.Parameters.accessKeyID="$AWS_ACCESS_KEY_ID" \
     --set secret.data.Parameters.region="$AWS_DEFAULT_REGION" \
@@ -45,7 +45,7 @@ You can provide the configuration of the External Secret Operator using the `sec
 | `image.tag` | Image tag | `0.2.0`
 | `image.pullPolicy` | Image pull policy | `IfNotPresent`
 | `watchNamespace` | Namespace to watch for `ExternalSecret` resources. If empty, will be the same as the one where the operator will be deployed | `""`
-| `operatorName` | Name passed as `OPERATOR_NAME` environment variable | `externalsecret-operator`
+| `operatorName` | Name passed as `OPERATOR_NAME` environment variable. Referenced by `ExternalSecret` resources in `Backend` field | `externalsecret-operator`
 | `crds.create` | Whether `ExternalSecret` CRD should be created | `true`
 | `secret.create` | Whether the secret containing the operator configuration should be created | `true`
 | `secret.name` | Name of the Secret that contains the operator configuration. If empty and `secret.create` is `true`, a secret based on the release name will be generated | `""`
@@ -58,7 +58,6 @@ The following default configuration is added in the secret if no other is specif
 
 ```yaml
 data:
-  Name: "dummy-example"
   Type: "dummy"
   Parameters:
     suffix: "-externalsecretsoperatorwashere"

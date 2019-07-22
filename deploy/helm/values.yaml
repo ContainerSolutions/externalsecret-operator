@@ -6,10 +6,14 @@ replicaCount: 1
 
 image:
   repository: containersol/externalsecret-operator
-  tag: 0.0.2
+  tag: 0.0.3
   pullPolicy: IfNotPresent
 
+# The namespace that will be watched for ExternalSecret resources
 watchNamespace: ""
+
+# The name for this operator, must be referenced by ExternalSecret resources
+# as the Backend field
 operatorName: externalsecret-operator
 
 crds:
@@ -26,7 +30,6 @@ secret:
   # The content of the secret.
   # If create is true, is going to be converted to JSON and added to the secret
   data:
-    Name: "dummy-example"
     Type: "dummy"
     Parameters:
       suffix: "-externalsecretsoperatorwashere"

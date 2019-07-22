@@ -17,7 +17,7 @@ export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
 export AWS_DEFAULT_REGION="eu-west-1"
 export AWS_SECRET_ACCESS_KEY="OoXie5Mai6Qu3fakemeezoo4ahfoo6IHahch0rai"
 helm upgrade --install asm1 --wait \
-    --set secret.data.Name="asm-example" \
+    --set operatorName="asm-example" \
     --set secret.data.Type="asm" \
     --set secret.data.Parameters.accessKeyID="$AWS_ACCESS_KEY_ID" \
     --set secret.data.Parameters.region="$AWS_DEFAULT_REGION" \
@@ -39,7 +39,8 @@ manifests for you. The following command will deploy the operator in the
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
 export AWS_DEFAULT_REGION="eu-west-1"
 export AWS_SECRET_ACCESS_KEY="OoXie5Mai6Qu3fakemeezoo4ahfoo6IHahch0rai"
-export BACKENDS=asm
+export OPERATOR_NAME=asm-example
+export BACKEND=asm
 make deploy
 ```
 It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
@@ -64,7 +65,7 @@ metadata:
   name: example-externalsecret
 spec:
   Key: example-externalsecret-key
-  Backend: asm
+  Backend: asm-example
 ```
 
 The operator fetches the secret from AWS Secrets Manager and injects it as a

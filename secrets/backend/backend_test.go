@@ -64,7 +64,6 @@ func TestInstantiate(t *testing.T) {
 func TestInitFromEnv(t *testing.T) {
 
 	configStruct := Config{
-		Name: "mock-backend",
 		Type: "mock",
 		Parameters: map[string]string{
 			"Param1": "Value1",
@@ -76,6 +75,7 @@ func TestInitFromEnv(t *testing.T) {
 		Convey("Given a valid config", func() {
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))
+			os.Setenv("OPERATOR_NAME", "mock-backend")
 			Convey("When initializing backend from env", func() {
 				err := InitFromEnv()
 				So(err, ShouldBeNil)
@@ -89,15 +89,29 @@ func TestInitFromEnv(t *testing.T) {
 			})
 		})
 
-		Convey("Given a valid config with unknown backend type ", func() {
-			configStruct.Type = "unknown"
+		Convey("Given a valid config but no OPERATOR_NAME", func() {
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))
+			os.Unsetenv("OPERATOR_NAME")
 			Convey("When initializing backend from env", func() {
 				err := InitFromEnv()
 				So(err, ShouldNotBeNil)
 				Convey("Then an error message is returned", func() {
-					So(err.Error(), ShouldStartWith, "unknown backend type")
+					So(err.Error(), ShouldStartWith, "OPERATOR_NAME must be set")
+				})
+			})
+		})
+
+		Convey("Given a valid config with unknown backend type ", func() {
+			configStruct.Type = "unknown"
+			configData, _ := json.Marshal(configStruct)
+			os.Setenv("OPERATOR_CONFIG", string(configData))
+			os.Setenv("OPERATOR_NAME", "mock-backend")
+			Convey("When initializing backend from env", func() {
+				err := InitFromEnv()
+				So(err, ShouldNotBeNil)
+				Convey("Then an error message is returned", func() {
+					So(err.Error(), ShouldEqual, "unknown backend type: 'unknown'")
 				})
 			})
 		})

@@ -12,4 +12,5 @@ export OP_MASTER_PASSWORD=$(echo $OP_ITEM_JSON | jq -r '.details.fields[] | sele
 export OP_VAULT="test vault one"
 export BACKEND="onepassword"
 
-export OPERATOR_CONFIG="{ \"Name\": \"onepassword\", \"Type\": \"onepassword\", \"Parameters\": {\"domain\": \"${OP_DOMAIN}\", \"email\": \"${OP_EMAIL}\", \"secretKey\": \"${OP_SECRET_KEY}\", \"masterPassword\": \"${OP_MASTER_PASSWORD}\", \"vault\": \"${OP_VAULT}\" }}"
+export OPERATOR_CONFIG="{\"Type\": \"onepassword\", \"Parameters\": {\"domain\": \"${OP_DOMAIN}\", \"email\": \"${OP_EMAIL}\", \"secretKey\": \"${OP_SECRET_KEY}\", \"masterPassword\": \"${OP_MASTER_PASSWORD}\", \"vault\": \"${OP_VAULT}\" }}"
+export OPERATOR_NAME="onepassword"

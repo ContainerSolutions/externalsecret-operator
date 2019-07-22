@@ -9,7 +9,6 @@ import (
 func TestBackendConfigFromJSON(t *testing.T) {
 	Convey("Given a JSON backend config string", t, func() {
 		configData := `{
-			 "Name": "dummy-example",
 			 "Type": "dummy",
 			 "Parameters": {
          "Suffix": "-ohlord"
@@ -20,7 +19,6 @@ func TestBackendConfigFromJSON(t *testing.T) {
 			backendConfig, err := ConfigFromJSON(configData)
 			So(err, ShouldBeNil)
 			Convey("The data in Config is as expected", func() {
-				So(backendConfig.Name, ShouldEqual, "dummy-example")
 				So(backendConfig.Type, ShouldEqual, "dummy")
 				So(backendConfig.Parameters, ShouldResemble, map[string]string{"Suffix": "-ohlord"})
 			})

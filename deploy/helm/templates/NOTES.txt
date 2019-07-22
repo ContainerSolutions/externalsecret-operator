@@ -8,6 +8,6 @@ metadata:
   name: example-externalsecret-{{ .Values.secret.data.Type }}
 spec:
   Key: example-externalsecret-key
-  Backend: {{ .Values.secret.data.Name }}
+  Backend: {{ .Values.operatorName }}
 {{- else }}
 {{- end -}}
