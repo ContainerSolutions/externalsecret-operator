@@ -147,13 +147,13 @@ $ eval $(op signin)
 2. Load the 1Password credentials of your _operator_ account into the environment
 
 ```
-$ . deploy/source-onepassword-secrets.sh
+$ source deploy/source-onepassword-secrets.sh
 ```
 
 4.  Deploy the operator
 
 ```
-$ make deploy
+$ make deploy-onepassword
 ```
 
 ## What's next
