@@ -2,10 +2,14 @@ package onepassword
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"os"
+
+	ioutil "io/ioutil"
+
 	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestOnePasswordBackend(t *testing.T) {
@@ -13,25 +17,44 @@ func TestOnePasswordBackend(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	Convey("Given an initialized OnePasswordBackend", t, func() {
-		key := "testkey"
-		expectedValue := "testvalue"
+	// Given
+	_ = backend.InitFromEnv()
+	backend.Register("onepassword", NewBackend)
+	backend := backend.Instances["onepassword"]
 
-		err := backend.InitFromEnv()
-		if err != nil {
-			fmt.Println("Init: Error parsing the OPERATOR_CONFIG env var. " + err.Error())
-			t.Fail()
-		}
+	secretKey, expectedValue := GetKeyAndValue(t)
 
-		backend.Register("onepassword", NewBackend)
-		backend := backend.Instances["onepassword"]
+	// When
+	value, _ := backend.Get(secretKey)
 
-		Convey("When retrieving a secret", func() {
-			actualValue, err := backend.Get(key)
-			Convey("Then no error is returned", func() {
-				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, expectedValue)
-			})
-		})
-	})
+	// Then
+	if expectedValue != value {
+		fmt.Printf("Expected value '%s' is not equal to value '%s'\n", expectedValue, value)
+		t.Fail()
+	}
+}
+
+func GetKeyAndValue(t *testing.T) (string, string) {
+	secretKeyFile := CheckAndGetenv("SECRET_KEY_FILE", t)
+
+	if !strings.HasPrefix(secretKeyFile, "secret-") {
+		fmt.Println("env var SECRET_KEY_FILE should point to file whose filename consists of 'secret-' plus the key of the secret. The contents of the file should be the secret value.")
+		t.Fail()
+	}
+
+	bytes, _ := ioutil.ReadFile(secretKeyFile)
+	value := string(bytes)
+
+	key := strings.TrimPrefix(secretKeyFile, "secret-")
+
+	return key, value
+}
+
+func CheckAndGetenv(name string, t *testing.T) string {
+	value := os.Getenv(name)
+	if value == "" {
+		fmt.Printf("please specify '%s' env var\n", value)
+		t.Fail()
+	}
+	return value
 }
