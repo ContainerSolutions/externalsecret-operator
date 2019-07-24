@@ -24,8 +24,7 @@ func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.
 		log.Error(err, "could not create secret due to error from backend")
 	}
 
-	secret := make(map[string][]byte)
-	secret[cr.Spec.Key] = []byte(value)
+	secret := map[string][]byte{cr.Spec.Key: []byte(value)}
 
 	secretObject := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
