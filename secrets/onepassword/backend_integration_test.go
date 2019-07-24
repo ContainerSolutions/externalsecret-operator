@@ -35,10 +35,11 @@ func TestOnePasswordBackend(t *testing.T) {
 }
 
 func GetKeyAndValue(t *testing.T) (string, string) {
-	secretKeyFile := CheckAndGetenv("SECRET_KEY_FILE", t)
+	envVar := "SECRET_KEY_FILE"
+	secretKeyFile := CheckAndGetenv(envVar, t)
 
-	if !strings.HasPrefix(secretKeyFile, "secret-") {
-		fmt.Println("env var SECRET_KEY_FILE should point to file whose filename consists of 'secret-' plus the key of the secret. The contents of the file should be the secret value.")
+	if secretKeyFile == "" || !strings.HasPrefix(secretKeyFile, "secret-") {
+		fmt.Printf("env var '%s' should point to file whose filename consists of 'secret-' plus the key of the secret. The contents of the file should be the secret value.\n", envVar)
 		t.Fail()
 	}
 
