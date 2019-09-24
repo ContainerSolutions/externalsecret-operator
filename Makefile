@@ -52,7 +52,7 @@ delete-onepassword:
 
 .PHONY: deploy-onepassword
 .EXPORT_ALL_VARIABLES: deploy-onepassword
-deploy-onepassword: push delete-onepassword apply-onepassword
+deploy-onepassword: push apply-onepassword
 	
 .PHONY: test
 test:
