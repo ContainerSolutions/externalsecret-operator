@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi7/ubi-minimal:7.6
 
 RUN microdnf install unzip -y
 
-ENV OPERATOR=/usr/local/bin/externalsecret-operator \
+ENV OPERATOR=/usr/local/bin/externalsecretoperator \
     USER_UID=1001 \
     USER_NAME=externalsecret-operator \
     ONEPASSWORD_CLI_VERSION=v0.5.6-003
@@ -10,7 +10,7 @@ ENV OPERATOR=/usr/local/bin/externalsecret-operator \
 USER root
 
 # install operator binary
-COPY build/_output/bin/externalsecret-operator ${OPERATOR}
+COPY build/_output/bin/externalsecretoperator ${OPERATOR}
 
 COPY build/bin /usr/local/bin
 RUN /usr/local/bin/user_setup

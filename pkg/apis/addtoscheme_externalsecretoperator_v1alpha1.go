@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
+	"github.com/containersolutions/externalsecretoperator/pkg/apis/externalsecretoperator/v1alpha1"
 )
 
 func init() {

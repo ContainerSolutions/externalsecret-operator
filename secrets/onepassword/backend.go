@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecretoperator/secrets/backend"
 	"github.com/pkg/errors"
 )
 

@@ -75,7 +75,7 @@ test-helm:
 	helm delete --purge $(RELEASE)
 
 PLATFORM := $(shell bash -c '[ "$$(uname -s)" = "Linux" ] && echo linux-gnu || echo apple-darwin')
-OPERATOR_SDK_VERSION := v0.8.1
+OPERATOR_SDK_VERSION := v0.9.0
 OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-$(PLATFORM)
 operator-sdk:
 	curl -LJ -o $@ $(OPERATOR_SDK_URL)
