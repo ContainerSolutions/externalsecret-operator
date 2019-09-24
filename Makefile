@@ -10,7 +10,7 @@ build: operator-sdk
 
 .PHONY: push
 .EXPORT_ALL_VARIABLES: push
-push:
+push: build
 	./build/scripts/push.sh
 
 .PHONY: deploy
@@ -23,6 +23,37 @@ deploy:
 	envsubst < deploy/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
 	envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
 
+.PHONY: apply-onepassword
+NAMESPACE=externalsecretoperator
+OPERATOR_NAME=onepassword
+BACKEND=onepassword
+.EXPORT_ALL_VARIABLES: apply-onepassword
+apply-onepassword:
+	@echo "Deploying service account..."
+	@kubectl apply -n $(NAMESPACE) -f ./deploy/service_account.yaml
+	@echo "Deploying role..."
+	@kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
+	@echo "Deploying rolebinding..."
+	@envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
+	@echo "Deploying external operator CRD..."
+	@kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
+	@echo "Deploying 1password operator config secret..."
+	@envsubst < deploy/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
+	@echo "Deploying operator deployment..."
+	@envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
+
+.PHONY: delete-onepassword
+.EXPORT_ALL_VARIABLES: delete-onepassword
+delete-onepassword:
+	@echo "Deleting 1password operator config secret..."
+	kubectl delete secret externalsecret-operator-config
+	@echo "Deleting operator deployment..."
+	kubectl delete deployment externalsecret-operator
+
+.PHONY: deploy-onepassword
+.EXPORT_ALL_VARIABLES: deploy-onepassword
+deploy-onepassword: push apply-onepassword
+	
 .PHONY: test
 test:
 	go test -v -short ./... -count=1

@@ -15,7 +15,7 @@ spec:
       serviceAccountName: externalsecret-operator
       containers:
         - name: externalsecret-operator
-          image: ${DOCKER_IMAGE}
+          image: containersol/externalsecret-operator:1password-deploy-internal-cluster-latest
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

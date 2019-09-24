@@ -40,5 +40,5 @@ func (client *OP) Get(vault string, key string) (string, error) {
 		return "", errors.Wrap(err, fmt.Sprintf("could not retrieve 1password item '%s'", key))
 	}
 
-	return string(itemMap["externalsecretoperator"][op.FieldName(key)]), nil
+	return string(itemMap["External Secret Operator"][op.FieldName("secretValue")]), nil
 }

@@ -22,4 +22,6 @@ if [[ "$GIT_BRANCH" == "master" ]] ; then
     if [[ "$GIT_TAG" == v[0-9]* ]] ; then
         tag_and_push $DOCKER_IMAGE ${GIT_TAG//v}
     fi
+else
+    tag_and_push $DOCKER_IMAGE $GIT_BRANCH-latest
 fi

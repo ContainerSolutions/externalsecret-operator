@@ -20,6 +20,10 @@ func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.
 	}
 
 	value, err := backend.Get(cr.Spec.Key)
+	if err != nil {
+		log.Error(err, "could not create secret due to error from backend")
+	}
+
 	secret := map[string][]byte{cr.Spec.Key: []byte(value)}
 
 	secretObject := &corev1.Secret{
