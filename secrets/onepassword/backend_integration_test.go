@@ -1,3 +1,4 @@
+// build +integration
 package onepassword
 
 import (
@@ -54,7 +55,7 @@ func GetKeyAndValue(t *testing.T) (string, string) {
 func CheckAndGetenv(name string, t *testing.T) string {
 	value := os.Getenv(name)
 	if value == "" {
-		fmt.Printf("please specify '%s' env var\n", value)
+		fmt.Printf("please specify '%s' env var\n", name)
 		t.Fail()
 	}
 	return value
