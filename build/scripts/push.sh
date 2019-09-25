@@ -2,7 +2,7 @@
 
 set -ex
 
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/')
 GIT_HASH=$(git rev-parse --short HEAD) 
 GIT_TAG=$(git describe --tags --abbrev=0 || true)
 
