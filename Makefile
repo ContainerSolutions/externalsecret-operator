@@ -6,7 +6,11 @@ OPERATOR_NAME ?= "asm-example"
 
 .PHONY: build
 build: operator-sdk
+	echo "PWD:"
+	pwd
 	./operator-sdk build $(DOCKER_IMAGE)
+	find -name build/_output
+	locate build_output
 
 .PHONY: push
 .EXPORT_ALL_VARIABLES: push
