@@ -10,7 +10,7 @@ ENV OPERATOR=/usr/local/bin/externalsecretoperator \
 USER root
 
 # install operator binary
-COPY build/_output/bin/externalsecretoperator ${OPERATOR}
+COPY build/_output/bin/external-secretoperator ${OPERATOR}
 
 COPY build/bin /usr/local/bin
 RUN /usr/local/bin/user_setup
