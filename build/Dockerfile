@@ -4,7 +4,7 @@ RUN microdnf install unzip -y
 
 ENV OPERATOR=/usr/local/bin/externalsecretoperator \
     USER_UID=1001 \
-    USER_NAME=externalsecret-operator \
+    USER_NAME=externalsecretoperator \
     ONEPASSWORD_CLI_VERSION=v0.5.6-003
 
 USER root

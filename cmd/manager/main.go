@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	operatorDefaultName = "externalsecret-operator"
+	operatorDefaultName = "externalsecretoperator"
 )
 
 // Change below variables to serve metrics on different host or port.
