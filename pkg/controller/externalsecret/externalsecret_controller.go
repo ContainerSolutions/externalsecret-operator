@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	externalsecretoperatorv1alpha1 "github.com/containersolutions/externalsecretoperator/pkg/apis/externalsecretoperator/v1alpha1"
+	externalsecretoperatorv1alpha1 "github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

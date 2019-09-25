@@ -6,6 +6,7 @@ OPERATOR_NAME ?= "asm-example"
 
 .PHONY: build
 build: operator-sdk
+	go build ./...
 	./operator-sdk build $(DOCKER_IMAGE)
 
 .PHONY: push

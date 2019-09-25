@@ -3,7 +3,7 @@ package secrets
 import (
 	"testing"
 
-	"github.com/containersolutions/externalsecretoperator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 )
 
 var expectedRegisteredBackends = []string{

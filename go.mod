@@ -1,4 +1,4 @@
-module github.com/containersolutions/externalsecretoperator
+module github.com/containersolutions/externalsecret-operator
 
 go 1.12
 

@@ -11,7 +11,7 @@ import (
 
 	ioutil "io/ioutil"
 
-	"github.com/containersolutions/externalsecretoperator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 )
 
 func TestOnePasswordBackend(t *testing.T) {

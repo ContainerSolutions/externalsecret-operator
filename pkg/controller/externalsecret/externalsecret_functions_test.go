@@ -3,9 +3,9 @@ package externalsecret
 import (
 	"testing"
 
-	"github.com/containersolutions/externalsecretoperator/pkg/apis/externalsecretoperator/v1alpha1"
-	"github.com/containersolutions/externalsecretoperator/secrets/backend"
-	"github.com/containersolutions/externalsecretoperator/secrets/dummy"
+	"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
+	"github.com/containersolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/secrets/dummy"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
