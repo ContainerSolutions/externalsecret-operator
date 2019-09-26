@@ -4,6 +4,11 @@ NAMESPACE ?= "default"
 BACKEND ?= "asm"
 OPERATOR_NAME ?= "asm-example"
 
+GIT_HASH	:= $(shell git rev-parse --short HEAD)
+GIT_BRANCH 	:= $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/')
+GIT_TAG 	:= $(shell git describe --tags --abbrev=0 --always)
+DOCKER_TAG 	:= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT_BRANCH) $(GIT_TAG))
+
 .PHONY: build
 build: operator-sdk
 	./operator-sdk build $(DOCKER_IMAGE)
@@ -11,7 +16,11 @@ build: operator-sdk
 .PHONY: push
 .EXPORT_ALL_VARIABLES: push
 push: build
-	./build/scripts/push.sh
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(GIT_HASH)
+	docker push $(DOCKER_IMAGE):$(GIT_HASH)
+
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(DOCKER_TAG)
+	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy
@@ -75,7 +84,7 @@ test-helm:
 	helm delete --purge $(RELEASE)
 
 PLATFORM := $(shell bash -c '[ "$$(uname -s)" = "Linux" ] && echo linux-gnu || echo apple-darwin')
-OPERATOR_SDK_VERSION := v0.8.1
+OPERATOR_SDK_VERSION := v0.9.0
 OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-$(PLATFORM)
 operator-sdk:
 	curl -LJ -o $@ $(OPERATOR_SDK_URL)

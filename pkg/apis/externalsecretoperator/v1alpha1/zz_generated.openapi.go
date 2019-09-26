@@ -13,9 +13,9 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecret":       schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref),
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec":   schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref),
-		"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus": schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref),
+		"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecret":       schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref),
+		"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec":   schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretSpec(ref),
+		"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus": schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecretStatus(ref),
 	}
 }
 
@@ -46,19 +46,19 @@ func schema_pkg_apis_externalsecretoperator_v1alpha1_ExternalSecret(ref common.R
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec"),
+							Ref: ref("github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus"),
+							Ref: ref("github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec", "github.com/ContainerSolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretSpec", "github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1.ExternalSecretStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 

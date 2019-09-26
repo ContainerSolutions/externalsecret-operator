@@ -1,4 +1,5 @@
-// build +integration
+// +build integration
+
 package onepassword
 
 import (
@@ -10,7 +11,7 @@ import (
 
 	ioutil "io/ioutil"
 
-	"github.com/ContainerSolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 )
 
 func TestOnePasswordBackend(t *testing.T) {
