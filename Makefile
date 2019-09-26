@@ -4,6 +4,11 @@ NAMESPACE ?= "default"
 BACKEND ?= "asm"
 OPERATOR_NAME ?= "asm-example"
 
+GIT_HASH	:= $(shell git rev-parse --short HEAD)
+GIT_BRANCH 	:= $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/')
+GIT_TAG 	:= $(shell git describe --tags --abbrev=0 --always)
+DOCKER_TAG 	:= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT_BRANCH) $(GIT_TAG))
+
 .PHONY: build
 build: operator-sdk
 	./operator-sdk build $(DOCKER_IMAGE)
@@ -11,7 +16,11 @@ build: operator-sdk
 .PHONY: push
 .EXPORT_ALL_VARIABLES: push
 push: build
-	./build/scripts/push.sh
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(GIT_HASH)
+	docker push $(DOCKER_IMAGE):$(GIT_HASH)
+
+	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(DOCKER_TAG)
+	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy
