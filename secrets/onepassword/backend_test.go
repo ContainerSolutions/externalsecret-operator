@@ -11,13 +11,13 @@ type MockClient struct {
 	mock.Mock
 }
 
-func (m MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (m *MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
 	args := m.Called(domain, email, secretKey, masterPassword)
 	return args.Error(0)
 }
 
 // Return a static JSON output for $ op get item 'testkey'
-func (m MockClient) Get(value string, key string) (string, error) {
+func (m *MockClient) Get(value string, key string) (string, error) {
 	return "testvalue", nil
 }
 
@@ -27,8 +27,8 @@ func TestGetOnePassword(t *testing.T) {
 	expectedValue := secretValue
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		backend := NewBackend()
-		(backend).(*Backend).Client = &MockClient{}
+		backend := &OnePassword{}
+		backend.Client = &MockClient{}
 
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey)
@@ -45,7 +45,7 @@ func TestOnePasswordBackend_DefaultVault(t *testing.T) {
 		backend := NewBackend()
 
 		Convey("The default vault should be 'Personal'", func() {
-			So((backend).(*Backend).Vault, ShouldEqual, "Personal")
+			So((backend).(*OnePassword).Vault, ShouldEqual, "Personal")
 		})
 	})
 }
@@ -64,7 +64,7 @@ func TestInitOnePassword(t *testing.T) {
 		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
 
 		backend := NewBackend()
-		(backend).(*Backend).Client = client
+		(backend).(*OnePassword).Client = client
 
 		Convey("When initializing", func() {
 			params := map[string]string{

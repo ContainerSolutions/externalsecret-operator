@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Backend represents a Backend for onepassword
-type Backend struct {
+// Backend implementation for 1Password
+type OnePassword struct {
 	Client Client
 	Vault  string
 }
@@ -19,16 +19,16 @@ func init() {
 	backend.Register("onepassword", NewBackend)
 }
 
-// NewBackend returns a Backend for onepassword
+// NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
-	backend := &Backend{}
+	backend := &OnePassword{}
 	backend.Client = &OP{}
 	backend.Vault = "Personal"
 	return backend
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
-func (b *Backend) Init(parameters map[string]string) error {
+func (b *OnePassword) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
 		return errors.Wrap(err, "error reading 1password backend parameters")
@@ -46,7 +46,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 
 // Get retrieves the 1password item whose name matches the key and return the
 // value of the 'password' field.
-func (b *Backend) Get(key string) (string, error) {
+func (b *OnePassword) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
 	value, err := b.Client.Get(b.Vault, key)
