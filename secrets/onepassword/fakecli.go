@@ -5,8 +5,9 @@ import (
 )
 
 type FakeCli struct {
-	ItemName   string
+	ItemName  string
 	ItemValue string
+	SignInOK  bool
 }
 
 func (f *FakeCli) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error) {
@@ -21,5 +22,9 @@ func (f *FakeCli) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, err
 }
 
 func (f *FakeCli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
-	return nil
+	if f.SignInOK {
+		return nil
+	} else {
+		return NewErrSigninFailed("fake cli configured for failure")
+	}
 }

@@ -14,8 +14,9 @@ func TestGetItem(t *testing.T) {
 	sectionName := "External Secret Operator"
 
 	cli := &FakeCli{
-		ItemName:   itemName,
+		ItemName:  itemName,
 		ItemValue: itemValue,
+		SignInOK:  true,
 	}
 
 	itemMap, _ := cli.GetItem(op.VaultName(vault), op.ItemName(itemName))
@@ -33,8 +34,9 @@ func TestSignIn(t *testing.T) {
 	itemValue := "itemValue"
 
 	cli := &FakeCli{
-		ItemName:   itemName,
+		ItemName:  itemName,
 		ItemValue: itemValue,
+		SignInOK:  true,
 	}
 
 	domain := "https://externalsecretoperator.1password.com"

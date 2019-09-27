@@ -1,87 +1,87 @@
 package onepassword
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/mock"
 )
 
-type MockClient struct {
-	mock.Mock
-}
-
-func (m *MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
-	args := m.Called(domain, email, secretKey, masterPassword)
-	return args.Error(0)
-}
-
-// Return a static JSON output for $ op get item 'testkey'
-func (m *MockClient) Get(value string, key string) (string, error) {
-	return "testvalue", nil
-}
-
 func TestGetOnePassword(t *testing.T) {
-	secretKey := "testkey"
-	secretValue := "testvalue"
-	expectedValue := secretValue
+	itemName := "itemName"
+	itemValue := "itemValue"
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
 		backend := &OnePassword{}
-		backend.Client = &MockClient{}
+		backend.Cli = &FakeCli{
+			ItemName:  itemName,
+			ItemValue: itemValue,
+		}
 
 		Convey("When retrieving a secret", func() {
-			actualValue, err := backend.Get(secretKey)
+			actualValue, err := backend.Get(itemName)
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, expectedValue)
+				So(actualValue, ShouldEqual, itemValue)
 			})
-		})
-	})
-}
-
-func TestOnePasswordBackend_DefaultVault(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		backend := NewBackend()
-
-		Convey("The default vault should be 'Personal'", func() {
-			So((backend).(*OnePassword).Vault, ShouldEqual, "Personal")
 		})
 	})
 }
 
 func TestInitOnePassword(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"
+	vault := "production"
 
-		vault := "production"
+	backend := &OnePassword{
+		Cli: &FakeCli{SignInOK: true},
+	}
 
-		domain := "https://externalsecretoperator.1password.com"
-		email := "externalsecretoperator@example.com"
-		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-		masterPassword := "MasterPassword12346!"
+	params := map[string]string{
+		"domain":         domain,
+		"email":          email,
+		"secretKey":      secretKey,
+		"masterPassword": masterPassword,
+		"vault":          vault,
+	}
 
-		client := &MockClient{}
-		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
+	err := backend.Init(params)
+	if err != nil {
+		t.Fail()
+		fmt.Println("expected signin to succeed")
+	}
+}
 
-		backend := NewBackend()
-		(backend).(*OnePassword).Client = client
+func TestInitOnePassword_ErrSigninFailed(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"
+	vault := "production"
 
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"domain":         domain,
-				"email":          email,
-				"secretKey":      secretKey,
-				"masterPassword": masterPassword,
-				"vault":          vault,
-			}
+	backend := &OnePassword{
+		Cli: &FakeCli{
+			SignInOK: false,
+		},
+	}
 
-			backend.Init(params)
+	params := map[string]string{
+		"domain":         domain,
+		"email":          email,
+		"secretKey":      secretKey,
+		"masterPassword": masterPassword,
+		"vault":          vault,
+	}
 
-			Convey("Client should have signed in", func() {
-				client.AssertExpectations(t)
-			})
-		})
-	})
+	err := backend.Init(params)
+	switch err.(type) {
+	case *ErrSigninFailed:
+	default:
+		t.Fail()
+		fmt.Println("expected signin failed error")
+	}
 }
 
 func TestInitOnePassword_MissingEmail(t *testing.T) {
@@ -162,4 +162,20 @@ func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
 			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `masterPassword` not found")
 		})
 	})
+}
+
+func TestNewBackend(t *testing.T) {
+	backend := NewBackend()
+
+	if backend.(*OnePassword).Cli == nil {
+		t.Fail()
+		fmt.Println("expected backend to have a 1password cli")
+	}
+
+	expectedVault := "Personal"
+
+	if backend.(*OnePassword).Vault != expectedVault {
+		t.Fail()
+		fmt.Printf("expected vault to be equal to '%s'", expectedVault)
+	}
 }

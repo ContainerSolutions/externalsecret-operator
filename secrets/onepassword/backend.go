@@ -5,25 +5,53 @@ import (
 	"fmt"
 	"reflect"
 
+	op "github.com/ameier38/onepassword"
 	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 	"github.com/pkg/errors"
 )
 
+type ErrSigninFailed struct {
+	message string
+}
+
+func NewErrSigninFailed(message string) *ErrSigninFailed {
+	return &ErrSigninFailed{
+		message: message,
+	}
+}
+
+func (e *ErrSigninFailed) Error() string {
+	return "could not sign in to 1password: " + e.message
+}
+
+var (
+	backendName         = "onepassword"
+	defaultVault        = "Personal"
+	paramDomain         = "domain"
+	paramEmail          = "email"
+	paramSecretKey      = "secretKey"
+	paramMasterPassword = "masterPassword"
+	paramVault          = "vault"
+	paramKeys           = []string{paramDomain, paramEmail, paramSecretKey, paramMasterPassword, paramVault}
+	sectionName         = "External Secret Operator"
+	errSigninFailed     = errors.New("could not sign in to 1password")
+)
+
 // Backend implementation for 1Password
 type OnePassword struct {
-	Client Client
-	Vault  string
+	Cli   Cli
+	Vault string
 }
 
 func init() {
-	backend.Register("onepassword", NewBackend)
+	backend.Register(backendName, NewBackend)
 }
 
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
 	backend := &OnePassword{}
-	backend.Client = &OP{}
-	backend.Vault = "Personal"
+	backend.Cli = &OPCli{}
+	backend.Vault = defaultVault
 	return backend
 }
 
@@ -33,11 +61,11 @@ func (b *OnePassword) Init(parameters map[string]string) error {
 	if err != nil {
 		return errors.Wrap(err, "error reading 1password backend parameters")
 	}
-	b.Vault = parameters["vault"]
+	b.Vault = parameters[paramVault]
 
-	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
+	err = b.Cli.SignIn(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
 	if err != nil {
-		return errors.Wrap(err, "could not sign in to 1password")
+		return NewErrSigninFailed(err.Error())
 	}
 	fmt.Println("signed into 1password successfully")
 
@@ -49,18 +77,15 @@ func (b *OnePassword) Init(parameters map[string]string) error {
 func (b *OnePassword) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	value, err := b.Client.Get(b.Vault, key)
+	itemMap, err := b.Cli.GetItem(op.VaultName(b.Vault), op.ItemName(key))
 	if err != nil {
 		return "", fmt.Errorf("error retrieving 1password item '%s'", key)
 	}
 
-	return value, nil
+	return string(itemMap[op.SectionName(sectionName)][op.FieldName(key)]), nil
 }
 
 func validateParameters(parameters map[string]string) error {
-
-	paramKeys := []string{"domain", "email", "secretKey", "masterPassword", "vault"}
-
 	for _, key := range paramKeys {
 		paramValue, found := parameters[key]
 		if !found {
