@@ -28,6 +28,18 @@ func TestGet(t *testing.T) {
 	})
 }
 
+func TestGet_ErrGetItem(t *testing.T) {
+	backend := &OnePassword{}
+	backend.Cli = &FakeCli{SignInOK: true}
+
+	_, actualErr := backend.Get("nonExistentItem")
+	expectedErr := "error retrieving 1password item 'nonExistentItem'"
+	if expectedErr != actualErr.Error() {
+		t.Fail()
+		fmt.Printf("expected '%s' got '%s'", expectedErr, actualErr)
+	}
+}
+
 func TestInit(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"

@@ -38,6 +38,20 @@ func NewErrParameterMissing(parameter string) *ErrParameterMissing {
 	}
 }
 
+type ErrGetItem struct {
+	itemName string
+}
+
+func (e *ErrGetItem) Error() string {
+	return fmt.Sprintf("error retrieving 1password item '%s'", e.itemName)
+}
+
+func NewErrGetItem(itemName string) error {
+	return &ErrGetItem{
+		itemName: itemName,
+	}
+}
+
 var (
 	backendName         = "onepassword"
 	defaultVault        = "Personal"
@@ -93,7 +107,7 @@ func (b *OnePassword) Get(key string) (string, error) {
 
 	itemMap, err := b.Cli.GetItem(op.VaultName(b.Vault), op.ItemName(key))
 	if err != nil {
-		return "", fmt.Errorf("error retrieving 1password item '%s'", key)
+		return "", NewErrGetItem(key)
 	}
 
 	return string(itemMap[op.SectionName(sectionName)][op.FieldName(key)]), nil

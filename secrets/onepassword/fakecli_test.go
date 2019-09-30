@@ -29,6 +29,26 @@ func TestGetItem(t *testing.T) {
 	}
 }
 
+func TestGetItem_ErrGetItem(t *testing.T) {
+	vault := "Shared"
+	itemName := "itemName"
+	itemValue := "itemValue"
+
+	cli := &FakeCli{
+		ItemName:  itemName,
+		ItemValue: itemValue,
+		SignInOK:  true,
+	}
+
+	nonExistentItem := "nonExistentItem"
+
+	_, err := cli.GetItem(op.VaultName(vault), op.ItemName(nonExistentItem))
+	if err == nil{
+		t.Fail()
+		fmt.Printf("expected error getting item")
+	}
+}
+
 func TestSignIn(t *testing.T) {
 	itemName := "itemName"
 	itemValue := "itemValue"
