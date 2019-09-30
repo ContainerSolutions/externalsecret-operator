@@ -24,6 +24,20 @@ func (e *ErrSigninFailed) Error() string {
 	return "could not sign in to 1password: " + e.message
 }
 
+type ErrParameterMissing struct {
+	parameter string
+}
+
+func (e *ErrParameterMissing) Error() string {
+	return fmt.Sprintf("error reading 1password backend parameters: invalid init parameters: expected `%s` not found", e.parameter)
+}
+
+func NewErrParameterMissing(parameter string) *ErrParameterMissing {
+	return &ErrParameterMissing{
+		parameter: parameter,
+	}
+}
+
 var (
 	backendName         = "onepassword"
 	defaultVault        = "Personal"
@@ -59,7 +73,7 @@ func NewBackend() backend.Backend {
 func (b *OnePassword) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
-		return errors.Wrap(err, "error reading 1password backend parameters")
+		return err
 	}
 	b.Vault = parameters[paramVault]
 
@@ -89,7 +103,7 @@ func validateParameters(parameters map[string]string) error {
 	for _, key := range paramKeys {
 		paramValue, found := parameters[key]
 		if !found {
-			return fmt.Errorf("invalid init parameters: expected `%v` not found", key)
+			return NewErrParameterMissing(key)
 		}
 
 		paramType := reflect.TypeOf(paramValue)
