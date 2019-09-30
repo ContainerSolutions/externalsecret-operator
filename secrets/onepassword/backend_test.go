@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestGetOnePassword(t *testing.T) {
+func TestGet(t *testing.T) {
 	itemName := "itemName"
 	itemValue := "itemValue"
 
@@ -28,7 +28,7 @@ func TestGetOnePassword(t *testing.T) {
 	})
 }
 
-func TestInitOnePassword(t *testing.T) {
+func TestInit(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
 	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
@@ -54,7 +54,7 @@ func TestInitOnePassword(t *testing.T) {
 	}
 }
 
-func TestInitOnePassword_ErrSigninFailed(t *testing.T) {
+func TestInit_ErrSigninFailed(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
 	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
@@ -84,7 +84,7 @@ func TestInitOnePassword_ErrSigninFailed(t *testing.T) {
 	}
 }
 
-func TestInitOnePassword_MissingEmail(t *testing.T) {
+func TestInit_ErrParameterMissing_Email(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		domain := "https://externalsecretoperator.1password.com"
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
@@ -104,7 +104,7 @@ func TestInitOnePassword_MissingEmail(t *testing.T) {
 	})
 }
 
-func TestInitOnePassword_MissingDomain(t *testing.T) {
+func TestInit_ErrParameterMissing_Domain(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		email := "externalsecretoperator@example.com"
 		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
@@ -124,7 +124,7 @@ func TestInitOnePassword_MissingDomain(t *testing.T) {
 	})
 }
 
-func TestInitOnePassword_MissingSecretKey(t *testing.T) {
+func TestInit_ErrParameterMissing_SecretKey(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		domain := "https://externalsecretoperator.1password.com"
 		email := "externalsecretoperator@example.com"
@@ -144,7 +144,7 @@ func TestInitOnePassword_MissingSecretKey(t *testing.T) {
 	})
 }
 
-func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
+func TestInit_ParameterMissing_MasterPassword(t *testing.T) {
 	Convey("Given a OnePasswordBackend", t, func() {
 		domain := "https://externalsecretoperator.1password.com"
 		email := "externalsecretoperator@example.com"
