@@ -77,7 +77,7 @@ func init() {
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
 	backend := &OnePassword{}
-	backend.Cli = &OPCli{}
+	backend.Cli = &OP{}
 	backend.Vault = defaultVault
 	return backend
 }

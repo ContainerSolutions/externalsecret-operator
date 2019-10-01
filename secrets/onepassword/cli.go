@@ -9,16 +9,16 @@ type Cli interface {
 	GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error)
 }
 
-type OPCli struct {
+type OP struct {
 	OP *op.Client
 }
 
-func (c *OPCli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (c *OP) SignIn(domain string, email string, secretKey string, masterPassword string) error {
 	op, err := op.NewClient("/usr/local/bin/op", domain, email, masterPassword, secretKey)
 	c.OP = op
 	return err
 }
 
-func (c *OPCli) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error) {
+func (c *OP) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error) {
 	return c.OP.GetItem(vault, item)
 }
