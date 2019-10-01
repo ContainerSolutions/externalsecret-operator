@@ -35,7 +35,7 @@ func (f FakeOp) SignIn(vaultName op.VaultName, itemName op.ItemName) error {
 	if f.SignInOk {
 		return nil
 	}
-	return fmt.Errorf("fake op programmed to fail")
+	return fmt.Errorf("fake op sign in programmed to fail")
 }
 
 func NewFakeOp(vaultName string, itemName string, itemValue string) *FakeOp {
