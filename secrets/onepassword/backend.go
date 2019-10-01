@@ -3,8 +3,7 @@ package onepassword
 
 import (
 	"fmt"
-	"reflect"
-
+	
 	op "github.com/ameier38/onepassword"
 	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 	"github.com/pkg/errors"
@@ -115,14 +114,9 @@ func (b *OnePassword) Get(key string) (string, error) {
 
 func validateParameters(parameters map[string]string) error {
 	for _, key := range paramKeys {
-		paramValue, found := parameters[key]
+		_, found := parameters[key]
 		if !found {
 			return NewErrParameterMissing(key)
-		}
-
-		paramType := reflect.TypeOf(paramValue)
-		if paramType.Kind() != reflect.String {
-			return fmt.Errorf("invalid init parameters: expected `%v` of type `string` got `%v`", key, paramType)
 		}
 	}
 
