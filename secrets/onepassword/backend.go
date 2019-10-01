@@ -3,7 +3,7 @@ package onepassword
 
 import (
 	"fmt"
-	
+
 	op "github.com/ameier38/onepassword"
 	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 	"github.com/pkg/errors"
@@ -65,7 +65,7 @@ var (
 )
 
 // Backend implementation for 1Password
-type OnePassword struct {
+type Backend struct {
 	Cli   Cli
 	Vault string
 }
@@ -76,14 +76,14 @@ func init() {
 
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
-	backend := &OnePassword{}
+	backend := &Backend{}
 	backend.Cli = &OP{}
 	backend.Vault = defaultVault
 	return backend
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
-func (b *OnePassword) Init(parameters map[string]string) error {
+func (b *Backend) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (b *OnePassword) Init(parameters map[string]string) error {
 
 // Get retrieves the 1password item whose name matches the key and return the
 // value of the 'password' field.
-func (b *OnePassword) Get(key string) (string, error) {
+func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
 	itemMap, err := b.Cli.GetItem(op.VaultName(b.Vault), op.ItemName(key))
