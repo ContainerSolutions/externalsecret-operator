@@ -66,8 +66,8 @@ var (
 
 // Backend implementation for 1Password
 type Backend struct {
-	Cli   Cli
-	Vault string
+	OnePassword OnePassword
+	Vault       string
 }
 
 func init() {
@@ -77,7 +77,7 @@ func init() {
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-	backend.Cli = &OP{}
+	backend.OnePassword = &OP{}
 	backend.Vault = defaultVault
 	return backend
 }
@@ -90,7 +90,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 	}
 	b.Vault = parameters[paramVault]
 
-	err = b.Cli.SignIn(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
+	err = b.OnePassword.SignIn(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
 	if err != nil {
 		return NewErrSigninFailed(err.Error())
 	}
@@ -104,7 +104,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	itemMap, err := b.Cli.GetItem(op.VaultName(b.Vault), op.ItemName(key))
+	itemMap, err := b.OnePassword.GetItem(op.VaultName(b.Vault), op.ItemName(key))
 	if err != nil {
 		return "", NewErrGetItem(key)
 	}

@@ -13,7 +13,7 @@ func TestGet(t *testing.T) {
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
 		backend := &Backend{}
-		backend.Cli = &FakeCli{
+		backend.OnePassword = &FakeOnePassword{
 			ItemName:  itemName,
 			ItemValue: itemValue,
 		}
@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 
 func TestGet_ErrGetItem(t *testing.T) {
 	backend := &Backend{}
-	backend.Cli = &FakeCli{SignInOK: true}
+	backend.OnePassword = &FakeOnePassword{SignInOK: true}
 
 	_, actualErr := backend.Get("nonExistentItem")
 	expectedErr := "error retrieving 1password item 'nonExistentItem'"
@@ -48,7 +48,7 @@ func TestInit(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{
-		Cli: &FakeCli{SignInOK: true},
+		OnePassword: &FakeOnePassword{SignInOK: true},
 	}
 
 	params := map[string]string{
@@ -74,7 +74,7 @@ func TestInit_ErrSigninFailed(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{
-		Cli: &FakeCli{
+		OnePassword: &FakeOnePassword{
 			SignInOK: false,
 		},
 	}
@@ -179,7 +179,7 @@ func TestInit_ParameterMissing_MasterPassword(t *testing.T) {
 func TestNewBackend(t *testing.T) {
 	backend := NewBackend()
 
-	if backend.(*Backend).Cli == nil {
+	if backend.(*Backend).OnePassword == nil {
 		t.Fail()
 		fmt.Println("expected backend to have a 1password cli")
 	}

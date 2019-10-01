@@ -13,13 +13,13 @@ func TestGetItem(t *testing.T) {
 	itemValue := "itemValue"
 	sectionName := "External Secret Operator"
 
-	cli := &FakeCli{
+	onepassword := &FakeOnePassword{
 		ItemName:  itemName,
 		ItemValue: itemValue,
 		SignInOK:  true,
 	}
 
-	itemMap, _ := cli.GetItem(op.VaultName(vault), op.ItemName(itemName))
+	itemMap, _ := onepassword.GetItem(op.VaultName(vault), op.ItemName(itemName))
 
 	actual := itemMap[op.SectionName(sectionName)][op.FieldName(itemName)]
 
@@ -34,7 +34,7 @@ func TestGetItem_ErrGetItem(t *testing.T) {
 	itemName := "itemName"
 	itemValue := "itemValue"
 
-	cli := &FakeCli{
+	onepassword := &FakeOnePassword{
 		ItemName:  itemName,
 		ItemValue: itemValue,
 		SignInOK:  true,
@@ -42,8 +42,8 @@ func TestGetItem_ErrGetItem(t *testing.T) {
 
 	nonExistentItem := "nonExistentItem"
 
-	_, err := cli.GetItem(op.VaultName(vault), op.ItemName(nonExistentItem))
-	if err == nil{
+	_, err := onepassword.GetItem(op.VaultName(vault), op.ItemName(nonExistentItem))
+	if err == nil {
 		t.Fail()
 		fmt.Printf("expected error getting item")
 	}
@@ -53,7 +53,7 @@ func TestSignIn(t *testing.T) {
 	itemName := "itemName"
 	itemValue := "itemValue"
 
-	cli := &FakeCli{
+	onepassword := &FakeOnePassword{
 		ItemName:  itemName,
 		ItemValue: itemValue,
 		SignInOK:  true,
@@ -64,7 +64,7 @@ func TestSignIn(t *testing.T) {
 	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
 	masterPassword := "MasterPassword12346!"
 
-	err := cli.SignIn(domain, email, secretKey, masterPassword)
+	err := onepassword.SignIn(domain, email, secretKey, masterPassword)
 	if err != nil {
 		t.Fail()
 		fmt.Println("signin should be successful")

@@ -4,7 +4,7 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
-type Cli interface {
+type OnePassword interface {
 	SignIn(domain string, email string, secretKey string, masterPassword string) error
 	GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error)
 }

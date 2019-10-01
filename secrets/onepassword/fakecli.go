@@ -6,13 +6,13 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
-type FakeCli struct {
+type FakeOnePassword struct {
 	ItemName  string
 	ItemValue string
 	SignInOK  bool
 }
 
-func (f *FakeCli) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error) {
+func (f *FakeOnePassword) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, error) {
 	if string(item) == f.ItemName {
 		im := make(op.ItemMap)
 
@@ -27,7 +27,7 @@ func (f *FakeCli) GetItem(vault op.VaultName, item op.ItemName) (op.ItemMap, err
 	}
 }
 
-func (f *FakeCli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (f *FakeOnePassword) SignIn(domain string, email string, secretKey string, masterPassword string) error {
 	if f.SignInOK {
 		return nil
 	} else {
