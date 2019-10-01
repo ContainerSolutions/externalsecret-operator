@@ -63,11 +63,6 @@ var (
 	errSigninFailed     = errors.New("could not sign in to 1password")
 )
 
-type OnePassword interface {
-	SignIn(domain string, email string, secretKey string, masterPassword string) error
-	GetItem(vault string, item string) (string, error)
-}
-
 // Backend implementation for 1Password
 type Backend struct {
 	OnePassword OnePassword
@@ -125,4 +120,9 @@ func validateParameters(parameters map[string]string) error {
 	}
 
 	return nil
+}
+
+type OnePassword interface {
+	SignIn(domain string, email string, secretKey string, masterPassword string) error
+	GetItem(vault string, item string) (string, error)
 }

@@ -10,11 +10,6 @@ type Cli struct {
 	Op Op
 }
 
-type Op interface {
-	NewClient(string, string, string, string, string) (*op.Client, error)
-	GetItem(op.VaultName, op.ItemName) (op.ItemMap, error)
-}
-
 func (c Cli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
 	_, err := c.Op.NewClient("/usr/local/bin/op", domain, email, masterPassword, secretKey)
 	if err != nil {
@@ -43,4 +38,9 @@ func (c Cli) GetItem(vault string, item string) (string, error) {
 	}
 
 	return string(itemValue), nil
+}
+
+type Op interface {
+	NewClient(string, string, string, string, string) (*op.Client, error)
+	GetItem(op.VaultName, op.ItemName) (op.ItemMap, error)
 }
