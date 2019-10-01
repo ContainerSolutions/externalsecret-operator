@@ -12,14 +12,15 @@ func TestGet(t *testing.T) {
 	itemValue := "itemValue"
 
 	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		backend := &Backend{}
-		backend.OnePassword = &FakeOnePassword{
+		b := &Backend{}
+		b.Vault = "Shared"
+		b.OnePassword = &Cli{Op: &FakeOp{
 			ItemName:  itemName,
 			ItemValue: itemValue,
-		}
+		}}
 
 		Convey("When retrieving a secret", func() {
-			actualValue, err := backend.Get(itemName)
+			actualValue, err := b.Get(itemName)
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
 				So(actualValue, ShouldEqual, itemValue)
@@ -29,8 +30,14 @@ func TestGet(t *testing.T) {
 }
 
 func TestGet_ErrGetItem(t *testing.T) {
+	itemName := "itemName"
+	itemValue := "itemValue"
+
 	backend := &Backend{}
-	backend.OnePassword = &FakeOnePassword{SignInOK: true}
+	backend.OnePassword = &Cli{Op: &FakeOp{
+		ItemName:  itemName,
+		ItemValue: itemValue,
+	}}
 
 	_, actualErr := backend.Get("nonExistentItem")
 	expectedErr := "error retrieving 1password item 'nonExistentItem'"
@@ -48,7 +55,9 @@ func TestInit(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{
-		OnePassword: &FakeOnePassword{SignInOK: true},
+		OnePassword: &Cli{Op: &FakeOp{
+			SignInOk: true,
+		}},
 	}
 
 	params := map[string]string{
@@ -74,9 +83,9 @@ func TestInit_ErrSigninFailed(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{
-		OnePassword: &FakeOnePassword{
-			SignInOK: false,
-		},
+		OnePassword: &Cli{Op: &FakeOp{
+			SignInOk: false,
+		}},
 	}
 
 	params := map[string]string{

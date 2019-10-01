@@ -4,7 +4,6 @@ package onepassword
 import (
 	"fmt"
 
-	op "github.com/ameier38/onepassword"
 	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 	"github.com/pkg/errors"
 )
@@ -64,6 +63,11 @@ var (
 	errSigninFailed     = errors.New("could not sign in to 1password")
 )
 
+type OnePassword interface {
+	SignIn(domain string, email string, secretKey string, masterPassword string) error
+	GetItem(vault string, item string) (string, error)
+}
+
 // Backend implementation for 1Password
 type Backend struct {
 	OnePassword OnePassword
@@ -104,12 +108,12 @@ func (b *Backend) Init(parameters map[string]string) error {
 func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	itemMap, err := b.OnePassword.GetItem(op.VaultName(b.Vault), op.ItemName(key))
+	item, err := b.OnePassword.GetItem(b.Vault, key)
 	if err != nil {
 		return "", NewErrGetItem(key)
 	}
 
-	return string(itemMap[op.SectionName(sectionName)][op.FieldName(key)]), nil
+	return item, nil
 }
 
 func validateParameters(parameters map[string]string) error {
