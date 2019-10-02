@@ -99,6 +99,12 @@ func TestInit_ErrSigninFailed(t *testing.T) {
 	err := backend.Init(params)
 	switch err.(type) {
 	case *ErrSigninFailed:
+		actual := err.Error()
+		expected := "could not sign in to 1password: fake op sign in programmed to fail"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
 	default:
 		t.Fail()
 		fmt.Println("expected signin failed error")
