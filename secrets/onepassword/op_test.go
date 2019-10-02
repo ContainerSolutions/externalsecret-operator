@@ -45,3 +45,23 @@ func TestFakeOPGetItem_ErrItemNotFound(t *testing.T) {
 		fmt.Printf("expected an empty string because item 'nonExistenItem' does not exist but got: '%s'", actual)
 	}
 }
+
+func TestFakeOpNewClient(t *testing.T) {
+	vault := "vault"
+	item := "item"
+	value := "value"
+
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"	
+	
+	f := NewFakeOp(vault, item, value)
+	f.SignInOk(true)
+
+	_, err := f.NewClient(domain, email, secretKey, masterPassword)
+	if err != nil {
+		t.Fail()
+		fmt.Printf("expected test to succeed because FakeOp signInOK is programmed to succeed")
+	}
+}

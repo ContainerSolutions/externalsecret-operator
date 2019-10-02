@@ -27,10 +27,10 @@ type FakeOp struct {
 	VaultName string
 	ItemName  string
 	ItemValue string
-	SignInOk  bool
+	signInOk  bool
 }
 
-func (f FakeOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
+func (f *FakeOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
 	im := make(op.ItemMap)
 	if string(itemName) == string(f.ItemName) {
 		fm := make(op.FieldMap)
@@ -41,18 +41,22 @@ func (f FakeOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMa
 	return im, nil
 }
 
-func (f FakeOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
-	if !f.SignInOk {
+func (f *FakeOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
+	if !f.signInOk {
 		return nil, fmt.Errorf("fake op sign in programmed to fail")
 	}
 	return nil, nil
 }
 
-func (f FakeOp) SignIn(vaultName op.VaultName, itemName op.ItemName) error {
-	if f.SignInOk {
+func (f *FakeOp) SignIn(vaultName op.VaultName, itemName op.ItemName) error {
+	if f.signInOk {
 		return nil
 	}
 	return fmt.Errorf("fake op sign in programmed to fail")
+}
+
+func (f *FakeOp) SignInOk(signInOk bool) {
+	f.signInOk = signInOk
 }
 
 func NewFakeOp(vaultName string, itemName string, itemValue string) *FakeOp {

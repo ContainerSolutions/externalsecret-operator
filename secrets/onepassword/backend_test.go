@@ -56,7 +56,7 @@ func TestInit(t *testing.T) {
 
 	backend := &Backend{
 		OnePassword: &Cli{Op: &FakeOp{
-			SignInOk: true,
+			signInOk: true,
 		}},
 	}
 
@@ -84,7 +84,7 @@ func TestInit_ErrSigninFailed(t *testing.T) {
 
 	backend := &Backend{
 		OnePassword: &Cli{Op: &FakeOp{
-			SignInOk: false,
+			signInOk: false,
 		}},
 	}
 
