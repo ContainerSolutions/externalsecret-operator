@@ -6,6 +6,23 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
+type RealOp struct {
+	client *op.Client
+}
+
+func (r *RealOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
+	client, err := op.NewClient("/usr/local/bin/op", domain, email, masterPassword, secretKey)
+	if err != nil {
+		return nil, err
+	}
+	r.client = client
+	return client, nil
+}
+
+func (r *RealOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
+	return r.client.GetItem(vaultName, itemName)
+}
+
 type FakeOp struct {
 	VaultName string
 	ItemName  string
@@ -24,7 +41,7 @@ func (f FakeOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMa
 	return im, nil
 }
 
-func (f FakeOp) NewClient(executable string, domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
+func (f FakeOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
 	if !f.SignInOk {
 		return nil, fmt.Errorf("fake op sign in programmed to fail")
 	}
