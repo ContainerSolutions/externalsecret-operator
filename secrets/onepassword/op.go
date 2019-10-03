@@ -6,6 +6,22 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
+type ErrOpGetItem struct {
+	message string
+}
+
+func (e *ErrOpGetItem) Error() string {
+	return fmt.Sprintf("op error get item: %s", e.message)
+}
+
+type ErrOpNewClient struct {
+	message string
+}
+
+func (e *ErrOpNewClient) Error() string {
+	return fmt.Sprintf("op error new client: %s", e.message)
+}
+
 type RealOp struct {
 	client *op.Client
 }

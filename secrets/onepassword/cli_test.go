@@ -1,7 +1,6 @@
 package onepassword
 
 import (
-	"fmt"
 	"testing"
 
 	op "github.com/ameier38/onepassword"
@@ -10,11 +9,11 @@ import (
 type MockOp struct{}
 
 func (m *MockOp) NewClient(domain string, email string, secretKey string, masterPassword string) (*op.Client, error) {
-	return nil, fmt.Errorf("could not create new `op` client")
+	return nil, &ErrOpNewClient{message: "op: could not create new client"}
 }
 
 func (m *MockOp) GetItem(op.VaultName, op.ItemName) (op.ItemMap, error) {
-	return nil, nil
+	return nil, &ErrOpGetItem{message: "op: could not get item"}
 }
 
 func TestSignIn_Err(t *testing.T) {
@@ -22,10 +21,21 @@ func TestSignIn_Err(t *testing.T) {
 
 	err := cli.SignIn("domain", "email", "secretKey", "masterPassword")
 
-	expected := "could not create new `op` client"
-	actual := err.Error()
-	if actual != expected {
+	switch err.(type) {
+	case *ErrOpNewClient:
+	default:
 		t.Fail()
-		fmt.Printf("expected '%s' got '%s'", expected, actual)
+	}
+}
+
+func TestGetItem_ErrGetItem(t *testing.T) {
+	cli := &Cli{Op: &MockOp{}}
+
+	_, err := cli.GetItem("vault", "item")
+
+	switch err.(type) {
+	case *ErrOpGetItem:
+	default:
+		t.Fail()
 	}
 }
