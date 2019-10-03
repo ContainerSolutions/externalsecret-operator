@@ -8,46 +8,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ErrSigninFailed struct {
+type ErrInitFailed struct {
 	message string
 }
 
-func NewErrSigninFailed(message string) *ErrSigninFailed {
-	return &ErrSigninFailed{
-		message: message,
-	}
+func (e *ErrInitFailed) Error() string {
+	return fmt.Sprintf("1password backend init failed: %s", e.message)
 }
 
-func (e *ErrSigninFailed) Error() string {
-	return "could not sign in to 1password: " + e.message
-}
-
-type ErrParameterMissing struct {
-	parameter string
-}
-
-func (e *ErrParameterMissing) Error() string {
-	return fmt.Sprintf("error reading 1password backend parameters: invalid init parameters: expected `%s` not found", e.parameter)
-}
-
-func NewErrParameterMissing(parameter string) *ErrParameterMissing {
-	return &ErrParameterMissing{
-		parameter: parameter,
-	}
-}
-
-type ErrGetItem struct {
+type ErrGet struct {
 	itemName string
+	message  string
 }
 
-func (e *ErrGetItem) Error() string {
-	return fmt.Sprintf("error retrieving 1password item '%s'", e.itemName)
-}
-
-func NewErrGetItem(itemName string) error {
-	return &ErrGetItem{
-		itemName: itemName,
-	}
+func (e *ErrGet) Error() string {
+	return fmt.Sprintf("1password backend get '%s' failed: %s", e.itemName, e.message)
 }
 
 var (
@@ -90,7 +65,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 
 	err = b.OnePassword.SignIn(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
 	if err != nil {
-		return NewErrSigninFailed(err.Error())
+		return &ErrInitFailed{message: err.Error()}
 	}
 	fmt.Println("signed into 1password successfully")
 
@@ -104,7 +79,7 @@ func (b *Backend) Get(key string) (string, error) {
 
 	item, err := b.OnePassword.GetItem(b.Vault, key)
 	if err != nil {
-		return "", NewErrGetItem(key)
+		return "", &ErrGet{itemName: key, message: err.Error()}
 	}
 
 	return item, nil
@@ -114,10 +89,9 @@ func validateParameters(parameters map[string]string) error {
 	for _, key := range paramKeys {
 		_, found := parameters[key]
 		if !found {
-			return NewErrParameterMissing(key)
+			return &ErrInitFailed{message: fmt.Sprintf("expected parameter '%s'", key)}
 		}
 	}
-
 	return nil
 }
 
