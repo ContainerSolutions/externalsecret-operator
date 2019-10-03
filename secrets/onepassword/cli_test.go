@@ -25,7 +25,7 @@ func (m *MockOp) GetItem(op.VaultName, op.ItemName) (op.ItemMap, error) {
 func TestErrItemInvalid(t *testing.T) {
 	err := &ErrItemInvalid{item: "myitem"}
 
-	expected := "1Password item 'myitem' is invalid. section 'External Secret Operator' is missing. this section should contain a field equal to the name of the item, 'myitem', and a value equal to the secret"
+	expected := "1Password item 'myitem' is invalid. it should have a section 'External Secret Operator' with a field equal to the name of the item, 'myitem', and a value equal to the secret"
 
 	actual := err.Error()
 	if actual != expected {
@@ -58,9 +58,26 @@ func TestGetItem_ErrGetItem(t *testing.T) {
 	}
 }
 
-func TestGetItem_ErrItemInvald(t *testing.T) {
+func TestGetItem_ErrItemInvald_MissingSection(t *testing.T) {
 	mockOp := &MockOp{}
 	mockOp.itemMap = make(op.ItemMap)
+	cli := &Cli{Op: mockOp}
+
+	_, err := cli.GetItem("vault", "item")
+
+	switch err.(type) {
+	case *ErrItemInvalid:
+	default:
+		t.Fail()
+	}
+}
+
+func TestGetItem_ErrItemInvalid_MissingField(t *testing.T) {
+	mockOp := &MockOp{}
+	itemMap := make(op.ItemMap)
+	fm := make(op.FieldMap)
+	itemMap[op.SectionName("External Secret Operator")] = fm
+	mockOp.itemMap = itemMap
 	cli := &Cli{Op: mockOp}
 
 	_, err := cli.GetItem("vault", "item")
