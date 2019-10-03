@@ -1,6 +1,7 @@
 package onepassword
 
 import (
+	"fmt"
 	"testing"
 
 	op "github.com/ameier38/onepassword"
@@ -19,6 +20,18 @@ func (m *MockOp) GetItem(op.VaultName, op.ItemName) (op.ItemMap, error) {
 		return nil, &ErrOpGetItem{message: "op: could not get item"}
 	}
 	return m.itemMap, nil
+}
+
+func TestErrItemInvalid(t *testing.T) {
+	err := &ErrItemInvalid{item: "myitem"}
+
+	expected := "1Password item 'myitem' is invalid. section 'External Secret Operator' is missing. this section should contain a field equal to the name of the item, 'myitem', and a value equal to the secret"
+
+	actual := err.Error()
+	if actual != expected {
+		t.Fail()
+		fmt.Printf("expected '%s' got '%s'", expected, actual)
+	}
 }
 
 func TestSignIn_Err(t *testing.T) {

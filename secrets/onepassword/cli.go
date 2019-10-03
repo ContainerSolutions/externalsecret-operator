@@ -6,17 +6,14 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
+var requiredSection = "External Secret Operator"
+
 type ErrItemInvalid struct {
-	item    string
-	section string
+	item string
 }
 
 func (e *ErrItemInvalid) Error() string {
-	return fmt.Sprintf(
-		`item '%s' is invalid.
-		 a 1Password item should have a section called '%s'
-		 with a field equal to the name of the item
-		 and a value equal to the secret you want to store`, e.item, e.section)
+	return fmt.Sprintf("1Password item '%s' is invalid. section '%s' is missing. this section should contain a field equal to the name of the item, '%s', and a value equal to the secret", e.item, requiredSection, e.item)
 }
 
 type Cli struct {
@@ -37,15 +34,12 @@ func (c Cli) GetItem(vault string, item string) (string, error) {
 		return "", err
 	}
 
-	section := "External Secret Operator"
-	sectionMap := itemMap[op.SectionName(section)]
-
+	sectionMap := itemMap[op.SectionName(requiredSection)]
 	if sectionMap == nil {
-		return "", &ErrItemInvalid{item: item, section: section}
+		return "", &ErrItemInvalid{item: item}
 	}
 
 	itemValue := sectionMap[op.FieldName(op.ItemName(item))]
-
 	if itemValue == "" {
 		return "", fmt.Errorf("expected section '%s' to have an field with name '%s'", sectionName, item)
 	}
