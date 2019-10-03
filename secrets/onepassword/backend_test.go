@@ -7,43 +7,50 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+type MockCli struct {
+	value string
+}
+
+func (m *MockCli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+	return nil
+}
+
+func (m *MockCli) GetItem(vault string, item string) (string, error) {
+	if m.value != "" {
+		return m.value, nil
+	} else {
+		return "", fmt.Errorf("invalid item")
+	}
+}
+
 func TestGet(t *testing.T) {
-	itemName := "itemName"
-	itemValue := "itemValue"
+	item := "item"
+	value := "value"
 
-	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		b := &Backend{}
-		b.Vault = "Shared"
-		b.OnePassword = &Cli{Op: &FakeOp{
-			ItemName:  itemName,
-			ItemValue: itemValue,
-		}}
+	backend := &Backend{}
+	backend.Vault = "Shared"
+	backend.OnePassword = &MockCli{value: value}
 
-		Convey("When retrieving a secret", func() {
-			actualValue, err := b.Get(itemName)
-			Convey("Then no error is returned", func() {
-				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, itemValue)
-			})
-		})
-	})
+	actual, err := backend.Get(item)
+	if err != nil {
+		t.Fail()
+		fmt.Printf("expected nil but got '%s'", err)
+	}
+	if actual != value {
+		t.Fail()
+		fmt.Printf("expected '%s' got %s'", value, actual)
+	}
 }
 
 func TestGet_ErrGetItem(t *testing.T) {
-	itemName := "itemName"
-	itemValue := "itemValue"
-
 	backend := &Backend{}
-	backend.OnePassword = &Cli{Op: &FakeOp{
-		ItemName:  itemName,
-		ItemValue: itemValue,
-	}}
+	backend.OnePassword = &MockCli{}
 
-	_, actualErr := backend.Get("nonExistentItem")
-	expectedErr := "error retrieving 1password item 'nonExistentItem'"
-	if expectedErr != actualErr.Error() {
+	_, err := backend.Get("nonExistentItem")
+	switch err.(type) {
+	case *ErrGetItem:
+	default:
 		t.Fail()
-		fmt.Printf("expected '%s' got '%s'", expectedErr, actualErr)
 	}
 }
 

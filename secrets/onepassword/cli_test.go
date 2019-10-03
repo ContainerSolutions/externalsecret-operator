@@ -76,7 +76,7 @@ func TestGetItem_ErrItemInvalid_MissingField(t *testing.T) {
 	mockOp := &MockOp{}
 	itemMap := make(op.ItemMap)
 	fm := make(op.FieldMap)
-	itemMap[op.SectionName("External Secret Operator")] = fm
+	itemMap[op.SectionName(requiredSection)] = fm
 	mockOp.itemMap = itemMap
 	cli := &Cli{Op: mockOp}
 

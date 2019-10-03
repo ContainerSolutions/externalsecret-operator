@@ -59,7 +59,6 @@ var (
 	paramMasterPassword = "masterPassword"
 	paramVault          = "vault"
 	paramKeys           = []string{paramDomain, paramEmail, paramSecretKey, paramMasterPassword, paramVault}
-	sectionName         = "External Secret Operator"
 	errSigninFailed     = errors.New("could not sign in to 1password")
 )
 
