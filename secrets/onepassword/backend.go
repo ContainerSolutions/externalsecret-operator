@@ -50,7 +50,7 @@ func init() {
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-	backend.OnePassword = &Cli{Op: &RealOp{}}
+	backend.OnePassword = &Op{}
 	backend.Vault = defaultVault
 	return backend
 }
@@ -63,7 +63,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 	}
 	b.Vault = parameters[paramVault]
 
-	err = b.OnePassword.SignIn(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
+	err = b.OnePassword.Authenticate(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
 	if err != nil {
 		return &ErrInitFailed{message: err.Error()}
 	}
@@ -96,6 +96,6 @@ func validateParameters(parameters map[string]string) error {
 }
 
 type OnePassword interface {
-	SignIn(domain string, email string, secretKey string, masterPassword string) error
+	Authenticate(domain string, email string, secretKey, masterPassword string) error
 	GetItem(vault string, item string) (string, error)
 }

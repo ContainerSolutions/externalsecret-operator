@@ -5,19 +5,19 @@ import (
 	"testing"
 )
 
-type MockCli struct {
+type MockOnePassword struct {
 	value    string
 	signInOk bool
 }
 
-func (m *MockCli) SignIn(domain string, email string, secretKey string, masterPassword string) error {
+func (m *MockOnePassword) Authenticate(domain string, email string, secretKey string, masterPassword string) error {
 	if m.signInOk {
 		return nil
 	}
 	return fmt.Errorf("mock op sign in failed")
 }
 
-func (m *MockCli) GetItem(vault string, item string) (string, error) {
+func (m *MockOnePassword) GetItem(vault string, item string) (string, error) {
 	if m.value != "" {
 		return m.value, nil
 	} else {
@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 	value := "value"
 
 	backend := &Backend{}
-	backend.OnePassword = &MockCli{value: value}
+	backend.OnePassword = &MockOnePassword{value: value}
 
 	actual, err := backend.Get(item)
 
@@ -46,7 +46,7 @@ func TestGet(t *testing.T) {
 
 func TestGet_ErrGet(t *testing.T) {
 	backend := &Backend{}
-	backend.OnePassword = &MockCli{}
+	backend.OnePassword = &MockOnePassword{}
 
 	_, err := backend.Get("nonExistentItem")
 
@@ -57,7 +57,7 @@ func TestGet_ErrGet(t *testing.T) {
 		if actual != expected {
 			t.Fail()
 			fmt.Printf("expected '%s' got '%s'", expected, actual)
-		}		
+		}
 	default:
 		t.Fail()
 	}
@@ -71,7 +71,7 @@ func TestInit(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
-	backend.OnePassword = &MockCli{signInOk: true}
+	backend.OnePassword = &MockOnePassword{signInOk: true}
 
 	params := map[string]string{
 		"domain":         domain,
@@ -96,7 +96,7 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
-	backend.OnePassword = &MockCli{signInOk: false}
+	backend.OnePassword = &MockOnePassword{signInOk: false}
 
 	params := map[string]string{
 		"domain":         domain,

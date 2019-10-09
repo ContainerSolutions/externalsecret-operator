@@ -7,61 +7,120 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
-func TestFakeOPGetItem(t *testing.T) {
-	vault := "vault"
-	item := "item"
-	value := "value"
+type MockGetterBuilder struct {
+	itemMap op.ItemMap
+}
 
-	f := NewFakeOp(vault, item, value)
-
-	vaultName := op.VaultName(vault)
-	itemName := op.ItemName(item)
-
-	itemMap, _ := f.GetItem(vaultName, itemName)
-
-	sectionName := "External Secret Operator"
-	if string(itemMap[op.SectionName(sectionName)][op.FieldName(itemName)]) != value {
-		t.Fail()
-		fmt.Printf("expected itemMap with item '%s' and value '%s' underneath section '%s' but got itemMap: '%v'", item, value, sectionName, itemMap)
+func (m *MockGetterBuilder) NewGetter(domain string, email string, secretKey string, masterPassword string) (Getter, error) {
+	if m.itemMap == nil {
+		return nil, fmt.Errorf("mock op: could not build new getter")
+	} else {
+		return &MockGetter{itemMap: m.itemMap}, nil
 	}
 }
 
-func TestFakeOPGetItem_ErrItemNotFound(t *testing.T) {
-	vault := "vault"
-	item := "item"
-	value := "value"
+type MockGetter struct {
+	itemMap op.ItemMap
+}
 
-	f := NewFakeOp(vault, item, value)
+func (m *MockGetter) GetItemMap(op.VaultName, op.ItemName) (op.ItemMap, error) {
+	if m.itemMap == nil {
+		return nil, fmt.Errorf("mock op: could not get item")
+	}
+	return m.itemMap, nil
+}
 
-	vaultName := op.VaultName(vault)
-	itemName := op.ItemName("nonExistentItem")
+func TestErrItemInvalid(t *testing.T) {
+	err := &ErrItemInvalid{item: "myitem"}
 
-	itemMap, _ := f.GetItem(vaultName, "nonExistentItem")
+	expected := "1Password item 'myitem' is invalid. it should have a section 'External Secret Operator' with a field equal to the name of the item, 'myitem', and a value equal to the secret"
 
-	sectionName := "External Secret Operator"
-	actual := itemMap[op.SectionName(sectionName)][op.FieldName(itemName)]
-	if actual != "" {
+	actual := err.Error()
+	if actual != expected {
 		t.Fail()
-		fmt.Printf("expected an empty string because item 'nonExistenItem' does not exist but got: '%s'", actual)
+		fmt.Printf("expected '%s' got '%s'", expected, actual)
 	}
 }
 
-func TestFakeOpNewClient(t *testing.T) {
-	vault := "vault"
+func TestAuthenticate_Err(t *testing.T) {
+	op := &Op{GetterBuilder: &MockGetterBuilder{}}
+
+	err := op.Authenticate("domain", "email", "secretKey", "masterPassword")
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestGetItem(t *testing.T) {
 	item := "item"
 	value := "value"
+	vault := "vault"
 
-	domain := "https://externalsecretoperator.1password.com"
-	email := "externalsecretoperator@example.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"	
-	
-	f := NewFakeOp(vault, item, value)
-	f.SignInOk(true)
+	itemMap := make(op.ItemMap)
+	fm := make(op.FieldMap)
+	fieldName := op.FieldName(item)
+	fieldValue := op.FieldValue(value)
 
-	_, err := f.NewClient(domain, email, secretKey, masterPassword)
-	if err != nil {
+	fm[fieldName] = fieldValue
+	itemMap[op.SectionName(requiredSection)] = fm
+
+	op := &Op{Getter: &MockGetter{itemMap: itemMap}}
+
+	actual, _ := op.GetItem(vault, item)
+	expected := value
+
+	if actual != expected {
 		t.Fail()
-		fmt.Printf("expected test to succeed because FakeOp signInOK is programmed to succeed")
+		fmt.Printf("expected '%s' got '%s'", expected, actual)
+	}
+}
+
+func TestGetItem_ErrItemInvalid_FailedGetItemMap(t *testing.T) {
+	op := &Op{Getter: &MockGetter{}}
+
+	_, err := op.GetItem("vault", "item")
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestGetItem_ErrItemInvald_MissingSection(t *testing.T) {
+	itemMap := make(op.ItemMap)
+
+	op := &Op{GetterBuilder: &MockGetterBuilder{itemMap: itemMap}}
+
+	_ = op.Authenticate("domain", "email", "secretKey", "masterPassword")
+	_, err := op.GetItem("vault", "item")
+
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestGetItem_ErrItemInvalid_MissingField(t *testing.T) {
+	itemMap := make(op.ItemMap)
+	fm := make(op.FieldMap)
+	itemMap[op.SectionName(requiredSection)] = fm
+
+	op := &Op{Getter: &MockGetter{itemMap: itemMap}}
+
+	_, err := op.GetItem("vault", "item")
+
+	switch err.(type) {
+	case *ErrItemInvalid:
+	default:
+		t.Fail()
+	}
+}
+
+func TestNotAuthenticatedGetItemMap(t *testing.T) {
+	notAuthGetter := &NotAuthenticatedGetter{}
+
+	_, err := notAuthGetter.GetItemMap(op.VaultName("vault"), op.ItemName("item"))
+	actual := err.Error()
+	expected := "failed to get an item map because you are not authenticated"
+	if actual != expected {
+		t.Fail()
+		fmt.Printf("expected '%s' got '%s'", expected, actual)
 	}
 }

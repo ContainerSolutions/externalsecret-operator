@@ -6,75 +6,78 @@ import (
 	op "github.com/ameier38/onepassword"
 )
 
-type ErrOpGetItem struct {
-	message string
+var executablePath = "/usr/local/bin/op"
+var requiredSection = "External Secret Operator"
+
+type ErrItemInvalid struct {
+	item string
 }
 
-func (e *ErrOpGetItem) Error() string {
-	return fmt.Sprintf("op error get item: %s", e.message)
+func (e *ErrItemInvalid) Error() string {
+	return fmt.Sprintf("1Password item '%s' is invalid. it should have a section '%s' with a field equal to the name of the item, '%s', and a value equal to the secret", e.item, requiredSection, e.item)
 }
 
-type ErrOpNewClient struct {
-	message string
+type Getter interface {
+	GetItemMap(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error)
 }
 
-func (e *ErrOpNewClient) Error() string {
-	return fmt.Sprintf("op error new client: %s", e.message)
-}
-
-type RealOp struct {
+type OpGetter struct {
 	client *op.Client
 }
 
-func (r *RealOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
-	client, err := op.NewClient("/usr/local/bin/op", domain, email, masterPassword, secretKey)
+func (o OpGetter) GetItemMap(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
+	return o.client.GetItem(vaultName, itemName)
+}
+
+type NotAuthenticatedGetter struct{}
+
+func (n NotAuthenticatedGetter) GetItemMap(vault op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
+	return nil, fmt.Errorf("failed to get an item map because you are not authenticated")
+}
+
+type GetterBuilder interface {
+	NewGetter(domain, email, secretKey, masterPassword string) (Getter, error)
+}
+
+type OpGetterBuilder struct{}
+
+func (o OpGetterBuilder) NewGetter(domain, email, secretKey, masterPassword string) (Getter, error) {
+	client, err := op.NewClient(executablePath, domain, email, secretKey, masterPassword)
 	if err != nil {
-		return nil, err
+		return &NotAuthenticatedGetter{}, err
 	}
-	r.client = client
-	return client, nil
+	return &OpGetter{client: client}, nil
 }
 
-func (r *RealOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
-	return r.client.GetItem(vaultName, itemName)
+type Op struct {
+	Getter        Getter
+	GetterBuilder GetterBuilder
 }
 
-type FakeOp struct {
-	VaultName string
-	ItemName  string
-	ItemValue string
-	signInOk  bool
-}
-
-func (f *FakeOp) GetItem(vaultName op.VaultName, itemName op.ItemName) (op.ItemMap, error) {
-	im := make(op.ItemMap)
-	if string(itemName) == string(f.ItemName) {
-		fm := make(op.FieldMap)
-		fm[op.FieldName(f.ItemName)] = op.FieldValue(f.ItemValue)
-		im[op.SectionName("External Secret Operator")] = fm
-		return im, nil
+func (o *Op) Authenticate(domain string, email string, secretKey string, masterPassword string) error {
+	getter, err := o.GetterBuilder.NewGetter(domain, email, secretKey, masterPassword)
+	if err != nil {
+		return err
 	}
-	return im, nil
+	o.Getter = getter
+	return nil
 }
 
-func (f *FakeOp) NewClient(domain string, email string, masterPassword string, secretKey string) (*op.Client, error) {
-	if !f.signInOk {
-		return nil, fmt.Errorf("fake op sign in programmed to fail")
+func (o *Op) GetItem(vault string, item string) (string, error) {
+	itemMap, err := o.Getter.GetItemMap(op.VaultName(vault), op.ItemName(item))
+	if err != nil {
+		return "", err
 	}
-	return nil, nil
-}
 
-func (f *FakeOp) SignIn(vaultName op.VaultName, itemName op.ItemName) error {
-	if f.signInOk {
-		return nil
+	sectionMap := itemMap[op.SectionName(requiredSection)]
+	if sectionMap == nil {
+		return "", &ErrItemInvalid{item: item}
 	}
-	return fmt.Errorf("fake op sign in programmed to fail")
-}
 
-func (f *FakeOp) SignInOk(signInOk bool) {
-	f.signInOk = signInOk
-}
+	itemValue := sectionMap[op.FieldName(op.ItemName(item))]
+	if itemValue == "" {
+		return "", &ErrItemInvalid{item: item}
+	}
 
-func NewFakeOp(vaultName string, itemName string, itemValue string) *FakeOp {
-	return &FakeOp{VaultName: vaultName, ItemName: itemName, ItemValue: itemValue}
+	return string(itemValue), nil
 }
