@@ -50,7 +50,7 @@ func init() {
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
 	backend := &Backend{}
-	backend.OnePassword = &Op{}
+	backend.OnePassword = &Op{GetterBuilder: &OpGetterBuilder{}}
 	backend.Vault = defaultVault
 	return backend
 }

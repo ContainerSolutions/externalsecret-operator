@@ -152,13 +152,20 @@ func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
 func TestNewBackend(t *testing.T) {
 	backend := NewBackend()
 
-	if backend.(*Backend).OnePassword == nil {
+	switch backend.(*Backend).OnePassword.(type) {
+	case *Op:
+		switch backend.(*Backend).OnePassword.(*Op).GetterBuilder.(type) {
+		case *OpGetterBuilder:
+		default:
+			t.Fail()
+			fmt.Println("expected OnePassword GetterBuilder to be OpGetterBuilder")
+		}
+	default:
 		t.Fail()
-		fmt.Println("expected backend to have a 1password cli")
+		fmt.Println("expected OnePassword implementation to be Op")
 	}
 
 	expectedVault := "Personal"
-
 	if backend.(*Backend).Vault != expectedVault {
 		t.Fail()
 		fmt.Printf("expected vault to be equal to '%s'", expectedVault)
