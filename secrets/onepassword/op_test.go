@@ -11,7 +11,7 @@ type MockGetterBuilder struct {
 	itemMap op.ItemMap
 }
 
-func (m *MockGetterBuilder) NewGetter(domain string, email string, secretKey string, masterPassword string) (Getter, error) {
+func (m *MockGetterBuilder) NewGetter(domain string, email string, masterPassword string, secretKey string) (Getter, error) {
 	if m.itemMap == nil {
 		return nil, fmt.Errorf("mock op: could not build new getter")
 	} else {

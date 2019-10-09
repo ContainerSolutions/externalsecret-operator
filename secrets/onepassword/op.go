@@ -36,13 +36,13 @@ func (n NotAuthenticatedGetter) GetItemMap(vault op.VaultName, itemName op.ItemN
 }
 
 type GetterBuilder interface {
-	NewGetter(domain, email, secretKey, masterPassword string) (Getter, error)
+	NewGetter(domain, email, masterPassword, secretKey string) (Getter, error)
 }
 
 type OpGetterBuilder struct{}
 
-func (o OpGetterBuilder) NewGetter(domain, email, secretKey, masterPassword string) (Getter, error) {
-	client, err := op.NewClient(executablePath, domain, email, secretKey, masterPassword)
+func (o OpGetterBuilder) NewGetter(domain, email, masterPassword, secretKey string) (Getter, error) {
+	client, err := op.NewClient(executablePath, domain, email, masterPassword, secretKey)
 	if err != nil {
 		return &NotAuthenticatedGetter{}, err
 	}

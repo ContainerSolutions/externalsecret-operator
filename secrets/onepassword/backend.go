@@ -87,15 +87,19 @@ func (b *Backend) Get(key string) (string, error) {
 
 func validateParameters(parameters map[string]string) error {
 	for _, key := range paramKeys {
-		_, found := parameters[key]
+		value, found := parameters[key]
+		fmt.Printf("parameter '%s' has length: '%d'\n", key, len(value))
+
 		if !found {
 			return &ErrInitFailed{message: fmt.Sprintf("expected parameter '%s'", key)}
+		} else if value == "" {
+			return &ErrInitFailed{message: fmt.Sprintf("parameter '%s' is empty", key)}
 		}
 	}
 	return nil
 }
 
 type OnePassword interface {
-	Authenticate(domain string, email string, secretKey, masterPassword string) error
+	Authenticate(domain string, email string, secretKey string, masterPassword string) error
 	GetItem(vault string, item string) (string, error)
 }

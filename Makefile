@@ -33,7 +33,6 @@ deploy:
 	envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: apply-onepassword
-NAMESPACE=externalsecretoperator
 OPERATOR_NAME=onepassword
 BACKEND=onepassword
 .EXPORT_ALL_VARIABLES: apply-onepassword
