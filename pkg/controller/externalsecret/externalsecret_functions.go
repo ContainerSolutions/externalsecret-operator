@@ -9,8 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	// Trigger secrets backend registration
-	_ "github.com/containersolutions/externalsecret-operator/secrets"
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
+	_ "github.com/containersolutions/externalsecret-operator/pkg/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
 func newSecretForCR(cr *externalsecretoperatorv1alpha1.ExternalSecret) (*corev1.Secret, error) {

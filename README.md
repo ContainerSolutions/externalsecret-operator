@@ -6,7 +6,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 ## Quick start
 
-If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deploy/helm/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
+If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
 
 ### Helm
 
@@ -22,12 +22,12 @@ helm upgrade --install asm1 --wait \
     --set secret.data.Parameters.accessKeyID="$AWS_ACCESS_KEY_ID" \
     --set secret.data.Parameters.region="$AWS_DEFAULT_REGION" \
     --set secret.data.Parameters.secretAccessKey="$AWS_SECRET_ACCESS_KEY" \
-    ./deploy/helm/.
+    ./deployments/helm/.
 ```
 
 It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
-Look for more deployment options in the [README.md](./deploy/helm/README.md) of the helm chart.
+Look for more deployment options in the [README.md](./deployments/helm/README.md) of the helm chart.
 
 ### Manifests
 
@@ -58,7 +58,7 @@ Given a secret defined in AWS Secrets Manager:
 and an `ExternalSecret` resource definition like this one:
 
 ```yaml
-% cat ./deploy/crds/examples/externalsecret-asm.yaml
+% cat ./deployments/crds/examples/externalsecret-asm.yaml
 apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
@@ -72,7 +72,7 @@ The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
-% kubectl apply -f ./deploy/crds/examples/externalsecret-asm.yaml
+% kubectl apply -f ./deployments/crds/examples/externalsecret-asm.yaml
 % kubectl get secret example-externalsecret \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret
@@ -98,7 +98,7 @@ A contributing guide is coming soon!
 * Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
 * Our naming convention for the item account is 'External Secret Operator' concatenated with name of the Kubernetes cluster for instance 'External Secret Operator minikube'. This item name is also used for development.
   
-![1Password operator account](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-operator-account.png)
+![1Password operator account](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/assets/1password-operator-account.png)
 
 #### Integration Test 
 
@@ -106,7 +106,7 @@ The integration `secrets/onepassword/backend_integration_test.go` test checks wh
 
 Create a secret in 1Password as follow. Create a vault called `test vault one`. Now add a new `Login` item with name `testkey`. Set its `password` field to `testvalue`. See the screenshot below.
 
-![1Password secret](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/images/1password-secret.png)
+![1Password secret](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/assets/1password-secret.png)
 
 To run the integration test do the following.
 
@@ -125,13 +125,13 @@ $ export ITEM_VAULT=myvault
 
 Now load the 1Password credentials of your _operator_ account into the environment
 
-$ . deploy/source-onepassword-secrets.sh
+$ . deployments/source-onepassword-secrets.sh
 ```
 
 Run the tests including the integration test with
 
 ```
-$ go test -v ./secrets/onepassword/
+$ go test -v ./pkg/onepassword/
 ```
 
 #### Operator Deployment
@@ -147,7 +147,7 @@ $ eval $(op signin)
 2. Load the 1Password credentials of your _operator_ account into the environment
 
 ```
-$ source deploy/source-onepassword-secrets.sh
+$ source deployments/source-onepassword-secrets.sh
 ```
 
 4.  Deploy the operator

@@ -1,9 +1,9 @@
-package secrets
+package controller
 
 import (
 	"testing"
 
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
 var expectedRegisteredBackends = []string{

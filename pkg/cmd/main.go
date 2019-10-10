@@ -12,8 +12,8 @@ import (
 
 	"github.com/containersolutions/externalsecret-operator/pkg/apis"
 	"github.com/containersolutions/externalsecret-operator/pkg/controller"
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
-	"github.com/containersolutions/externalsecret-operator/version"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/version"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"

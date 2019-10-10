@@ -4,7 +4,7 @@ package asm
 import (
 	"fmt"
 
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"

@@ -31,7 +31,7 @@ helm upgrade --install asm1 --wait \
     --set secret.data.Parameters.accessKeyID="$AWS_ACCESS_KEY_ID" \
     --set secret.data.Parameters.region="$AWS_DEFAULT_REGION" \
     --set secret.data.Parameters.secretAccessKey="$AWS_SECRET_ACCESS_KEY" \
-    ./deploy/helm/.
+    ./deployments/helm/.
 ```
 
 ### Configuration
