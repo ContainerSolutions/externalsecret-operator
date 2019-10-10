@@ -35,11 +35,18 @@ func TestErrMissingSection(t *testing.T) {
 
 	expected := "missing section 'External Secret Operator' in 1Password item 'myitem'"
 
-	actual := err.Error()
-	if actual != expected {
-		t.Fail()
-		fmt.Printf("expected '%s' got '%s'", expected, actual)
-	}
+	assertEquals(t, expected, err.Error())
+}
+
+func TestAuthenticate(t *testing.T) {
+	itemMap := make(op.ItemMap)
+
+	builder := &MockGetterBuilder{itemMap: itemMap}
+	op := &Op{GetterBuilder: builder}
+
+	op.Authenticate("domain", "email", "masterPassword", "secretKey")
+
+	assertNotNil(t, op.Getter)
 }
 
 func TestAuthenticate_Err(t *testing.T) {
@@ -67,37 +74,39 @@ func TestGetItem(t *testing.T) {
 	op := &Op{Getter: &MockGetter{itemMap: itemMap}}
 
 	actual, _ := op.GetItem(vault, item)
-	expected := value
 
-	if actual != expected {
-		t.Fail()
-		fmt.Printf("expected '%s' got '%s'", expected, actual)
-	}
+	assertEquals(t, value, actual)
 }
 
-func TestGetItem_ErrItemInvalid_FailedGetItemMap(t *testing.T) {
+func TestGetItem_ErrFailedGetItemMap(t *testing.T) {
 	op := &Op{Getter: &MockGetter{}}
 
 	_, err := op.GetItem("vault", "item")
-	if err == nil {
-		t.Fail()
-	}
+
+	expected := "failed to get itemMap of 1Password item 'item': mock op: could not get item"
+	assertEquals(t, expected, err.Error())
 }
 
-func TestGetItem_ErrItemInvald_MissingSection(t *testing.T) {
+func TestGetItem_ErrMissingSection(t *testing.T) {
+	item := "item"
+	value := "value"
+
 	itemMap := make(op.ItemMap)
+	fm := make(op.FieldMap)
+	fieldName := op.FieldName(item)
+	fieldValue := op.FieldValue(value)
 
-	op := &Op{GetterBuilder: &MockGetterBuilder{itemMap: itemMap}}
+	fm[fieldName] = fieldValue
 
-	_ = op.Authenticate("domain", "email", "masterPassword", "secretKey")
+	op := &Op{Getter: &MockGetter{itemMap: itemMap}}
+
 	_, err := op.GetItem("vault", "item")
 
-	if err == nil {
-		t.Fail()
-	}
+	expected := "missing section 'External Secret Operator' in 1Password item 'item'"
+	assertEquals(t, expected, err.Error())
 }
 
-func TestGetItem_ErrItemInvalid_MissingValue(t *testing.T) {
+func TestGetItem_ErrMissingField(t *testing.T) {
 	itemMap := make(op.ItemMap)
 	fm := make(op.FieldMap)
 	itemMap[op.SectionName(requiredSection)] = fm
@@ -106,21 +115,15 @@ func TestGetItem_ErrItemInvalid_MissingValue(t *testing.T) {
 
 	_, err := op.GetItem("vault", "item")
 
-	switch err.(type) {
-	case *ErrMissingField:
-	default:
-		t.Fail()
-	}
+	expected := "missing field 'item' in 1Password item 'item'"
+	assertEquals(t, expected, err.Error())
 }
 
 func TestNotAuthenticatedGetItemMap(t *testing.T) {
 	notAuthGetter := &NotAuthenticatedGetter{}
 
 	_, err := notAuthGetter.GetItemMap(op.VaultName("vault"), op.ItemName("item"))
-	actual := err.Error()
+
 	expected := "failed to get an item map because you are not authenticated"
-	if actual != expected {
-		t.Fail()
-		fmt.Printf("expected '%s' got '%s'", expected, actual)
-	}
+	assertEquals(t, expected, err.Error())
 }
