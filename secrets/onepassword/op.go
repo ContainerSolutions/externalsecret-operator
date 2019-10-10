@@ -9,12 +9,30 @@ import (
 var executablePath = "/usr/local/bin/op"
 var requiredSection = "External Secret Operator"
 
-type ErrItemInvalid struct {
+type ErrFailedGetItemMap struct {
+	message string
+	item    string
+}
+
+func (e *ErrFailedGetItemMap) Error() string {
+	return fmt.Sprintf("failed to get itemMap of 1Password item '%s': %s", e.item, e.message)
+}
+
+type ErrMissingField struct {
+	item  string
+	field string
+}
+
+func (e *ErrMissingField) Error() string {
+	return fmt.Sprintf("missing field '%s' in 1Password item '%s'", e.field, e.item)
+}
+
+type ErrMissingSection struct {
 	item string
 }
 
-func (e *ErrItemInvalid) Error() string {
-	return fmt.Sprintf("1Password item '%s' is invalid. it should have a section '%s' with a field equal to the name of the item, '%s', and a value equal to the secret", e.item, requiredSection, e.item)
+func (e *ErrMissingSection) Error() string {
+	return fmt.Sprintf("missing section '%s' in 1Password item '%s'", requiredSection, e.item)
 }
 
 type Getter interface {
@@ -54,8 +72,8 @@ type Op struct {
 	GetterBuilder GetterBuilder
 }
 
-func (o *Op) Authenticate(domain string, email string, secretKey string, masterPassword string) error {
-	getter, err := o.GetterBuilder.NewGetter(domain, email, secretKey, masterPassword)
+func (o *Op) Authenticate(domain, email, masterPassword, secretKey string) error {
+	getter, err := o.GetterBuilder.NewGetter(domain, email, masterPassword, secretKey)
 	if err != nil {
 		return err
 	}
@@ -66,17 +84,17 @@ func (o *Op) Authenticate(domain string, email string, secretKey string, masterP
 func (o *Op) GetItem(vault string, item string) (string, error) {
 	itemMap, err := o.Getter.GetItemMap(op.VaultName(vault), op.ItemName(item))
 	if err != nil {
-		return "", err
+		return "", &ErrFailedGetItemMap{item: item, message: err.Error()}
 	}
 
 	sectionMap := itemMap[op.SectionName(requiredSection)]
 	if sectionMap == nil {
-		return "", &ErrItemInvalid{item: item}
+		return "", &ErrMissingSection{item: item}
 	}
 
 	itemValue := sectionMap[op.FieldName(op.ItemName(item))]
 	if itemValue == "" {
-		return "", &ErrItemInvalid{item: item}
+		return "", &ErrMissingField{item: item, field: item}
 	}
 
 	return string(itemValue), nil

@@ -63,7 +63,7 @@ func (b *Backend) Init(parameters map[string]string) error {
 	}
 	b.Vault = parameters[paramVault]
 
-	err = b.OnePassword.Authenticate(parameters[paramDomain], parameters[paramEmail], parameters[paramSecretKey], parameters[paramMasterPassword])
+	err = b.OnePassword.Authenticate(parameters[paramDomain], parameters[paramEmail], parameters[paramMasterPassword], parameters[paramSecretKey])
 	if err != nil {
 		return &ErrInitFailed{message: err.Error()}
 	}
@@ -100,6 +100,6 @@ func validateParameters(parameters map[string]string) error {
 }
 
 type OnePassword interface {
-	Authenticate(domain string, email string, secretKey string, masterPassword string) error
+	Authenticate(domain string, email string, masterPassword string, secretKey string) error
 	GetItem(vault string, item string) (string, error)
 }

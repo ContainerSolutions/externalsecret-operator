@@ -30,10 +30,10 @@ func (m *MockGetter) GetItemMap(op.VaultName, op.ItemName) (op.ItemMap, error) {
 	return m.itemMap, nil
 }
 
-func TestErrItemInvalid(t *testing.T) {
-	err := &ErrItemInvalid{item: "myitem"}
+func TestErrMissingSection(t *testing.T) {
+	err := &ErrMissingSection{item: "myitem"}
 
-	expected := "1Password item 'myitem' is invalid. it should have a section 'External Secret Operator' with a field equal to the name of the item, 'myitem', and a value equal to the secret"
+	expected := "missing section 'External Secret Operator' in 1Password item 'myitem'"
 
 	actual := err.Error()
 	if actual != expected {
@@ -45,7 +45,7 @@ func TestErrItemInvalid(t *testing.T) {
 func TestAuthenticate_Err(t *testing.T) {
 	op := &Op{GetterBuilder: &MockGetterBuilder{}}
 
-	err := op.Authenticate("domain", "email", "secretKey", "masterPassword")
+	err := op.Authenticate("domain", "email", "masterPassword", "secretKey")
 	if err == nil {
 		t.Fail()
 	}
@@ -89,7 +89,7 @@ func TestGetItem_ErrItemInvald_MissingSection(t *testing.T) {
 
 	op := &Op{GetterBuilder: &MockGetterBuilder{itemMap: itemMap}}
 
-	_ = op.Authenticate("domain", "email", "secretKey", "masterPassword")
+	_ = op.Authenticate("domain", "email", "masterPassword", "secretKey")
 	_, err := op.GetItem("vault", "item")
 
 	if err == nil {
@@ -97,7 +97,7 @@ func TestGetItem_ErrItemInvald_MissingSection(t *testing.T) {
 	}
 }
 
-func TestGetItem_ErrItemInvalid_MissingField(t *testing.T) {
+func TestGetItem_ErrItemInvalid_MissingValue(t *testing.T) {
 	itemMap := make(op.ItemMap)
 	fm := make(op.FieldMap)
 	itemMap[op.SectionName(requiredSection)] = fm
@@ -107,7 +107,7 @@ func TestGetItem_ErrItemInvalid_MissingField(t *testing.T) {
 	_, err := op.GetItem("vault", "item")
 
 	switch err.(type) {
-	case *ErrItemInvalid:
+	case *ErrMissingField:
 	default:
 		t.Fail()
 	}
