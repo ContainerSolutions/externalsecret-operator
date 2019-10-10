@@ -1,165 +1,173 @@
 package onepassword
 
 import (
+	"fmt"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/mock"
 )
 
-type MockClient struct {
-	mock.Mock
+type MockOnePassword struct {
+	value    string
+	signInOk bool
 }
 
-func (m *MockClient) SignIn(domain string, email string, secretKey string, masterPassword string) error {
-	args := m.Called(domain, email, secretKey, masterPassword)
-	return args.Error(0)
+func (m *MockOnePassword) Authenticate(domain string, email string, secretKey string, masterPassword string) error {
+	if m.signInOk {
+		return nil
+	}
+	return fmt.Errorf("mock op sign in failed")
 }
 
-// Return a static JSON output for $ op get item 'testkey'
-func (m *MockClient) Get(value string, key string) (string, error) {
-	return "testvalue", nil
+func (m *MockOnePassword) GetItem(vault string, item string) (string, error) {
+	if m.value != "" {
+		return m.value, nil
+	} else {
+		return "", fmt.Errorf("mock op get item failed")
+	}
 }
 
-func TestGetOnePassword(t *testing.T) {
-	secretKey := "testkey"
-	secretValue := "testvalue"
-	expectedValue := secretValue
+func TestGet(t *testing.T) {
+	item := "item"
+	value := "value"
 
-	Convey("Given an OPERATOR_CONFIG env var", t, func() {
-		backend := &OnePassword{}
-		backend.Client = &MockClient{}
+	backend := &Backend{}
+	backend.OnePassword = &MockOnePassword{value: value}
 
-		Convey("When retrieving a secret", func() {
-			actualValue, err := backend.Get(secretKey)
-			Convey("Then no error is returned", func() {
-				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, expectedValue)
-			})
-		})
-	})
+	actual, err := backend.Get(item)
+
+	if err != nil {
+		t.Fail()
+		fmt.Printf("expected nil but got '%s'", err)
+	}
+	if actual != value {
+		t.Fail()
+		fmt.Printf("expected '%s' got %s'", value, actual)
+	}
 }
 
-func TestOnePasswordBackend_DefaultVault(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		backend := NewBackend()
+func TestGet_ErrGet(t *testing.T) {
+	backend := &Backend{}
+	backend.OnePassword = &MockOnePassword{}
 
-		Convey("The default vault should be 'Personal'", func() {
-			So((backend).(*OnePassword).Vault, ShouldEqual, "Personal")
-		})
-	})
+	_, err := backend.Get("nonExistentItem")
+
+	switch err.(type) {
+	case *ErrGet:
+		actual := err.Error()
+		expected := "1password backend get 'nonExistentItem' failed: mock op get item failed"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+	}
 }
 
-func TestInitOnePassword(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
+func TestInit(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"
+	vault := "production"
 
-		vault := "production"
+	backend := &Backend{}
+	backend.OnePassword = &MockOnePassword{signInOk: true}
 
-		domain := "https://externalsecretoperator.1password.com"
-		email := "externalsecretoperator@example.com"
-		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-		masterPassword := "MasterPassword12346!"
+	params := map[string]string{
+		"domain":         domain,
+		"email":          email,
+		"secretKey":      secretKey,
+		"masterPassword": masterPassword,
+		"vault":          vault,
+	}
 
-		client := &MockClient{}
-		client.On("SignIn", domain, email, secretKey, masterPassword).Return(nil)
-
-		backend := NewBackend()
-		(backend).(*OnePassword).Client = client
-
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"domain":         domain,
-				"email":          email,
-				"secretKey":      secretKey,
-				"masterPassword": masterPassword,
-				"vault":          vault,
-			}
-
-			backend.Init(params)
-
-			Convey("Client should have signed in", func() {
-				client.AssertExpectations(t)
-			})
-		})
-	})
+	err := backend.Init(params)
+	if err != nil {
+		t.Fail()
+		fmt.Println("expected signin to succeed")
+	}
 }
 
-func TestInitOnePassword_MissingEmail(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		domain := "https://externalsecretoperator.1password.com"
-		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-		masterPassword := "MasterPassword12346!"
+func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"
+	vault := "production"
 
-		backend := NewBackend()
+	backend := &Backend{}
+	backend.OnePassword = &MockOnePassword{signInOk: false}
 
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"domain":         domain,
-				"secretKey":      secretKey,
-				"masterPassword": masterPassword,
-			}
+	params := map[string]string{
+		"domain":         domain,
+		"email":          email,
+		"secretKey":      secretKey,
+		"masterPassword": masterPassword,
+		"vault":          vault,
+	}
 
-			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `email` not found")
-		})
-	})
+	err := backend.Init(params)
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: mock op sign in failed"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+		fmt.Println("expected init failed error")
+	}
 }
 
-func TestInitOnePassword_MissingDomain(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		email := "externalsecretoperator@example.com"
-		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-		masterPassword := "MasterPassword12346!"
+func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
+	masterPassword := "MasterPassword12346!"
 
-		backend := NewBackend()
+	backend := NewBackend()
 
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"email":          email,
-				"secretKey":      secretKey,
-				"masterPassword": masterPassword,
-			}
+	params := map[string]string{
+		"domain":         domain,
+		"secretKey":      secretKey,
+		"masterPassword": masterPassword,
+	}
 
-			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `domain` not found")
-		})
-	})
+	err := backend.Init(params)
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: expected parameter 'email'"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+		fmt.Println("expected init failed error")
+	}
 }
 
-func TestInitOnePassword_MissingSecretKey(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		domain := "https://externalsecretoperator.1password.com"
-		email := "externalsecretoperator@example.com"
-		masterPassword := "MasterPassword12346!"
+func TestNewBackend(t *testing.T) {
+	backend := NewBackend()
 
-		backend := NewBackend()
+	switch backend.(*Backend).OnePassword.(type) {
+	case *Op:
+		switch backend.(*Backend).OnePassword.(*Op).GetterBuilder.(type) {
+		case *OpGetterBuilder:
+		default:
+			t.Fail()
+			fmt.Println("expected OnePassword GetterBuilder to be OpGetterBuilder")
+		}
+	default:
+		t.Fail()
+		fmt.Println("expected OnePassword implementation to be Op")
+	}
 
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"email":          email,
-				"domain":         domain,
-				"masterPassword": masterPassword,
-			}
-
-			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `secretKey` not found")
-		})
-	})
-}
-
-func TestInitOnePassword_MissingMasterPassword(t *testing.T) {
-	Convey("Given a OnePasswordBackend", t, func() {
-		domain := "https://externalsecretoperator.1password.com"
-		email := "externalsecretoperator@example.com"
-		secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-
-		backend := NewBackend()
-
-		Convey("When initializing", func() {
-			params := map[string]string{
-				"email":     email,
-				"domain":    domain,
-				"secretKey": secretKey,
-			}
-
-			So(backend.Init(params).Error(), ShouldEqual, "error reading 1password backend parameters: invalid init parameters: expected `masterPassword` not found")
-		})
-	})
+	expectedVault := "Personal"
+	if backend.(*Backend).Vault != expectedVault {
+		t.Fail()
+		fmt.Printf("expected vault to be equal to '%s'", expectedVault)
+	}
 }

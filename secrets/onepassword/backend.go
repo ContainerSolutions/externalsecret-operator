@@ -3,41 +3,69 @@ package onepassword
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/containersolutions/externalsecret-operator/secrets/backend"
 	"github.com/pkg/errors"
 )
 
+type ErrInitFailed struct {
+	message string
+}
+
+func (e *ErrInitFailed) Error() string {
+	return fmt.Sprintf("1password backend init failed: %s", e.message)
+}
+
+type ErrGet struct {
+	itemName string
+	message  string
+}
+
+func (e *ErrGet) Error() string {
+	return fmt.Sprintf("1password backend get '%s' failed: %s", e.itemName, e.message)
+}
+
+var (
+	backendName         = "onepassword"
+	defaultVault        = "Personal"
+	paramDomain         = "domain"
+	paramEmail          = "email"
+	paramSecretKey      = "secretKey"
+	paramMasterPassword = "masterPassword"
+	paramVault          = "vault"
+	paramKeys           = []string{paramDomain, paramEmail, paramSecretKey, paramMasterPassword, paramVault}
+	errSigninFailed     = errors.New("could not sign in to 1password")
+)
+
 // Backend implementation for 1Password
-type OnePassword struct {
-	Client Client
-	Vault  string
+type Backend struct {
+	OnePassword OnePassword
+	Vault       string
 }
 
 func init() {
-	backend.Register("onepassword", NewBackend)
+	backend.Register(backendName, NewBackend)
 }
 
 // NewBackend returns a 1Password backend
 func NewBackend() backend.Backend {
-	backend := &OnePassword{}
-	backend.Client = &OP{}
-	backend.Vault = "Personal"
+	backend := &Backend{}
+	backend.OnePassword = &Op{GetterBuilder: &OpGetterBuilder{}}
+	backend.Vault = defaultVault
 	return backend
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
-func (b *OnePassword) Init(parameters map[string]string) error {
+func (b *Backend) Init(parameters map[string]string) error {
 	err := validateParameters(parameters)
 	if err != nil {
-		return errors.Wrap(err, "error reading 1password backend parameters")
+		return err
 	}
-	b.Vault = parameters["vault"]
+	b.Vault = parameters[paramVault]
 
-	err = b.Client.SignIn(parameters["domain"], parameters["email"], parameters["secretKey"], parameters["masterPassword"])
+	err = b.OnePassword.Authenticate(parameters[paramDomain], parameters[paramEmail], parameters[paramMasterPassword], parameters[paramSecretKey])
 	if err != nil {
-		return errors.Wrap(err, "could not sign in to 1password")
+		return &ErrInitFailed{message: err.Error()}
 	}
 	fmt.Println("signed into 1password successfully")
 
@@ -46,32 +74,32 @@ func (b *OnePassword) Init(parameters map[string]string) error {
 
 // Get retrieves the 1password item whose name matches the key and return the
 // value of the 'password' field.
-func (b *OnePassword) Get(key string) (string, error) {
+func (b *Backend) Get(key string) (string, error) {
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
-	value, err := b.Client.Get(b.Vault, key)
+	item, err := b.OnePassword.GetItem(b.Vault, key)
 	if err != nil {
-		return "", fmt.Errorf("error retrieving 1password item '%s'", key)
+		return "", &ErrGet{itemName: key, message: err.Error()}
 	}
 
-	return value, nil
+	return item, nil
 }
 
 func validateParameters(parameters map[string]string) error {
-
-	paramKeys := []string{"domain", "email", "secretKey", "masterPassword", "vault"}
-
 	for _, key := range paramKeys {
-		paramValue, found := parameters[key]
-		if !found {
-			return fmt.Errorf("invalid init parameters: expected `%v` not found", key)
-		}
+		value, found := parameters[key]
+		fmt.Printf("parameter '%s' has length: '%d'\n", key, len(value))
 
-		paramType := reflect.TypeOf(paramValue)
-		if paramType.Kind() != reflect.String {
-			return fmt.Errorf("invalid init parameters: expected `%v` of type `string` got `%v`", key, paramType)
+		if !found {
+			return &ErrInitFailed{message: fmt.Sprintf("expected parameter '%s'", key)}
+		} else if value == "" {
+			return &ErrInitFailed{message: fmt.Sprintf("parameter '%s' is empty", key)}
 		}
 	}
-
 	return nil
+}
+
+type OnePassword interface {
+	Authenticate(domain string, email string, masterPassword string, secretKey string) error
+	GetItem(vault string, item string) (string, error)
 }
