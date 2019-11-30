@@ -46,7 +46,6 @@ You can provide the configuration of the External Secret Operator using the `sec
 | `image.pullPolicy` | Image pull policy | `IfNotPresent`
 | `watchNamespace` | Namespace to watch for `ExternalSecret` resources. If empty, will be the same as the one where the operator will be deployed | `""`
 | `operatorName` | Name passed as `OPERATOR_NAME` environment variable. Referenced by `ExternalSecret` resources in `Backend` field | `externalsecret-operator`
-| `crds.create` | Whether `ExternalSecret` CRD should be created | `true`
 | `secret.create` | Whether the secret containing the operator configuration should be created | `true`
 | `secret.name` | Name of the Secret that contains the operator configuration. If empty and `secret.create` is `true`, a secret based on the release name will be generated | `""`
 | `secret.key` | Key in the secret holding the operator configuration | `config.json`

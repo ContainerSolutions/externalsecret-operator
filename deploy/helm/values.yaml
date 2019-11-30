@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: containersol/externalsecret-operator
-  tag: 0.0.3
+  tag: latest
   pullPolicy: IfNotPresent
 
 # The namespace that will be watched for ExternalSecret resources
@@ -16,10 +16,6 @@ watchNamespace: ""
 # as the Backend field.
 # If not set will default to release name.
 operatorName: ""
-
-crds:
-  # Specifies wether the ExternalSecret CRD should be created
-  create: true
 
 secret:
   # Specifies wether the secret containing the operator configuration should be created

@@ -75,12 +75,15 @@ coverage:
 
 .PHONY: test-helm
 RELEASE := test$(shell echo $$$$)
+OPERATOR_NAME=$(RELEASE)
+BACKEND=dummy
+.EXPORT_ALL_VARIABLES: test-helm
 test-helm:
 	helm upgrade --install --wait $(RELEASE) \
 		--set test.create=true \
 		./deploy/helm
-	helm test --cleanup $(RELEASE)
-	helm delete --purge $(RELEASE)
+	helm test  $(RELEASE)
+	helm uninstall $(RELEASE)
 
 PLATFORM := $(shell bash -c '[ "$$(uname -s)" = "Linux" ] && echo linux-gnu || echo apple-darwin')
 OPERATOR_SDK_VERSION := v0.9.0
