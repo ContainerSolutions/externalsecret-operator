@@ -6,7 +6,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 ## Quick start
 
-If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
+If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
 
 ### Helm
 
@@ -22,12 +22,12 @@ helm upgrade --install asm1 --wait \
     --set secret.data.Parameters.accessKeyID="$AWS_ACCESS_KEY_ID" \
     --set secret.data.Parameters.region="$AWS_DEFAULT_REGION" \
     --set secret.data.Parameters.secretAccessKey="$AWS_SECRET_ACCESS_KEY" \
-    ./deployments/helm/.
+    ./deployments/helm/externalsecret-operator/.
 ```
 
 It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
-Look for more deployment options in the [README.md](./deployments/helm/README.md) of the helm chart.
+Look for more deployment options in the [README.md](./deployments/helm/externalsecret-operator/README.md) of the helm chart.
 
 ### Manifests
 

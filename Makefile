@@ -82,7 +82,7 @@ BACKEND=dummy
 test-helm:
 	helm upgrade --install --wait $(RELEASE) \
 		--set test.create=true \
-		./deployments/helm
+		./deployments/helm/externalsecret-operator/.
 	helm test  $(RELEASE)
 	helm uninstall $(RELEASE)
 
