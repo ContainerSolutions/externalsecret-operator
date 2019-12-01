@@ -1,6 +1,7 @@
 version: 2
 
 jobs:
+
   test:
     docker:
       - image: circleci/golang:1.11
@@ -9,19 +10,13 @@ jobs:
     working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
     steps:
       - checkout
-      - run: make test
-
-  coverage:
-    docker:
-      - image: circleci/golang:1.11
-        environment:
-          GO111MODULE: "on"
-    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
-    steps:
-      - checkout
+      - setup_remote_docker
+      - run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - run: make coverage
+      - run: make push
 
-  test-helm:
+  helm:
     machine:
       image: circleci/classic:201808-01
     environment:
@@ -29,7 +24,6 @@ jobs:
       INSTALL_K3S_VERSION: "v1.0.0"
       INSTALL_K3S_EXEC: "--write-kubeconfig-mode 664 --docker"
       KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-      DOCKER_TAG: latest
 
     working_directory: ~/k3s-circleci
     steps:
@@ -56,7 +50,7 @@ jobs:
             kubectl --namespace=kube-system wait --for=condition=Available --timeout=5m apiservices/v1beta1.metrics.k8s.io
             PATH="$(pwd)/linux-amd64:$PATH" make test-helm
 
-  push:
+  release:
     docker:
       - image: circleci/golang:1.11
         environment:
@@ -67,18 +61,17 @@ jobs:
       - setup_remote_docker
       - run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - run: make build
-      - run: make push
+      - run: make release
+
 
 workflows:
   version: 2
   build:
     jobs:
       - test
-      - coverage
-      - test-helm
-      - push:
+      - helm:
           requires:
             - test
-            - coverage
-            - test-helm
+      - release:
+          requires:
+            - helm
