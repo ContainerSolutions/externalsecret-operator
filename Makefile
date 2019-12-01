@@ -7,7 +7,7 @@ OPERATOR_NAME ?= "asm-example"
 GIT_HASH	:= $(shell git rev-parse --short HEAD)
 GIT_BRANCH 	:= $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/')
 GIT_TAG 	:= $(shell git describe --tags --abbrev=0 --always)
-DOCKER_TAG 	:= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT_BRANCH) $(GIT_TAG))
+DOCKER_TAG 	?= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT_BRANCH) $(GIT_TAG))
 
 .PHONY: build
 build: operator-sdk
@@ -80,8 +80,9 @@ OPERATOR_NAME=$(RELEASE)
 BACKEND=dummy
 .EXPORT_ALL_VARIABLES: test-helm
 test-helm:
-	helm upgrade --install --wait $(RELEASE) \
+	helm install --wait $(RELEASE) \
 		--set test.create=true \
+		--set image.tag=$(DOCKER_TAG) \
 		./deployments/helm/externalsecret-operator/.
 	helm test  $(RELEASE)
 	helm uninstall $(RELEASE)
