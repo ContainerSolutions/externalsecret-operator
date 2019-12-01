@@ -4,7 +4,7 @@ package onepassword
 import (
 	"fmt"
 
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	"github.com/pkg/errors"
 )
 

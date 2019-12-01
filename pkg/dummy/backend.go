@@ -3,7 +3,7 @@
 // key passed to the Get function.
 package dummy
 
-import "github.com/containersolutions/externalsecret-operator/secrets/backend"
+import "github.com/containersolutions/externalsecret-operator/pkg/backend"
 
 // Backend is a fake secrets backend for testing purposes
 type Backend struct {

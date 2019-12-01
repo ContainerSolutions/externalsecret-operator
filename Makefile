@@ -11,6 +11,7 @@ DOCKER_TAG 	:= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT
 
 .PHONY: build
 build: operator-sdk
+	go build -o ./build/_output/bin/externalsecret-operator ./pkg/cmd
 	./operator-sdk build $(DOCKER_IMAGE)
 
 .PHONY: push
@@ -25,12 +26,12 @@ push: build
 .PHONY: deploy
 .EXPORT_ALL_VARIABLES: deploy
 deploy:
-	kubectl apply -n $(NAMESPACE) -f ./deploy/service_account.yaml
-	kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
-	envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
-	kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
-	envsubst < deploy/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
-	envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
+	kubectl apply -n $(NAMESPACE) -f ./deployments/service_account.yaml
+	kubectl apply -n $(NAMESPACE) -f ./deployments/role.yaml
+	envsubst < ./deployments/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
+	kubectl apply -n $(NAMESPACE) -f ./deployments/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
+	envsubst < deployments/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
+	envsubst < deployments/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: apply-onepassword
 OPERATOR_NAME=onepassword
@@ -38,17 +39,17 @@ BACKEND=onepassword
 .EXPORT_ALL_VARIABLES: apply-onepassword
 apply-onepassword:
 	@echo "Deploying service account..."
-	@kubectl apply -n $(NAMESPACE) -f ./deploy/service_account.yaml
+	@kubectl apply -n $(NAMESPACE) -f ./deployments/service_account.yaml
 	@echo "Deploying role..."
-	@kubectl apply -n $(NAMESPACE) -f ./deploy/role.yaml
+	@kubectl apply -n $(NAMESPACE) -f ./deployments/role.yaml
 	@echo "Deploying rolebinding..."
-	@envsubst < ./deploy/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
+	@envsubst < ./deployments/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
 	@echo "Deploying external operator CRD..."
-	@kubectl apply -n $(NAMESPACE) -f ./deploy/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
+	@kubectl apply -n $(NAMESPACE) -f ./deployments/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
 	@echo "Deploying 1password operator config secret..."
-	@envsubst < deploy/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
+	@envsubst < deployments/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
 	@echo "Deploying operator deployment..."
-	@envsubst < deploy/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
+	@envsubst < deployments/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
 
 .PHONY: delete-onepassword
 .EXPORT_ALL_VARIABLES: delete-onepassword
@@ -68,7 +69,7 @@ test:
 
 .PHONY: coverage
 # include only code we write in coverage report, not generated
-COVERAGE := ./pkg/controller/externalsecret... ./secrets/...
+COVERAGE := ./...
 coverage:
 	go test -short -race -coverprofile=coverage.txt -covermode=atomic $(COVERAGE)
 	curl -s https://codecov.io/bash | bash
@@ -81,7 +82,7 @@ BACKEND=dummy
 test-helm:
 	helm upgrade --install --wait $(RELEASE) \
 		--set test.create=true \
-		./deploy/helm
+		./deployments/helm/externalsecret-operator/.
 	helm test  $(RELEASE)
 	helm uninstall $(RELEASE)
 

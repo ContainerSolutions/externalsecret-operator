@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/containersolutions/externalsecret-operator/pkg/apis/externalsecretoperator/v1alpha1"
-	"github.com/containersolutions/externalsecret-operator/secrets/backend"
-	"github.com/containersolutions/externalsecret-operator/secrets/dummy"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/dummy"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

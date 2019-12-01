@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	op "github.com/ameier38/onepassword"
+
+	. "github.com/containersolutions/externalsecret-operator/pkg/internal"
 )
 
 type MockGetterBuilder struct {
@@ -35,7 +37,7 @@ func TestErrMissingSection(t *testing.T) {
 
 	expected := "missing section 'External Secret Operator' in 1Password item 'myitem'"
 
-	assertEquals(t, expected, err.Error())
+	AssertEquals(t, expected, err.Error())
 }
 
 func TestAuthenticate(t *testing.T) {
@@ -46,7 +48,7 @@ func TestAuthenticate(t *testing.T) {
 
 	op.Authenticate("domain", "email", "masterPassword", "secretKey")
 
-	assertNotNil(t, op.Getter)
+	AssertNotNil(t, op.Getter)
 }
 
 func TestAuthenticate_Err(t *testing.T) {
@@ -75,7 +77,7 @@ func TestGetItem(t *testing.T) {
 
 	actual, _ := op.GetItem(vault, item)
 
-	assertEquals(t, value, actual)
+	AssertEquals(t, value, actual)
 }
 
 func TestGetItem_ErrFailedGetItemMap(t *testing.T) {
@@ -84,7 +86,7 @@ func TestGetItem_ErrFailedGetItemMap(t *testing.T) {
 	_, err := op.GetItem("vault", "item")
 
 	expected := "failed to get itemMap of 1Password item 'item': mock op: could not get item"
-	assertEquals(t, expected, err.Error())
+	AssertEquals(t, expected, err.Error())
 }
 
 func TestGetItem_ErrMissingSection(t *testing.T) {
@@ -103,7 +105,7 @@ func TestGetItem_ErrMissingSection(t *testing.T) {
 	_, err := op.GetItem("vault", "item")
 
 	expected := "missing section 'External Secret Operator' in 1Password item 'item'"
-	assertEquals(t, expected, err.Error())
+	AssertEquals(t, expected, err.Error())
 }
 
 func TestGetItem_ErrMissingField(t *testing.T) {
@@ -116,7 +118,7 @@ func TestGetItem_ErrMissingField(t *testing.T) {
 	_, err := op.GetItem("vault", "item")
 
 	expected := "missing field 'item' in 1Password item 'item'"
-	assertEquals(t, expected, err.Error())
+	AssertEquals(t, expected, err.Error())
 }
 
 func TestNotAuthenticatedGetItemMap(t *testing.T) {
@@ -125,5 +127,5 @@ func TestNotAuthenticatedGetItemMap(t *testing.T) {
 	_, err := notAuthGetter.GetItemMap(op.VaultName("vault"), op.ItemName("item"))
 
 	expected := "failed to get an item map because you are not authenticated"
-	assertEquals(t, expected, err.Error())
+	AssertEquals(t, expected, err.Error())
 }

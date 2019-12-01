@@ -1,5 +1,5 @@
-// Package secrets implements the logic and data structures to handle external
-// secrets backends. Each external secret implementation will reside in its own
+// Package backend implements the logic and data structures to handle external
+// backend backends. Each external secret implementation will reside in its own
 // package. A "Dummy" backend is provided as reference.
 //
 // Backends must register their "type" using a function to instantiate themselves. An
@@ -7,7 +7,7 @@
 // backend package init() function:
 //
 //		func init() {
-//			secrets.Register("dummy", NewBackend)
+//			backend.Register("dummy", NewBackend)
 //		}
 //
 //		// NewBackend gives you an new Dummy Backend
@@ -15,4 +15,4 @@
 //			return &Backend{}
 //		}
 //
-package secrets
+package backend
