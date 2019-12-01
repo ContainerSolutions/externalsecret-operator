@@ -125,7 +125,8 @@ $ export ITEM_VAULT=myvault
 
 Now load the 1Password credentials of your _operator_ account into the environment
 
-$ . deploy/source-onepassword-secrets.sh
+```
+$ . deployments/source-onepassword-secrets.sh
 ```
 
 Run the tests including the integration test with
