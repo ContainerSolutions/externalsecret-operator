@@ -125,6 +125,7 @@ $ export ITEM_VAULT=myvault
 
 Now load the 1Password credentials of your _operator_ account into the environment
 
+```
 $ . deployments/source-onepassword-secrets.sh
 ```
 
