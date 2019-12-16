@@ -1,36 +1,77 @@
 version: 2
 
 jobs:
+
   test:
     docker:
       - image: circleci/golang:1.11
         environment:
-          GO111MODULE: "on"      
-    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator          
-    steps:
-      - checkout
-      - run: make test
-      - run: make coverage
-
-  push:
-    docker:
-      - image: circleci/golang:1.11
-        environment:
           GO111MODULE: "on"
-    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator                    
+    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
     steps:
       - checkout
       - setup_remote_docker
       - run: |
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - run: make build
+      - run: make coverage
       - run: make push
+
+  helm:
+    machine:
+      image: circleci/classic:201808-01
+    environment:
+      HELM_VERSION: "v3.0.0"
+      INSTALL_K3S_VERSION: "v1.0.0"
+      INSTALL_K3S_EXEC: "--write-kubeconfig-mode 664 --docker"
+      KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    working_directory: ~/k3s-circleci
+    steps:
+      - checkout
+      - run:
+          name: Install k3s cluster
+          command: |
+            curl -sfL https://get.k3s.io | sh -
+            sudo chmod -R a+rw /etc/rancher/k3s
+      - run:
+          name: Install helm
+          command: |
+            curl -sLo helm.tar.gz https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
+            tar xzf helm.tar.gz
+            chmod +x linux-amd64/helm
+      - run:
+          name: Run test-helm
+          command: |
+            # make sure k3s is ready
+            while [ ! "$(kubectl get node | grep Ready)" ] ; do sleep 1 ; done
+            # make extra sure k3s is ready
+            sleep 5
+            # make extra extra sure k3s is ready https://github.com/helm/helm/issues/6361
+            kubectl --namespace=kube-system wait --for=condition=Available --timeout=5m apiservices/v1beta1.metrics.k8s.io
+            PATH="$(pwd)/linux-amd64:$PATH" make test-helm
+
+  release:
+    docker:
+      - image: circleci/golang:1.11
+        environment:
+          GO111MODULE: "on"
+    working_directory: /go/src/github.com/ContainerSolutions/externalsecret-operator
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - run: make release
+
 
 workflows:
   version: 2
   build:
     jobs:
       - test
-      - push:
+      - helm:
           requires:
             - test
+      - release:
+          requires:
+            - helm
