@@ -4,18 +4,17 @@ package asm
 import (
 	"fmt"
 
-	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
 // Backend represents a backend for AWS Secrets Manager
 type Backend struct {
 	SecretsManager secretsmanageriface.SecretsManagerAPI
-	config         *aws.Config
 	session        *session.Session
 }
 
@@ -32,12 +31,7 @@ func NewBackend() backend.Backend {
 func (s *Backend) Init(parameters map[string]string) error {
 	var err error
 
-	s.config, err = awsConfigFromParams(parameters)
-	if err != nil {
-		return err
-	}
-
-	s.session, err = session.NewSession(s.config)
+	s.session, err = getAWSSession(parameters)
 	if err != nil {
 		return err
 	}
@@ -68,23 +62,27 @@ func (s *Backend) Get(key string) (string, error) {
 	return *output.SecretString, nil
 }
 
-// awsConfigFromParams returns an aws.Config based on the parameters
-func awsConfigFromParams(parameters map[string]string) (*aws.Config, error) {
+/* getAWSSession returns an aws.session.Session based on the parameters or environment variables
+* If parameters are not present or incomplete (secret key, access key AND region)
+* then let default config loading order to go on:
+* https://docs.aws.amazon.com/sdk-for-go/api/aws/session/
+ */
+func getAWSSession(parameters map[string]string) (*session.Session, error) {
 
 	keys := []string{"accessKeyID", "secretAccessKey", "region"}
 
 	for _, key := range keys {
 		_, found := parameters[key]
 		if !found {
-			return nil, fmt.Errorf("Invalid init parameters: expected `%v` not found", key)
+			return session.NewSession()
 		}
 	}
 
-	return &aws.Config{
+	return session.NewSession(&aws.Config{
 		Region: aws.String(parameters["region"]),
 		Credentials: credentials.NewStaticCredentials(
 			parameters["accessKeyID"],
 			parameters["secretAccessKey"],
 			""),
-	}, nil
+	})
 }
