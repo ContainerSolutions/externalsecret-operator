@@ -78,6 +78,14 @@ secret:
 this string is a secret
 ```
 
+## Architecture
+
+In [this](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkEmDFo5GWNzJ2N398cI) you can find more information about the architecture and design choices. 
+
+Here's a high-level diagram of how things are put together.
+
+![architecture](./assets/architecture.png)
+
 ## Secrets Backends
 
 We would like to support as many backend as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
