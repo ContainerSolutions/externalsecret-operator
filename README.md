@@ -4,8 +4,6 @@
 This operator reads information from a third party service
 like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and automatically injects the values as [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
 
-![architecture](./assets/architecture.png)
-
 ## Quick start
 
 If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
@@ -79,6 +77,14 @@ secret:
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret
 ```
+
+## Architecture
+
+In [this](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkEmDFo5GWNzJ2N398cI) you can find more information about the architecture and design choices. 
+
+Here's a high-level diagram of how things are put together.
+
+![architecture](./assets/architecture.png)
 
 ## Secrets Backends
 
