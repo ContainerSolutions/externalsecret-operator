@@ -165,8 +165,10 @@ $ source deployments/source-onepassword-secrets.sh
 $ make deploy-onepassword
 ```
 
-## What's next
+## Contributing
 
-This project is just at its beginning. See
-[Issues](https://github.com/ContainerSolutions/externalsecret-operator/issues)
-for planned improvements and additions.
+Yay! We welcome and encourage contributions to this project! 
+
+See our [contributing document](./CONTRIBUTING.md) and
+[Issues](https://github.com/ContainerSolutions/externalsecret-operator/issues) for
+planned improvements and additions.

@@ -34,4 +34,4 @@ else
     DOCKER_TAG="$GIT_BRANCH-latest"
 fi
 
-echo $DOCKER_TAG
+echo "$DOCKER_TAG"
