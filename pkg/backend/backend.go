@@ -5,7 +5,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	// "github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	config "github.com/containersolutions/externalsecret-operator/pkg/config"
 
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -60,12 +61,12 @@ func InitFromEnv() error {
 	defer initLock.Unlock()
 	log.Info("initFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
 
-	config, err := ConfigFromEnv()
+	config, err := config.ConfigFromEnv()
 	if err != nil {
 		return err
 	}
 
-	operatorName, err := k8sutil.GetOperatorName()
+	operatorName, err := "gsm-local", nil
 	if err != nil {
 		return err
 	}

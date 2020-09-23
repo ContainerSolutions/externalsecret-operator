@@ -59,7 +59,7 @@ and an `ExternalSecret` resource definition like this one:
 
 ```yaml
 % cat ./deployments/crds/examples/externalsecret-asm.yaml
-apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
+apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
   name: example-externalsecret

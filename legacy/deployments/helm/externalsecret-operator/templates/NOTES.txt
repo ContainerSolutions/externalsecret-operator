@@ -1,0 +1,13 @@
+Deploy an ExternalSecret CR in the namespace watched by the External Secret Operator
+using name provided in the configuration secret as Backend.
+
+{{- if and .Values.rbac.create }}
+apiVersion: externalsecret-operator.container-solutions.com/v1alpha1
+kind: ExternalSecret
+metadata:
+  name: example-externalsecret-{{ .Values.secret.data.Type }}
+spec:
+  Key: example-externalsecret-key
+  Backend: {{ .Values.operatorName }}
+{{- else }}
+{{- end -}}

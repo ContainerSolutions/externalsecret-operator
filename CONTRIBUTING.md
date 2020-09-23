@@ -23,7 +23,7 @@ The build process is entirely automated and it uses the
 [operator-sdk](https://github.com/operator-framework/operator-sdk) executable.
 
 ```
-make build
+make docker-build
 ```
 
 There's a comprehensive set of unit tests that can be run with:

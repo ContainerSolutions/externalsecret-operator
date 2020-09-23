@@ -1,107 +1,120 @@
-DOCKER_IMAGE ?= containersol/externalsecret-operator
+# Current Operator version
+VERSION ?= 0.1.0
+# Default bundle image tag
+BUNDLE_IMG ?= controller-bundle:$(VERSION)
+# Options for 'bundle-build'
+ifneq ($(origin CHANNELS), undefined)
+BUNDLE_CHANNELS := --channels=$(CHANNELS)
+endif
+ifneq ($(origin DEFAULT_CHANNEL), undefined)
+BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
+endif
+BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
-NAMESPACE ?= "default"
-BACKEND ?= "asm"
-OPERATOR_NAME ?= "asm-example"
+# Image URL to use all building/pushing image targets
+IMG ?= containersol/externalsecret-operator
+# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
+CRD_OPTIONS ?= "crd:trivialVersions=true"
 
-GIT_HASH	:= $(shell git rev-parse --short HEAD)
-GIT_BRANCH 	:= $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/')
-GIT_TAG 	:= $(shell git describe --tags --abbrev=0 --always)
-DOCKER_TAG 	:= $(shell ./build/scripts/determine_docker_tag.sh $(GIT_HASH) $(GIT_BRANCH) $(GIT_TAG))
+# Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
 
-.PHONY: build
-build: operator-sdk
-	go build -o ./build/_output/bin/externalsecret-operator ./pkg/cmd
-	./operator-sdk build $(DOCKER_IMAGE)
+all: manager
 
-.PHONY: push
-.EXPORT_ALL_VARIABLES: push
-push: build
-	# tag and push docker image with commit hash as tag
-	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):$(GIT_HASH)
-	docker push $(DOCKER_IMAGE):$(GIT_HASH)
+# Run tests
+test: generate fmt vet manifests
+	go test ./... -coverprofile cover.out
 
-.PHONY: release
-.EXPORT_ALL_VARIABLES: push
-release:
-	# tag an existing image with a proper release tag (i.e. latest or 0.0.4)
-	docker pull $(DOCKER_IMAGE):$(GIT_HASH)
-	docker tag $(DOCKER_IMAGE):$(GIT_HASH) $(DOCKER_IMAGE):$(DOCKER_TAG)
-	docker push $(DOCKER_IMAGE):$(DOCKER_TAG)
+# Build manager binary
+manager: generate fmt vet
+	go build -o bin/manager main.go
 
-.PHONY: deploy
-.EXPORT_ALL_VARIABLES: deploy
-deploy:
-	# deploy using vanilla manifests with envsubsts
-	kubectl apply -n $(NAMESPACE) -f ./deployments/service_account.yaml
-	kubectl apply -n $(NAMESPACE) -f ./deployments/role.yaml
-	envsubst < ./deployments/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
-	kubectl apply -n $(NAMESPACE) -f ./deployments/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
-	envsubst < deployments/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
-	envsubst < deployments/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
+# Run against the configured Kubernetes cluster in ~/.kube/config
+run: generate fmt vet manifests
+	go run ./main.go
 
-.PHONY: apply-onepassword
-OPERATOR_NAME=onepassword
-BACKEND=onepassword
-.EXPORT_ALL_VARIABLES: apply-onepassword
-apply-onepassword:
-	@echo "Deploying service account..."
-	@kubectl apply -n $(NAMESPACE) -f ./deployments/service_account.yaml
-	@echo "Deploying role..."
-	@kubectl apply -n $(NAMESPACE) -f ./deployments/role.yaml
-	@echo "Deploying rolebinding..."
-	@envsubst < ./deployments/role_binding.yaml | kubectl apply -n $(NAMESPACE) -f  -
-	@echo "Deploying external operator CRD..."
-	@kubectl apply -n $(NAMESPACE) -f ./deployments/crds/externalsecret-operator_v1alpha1_externalsecret_crd.yaml
-	@echo "Deploying 1password operator config secret..."
-	@envsubst < deployments/secret-${BACKEND}.yaml | kubectl apply -n $(NAMESPACE) -f -
-	@echo "Deploying operator deployment..."
-	@envsubst < deployments/deployment.yaml | kubectl apply -n $(NAMESPACE) -f -
+# Install CRDs into a cluster
+install: manifests kustomize
+	$(KUSTOMIZE) build config/crd | kubectl apply -f -
 
-.PHONY: delete-onepassword
-.EXPORT_ALL_VARIABLES: delete-onepassword
-delete-onepassword:
-	@echo "Deleting 1password operator config secret..."
-	kubectl delete secret externalsecret-operator-config
-	@echo "Deleting operator deployment..."
-	kubectl delete deployment externalsecret-operator
+# Uninstall CRDs from a cluster
+uninstall: manifests kustomize
+	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
-.PHONY: deploy-onepassword
-.EXPORT_ALL_VARIABLES: deploy-onepassword
-deploy-onepassword: push apply-onepassword
-	
-.PHONY: test
-test:
-	# run unit tests
-	go test -v -short ./... -count=1
+# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
+deploy: manifests kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
-.PHONY: coverage
-# include only code we write in coverage report, not generated
-COVERAGE := ./...
-coverage:
-	# generate coverage report
-	go test -short -race -coverprofile=coverage.txt -covermode=atomic $(COVERAGE)
-	curl -s https://codecov.io/bash | bash
+# Generate manifests e.g. CRD, RBAC etc.
+manifests: controller-gen
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
-.PHONY: test-helm
-RELEASE := test$(shell echo $$$$)
-OPERATOR_NAME=$(RELEASE)
-BACKEND=dummy
-HELM_IMAGE_TAG ?= $(GIT_HASH)
-.EXPORT_ALL_VARIABLES: test-helm
-test-helm:
-	# end-to-end test using test included in the helm chart
-	helm install --wait $(RELEASE) \
-		--set test.create=true \
-		--set image.tag=$(HELM_IMAGE_TAG) \
-		./deployments/helm/externalsecret-operator/.
-	helm test  $(RELEASE)
-	helm uninstall $(RELEASE)
+# Run go fmt against code
+fmt:
+	go fmt ./...
 
-PLATFORM := $(shell bash -c '[ "$$(uname -s)" = "Linux" ] && echo linux-gnu || echo apple-darwin')
-OPERATOR_SDK_VERSION := v0.9.0
-OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-$(PLATFORM)
-operator-sdk:
-	# ensure operator-sdk is available
-	curl -LJ -o $@ $(OPERATOR_SDK_URL)
-	chmod +x $@
+# Run go vet against code
+vet:
+	go vet ./...
+
+# Generate code
+generate: controller-gen
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+
+# Build the docker image
+docker-build: test
+	docker build . -t ${IMG}
+
+# Push the docker image
+docker-push:
+	docker push ${IMG}
+
+# find or download controller-gen
+# download controller-gen if necessary
+controller-gen:
+ifeq (, $(shell which controller-gen))
+	@{ \
+	set -e ;\
+	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$CONTROLLER_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.3.0 ;\
+	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
+	}
+CONTROLLER_GEN=$(GOBIN)/controller-gen
+else
+CONTROLLER_GEN=$(shell which controller-gen)
+endif
+
+kustomize:
+ifeq (, $(shell which kustomize))
+	@{ \
+	set -e ;\
+	KUSTOMIZE_GEN_TMP_DIR=$$(mktemp -d) ;\
+	cd $$KUSTOMIZE_GEN_TMP_DIR ;\
+	go mod init tmp ;\
+	go get sigs.k8s.io/kustomize/kustomize/v3@v3.5.4 ;\
+	rm -rf $$KUSTOMIZE_GEN_TMP_DIR ;\
+	}
+KUSTOMIZE=$(GOBIN)/kustomize
+else
+KUSTOMIZE=$(shell which kustomize)
+endif
+
+# Generate bundle manifests and metadata, then validate generated files.
+.PHONY: bundle
+bundle: manifests
+	operator-sdk generate kustomize manifests -q
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
+	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
+	operator-sdk bundle validate ./bundle
+
+# Build the bundle image.
+.PHONY: bundle-build
+bundle-build:
+	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .

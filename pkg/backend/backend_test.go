@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	config "github.com/containersolutions/externalsecret-operator/pkg/config"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -63,7 +64,7 @@ func TestInstantiate(t *testing.T) {
 
 func TestInitFromEnv(t *testing.T) {
 
-	configStruct := Config{
+	configStruct := config.Config{
 		Type: "mock",
 		Parameters: map[string]string{
 			"Param1": "Value1",
