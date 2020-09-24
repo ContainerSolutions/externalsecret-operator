@@ -10,6 +10,7 @@ var expectedRegisteredBackends = []string{
 	"asm",
 	"dummy",
 	"onepassword",
+	"gsm",
 }
 
 func TestInit(t *testing.T) {
