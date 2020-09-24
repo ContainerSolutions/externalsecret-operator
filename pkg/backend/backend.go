@@ -56,7 +56,7 @@ func Register(name string, function func() Backend) {
 }
 
 // InitFromEnv initializes a backend looking into Env for config data
-func InitFromEnv() error {
+func InitFromEnv(leaderID string) error {
 	initLock.Lock()
 	defer initLock.Unlock()
 	log.Info("initFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
@@ -66,18 +66,18 @@ func InitFromEnv() error {
 		return err
 	}
 
-	operatorName, err := "gsm-local", nil
+	// operatorName, err := "", nil
+	// if err != nil {
+	// 	return err
+	// }
+
+	err = Instantiate(leaderID, config.Type)
 	if err != nil {
 		return err
 	}
 
-	err = Instantiate(operatorName, config.Type)
-	if err != nil {
-		return err
-	}
-
-	log.Info("initialize", "name", operatorName)
-	err = Instances[operatorName].Init(config.Parameters)
+	log.Info("initialize", "name", leaderID)
+	err = Instances[leaderID].Init(config.Parameters)
 
 	return err
 }
