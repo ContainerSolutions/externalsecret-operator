@@ -76,9 +76,8 @@ func TestInitFromEnv(t *testing.T) {
 		Convey("Given a valid config", func() {
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))
-			os.Setenv("OPERATOR_NAME", "mock-backend")
 			Convey("When initializing backend from env", func() {
-				err := InitFromEnv("testing-backend")
+				err := InitFromEnv("mock-backend")
 				So(err, ShouldBeNil)
 				Convey("Then a backend is instantiated and initialized correctly", func() {
 					backend, found := Instances["mock-backend"]
@@ -90,26 +89,13 @@ func TestInitFromEnv(t *testing.T) {
 			})
 		})
 
-		Convey("Given a valid config but no OPERATOR_NAME", func() {
-			configData, _ := json.Marshal(configStruct)
-			os.Setenv("OPERATOR_CONFIG", string(configData))
-			os.Unsetenv("OPERATOR_NAME")
-			Convey("When initializing backend from env", func() {
-				err := InitFromEnv("testing-backend")
-				So(err, ShouldNotBeNil)
-				Convey("Then an error message is returned", func() {
-					So(err.Error(), ShouldStartWith, "OPERATOR_NAME must be set")
-				})
-			})
-		})
-
 		Convey("Given a valid config with unknown backend type ", func() {
 			configStruct.Type = "unknown"
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))
-			os.Setenv("OPERATOR_NAME", "mock-backend")
+			// os.Setenv("OPERATOR_NAME", "mock-backend")
 			Convey("When initializing backend from env", func() {
-				err := InitFromEnv("testing-backend")
+				err := InitFromEnv("mock-backend")
 				So(err, ShouldNotBeNil)
 				Convey("Then an error message is returned", func() {
 					So(err.Error(), ShouldEqual, "unknown backend type: 'unknown'")
@@ -120,7 +106,7 @@ func TestInitFromEnv(t *testing.T) {
 		Convey("Given an invalid config", func() {
 			os.Setenv("OPERATOR_CONFIG", "garbage")
 			Convey("When initializing backend from env", func() {
-				err := InitFromEnv("testing-backend")
+				err := InitFromEnv("mock-backend")
 				So(err, ShouldNotBeNil)
 				Convey("Then an error is returned", func() {
 					So(err.Error(), ShouldStartWith, "invalid")
@@ -131,7 +117,7 @@ func TestInitFromEnv(t *testing.T) {
 		Convey("Given a missing config", func() {
 			os.Unsetenv("OPERATOR_CONFIG")
 			Convey("When initializing backend from env", func() {
-				err := InitFromEnv("testing-backend")
+				err := InitFromEnv("mock-backend")
 				So(err, ShouldNotBeNil)
 				Convey("Then an error is returned", func() {
 					So(err.Error(), ShouldStartWith, "cannot find config")
