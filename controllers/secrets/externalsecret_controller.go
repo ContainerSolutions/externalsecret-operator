@@ -30,7 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
@@ -57,8 +56,8 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log.Info("Reconciling ExternalSecret")
 
 	// Fetch the ExternalSecret instance
-	instance := &secretsv1alpha1.ExternalSecret{}
-	err := r.Get(ctx, req.NamespacedName, instance)
+	externalSecret := &secretsv1alpha1.ExternalSecret{}
+	err := r.Get(ctx, req.NamespacedName, externalSecret)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -67,38 +66,33 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		return ctrl.Result{}, err
-	}
-
-	// Define a new Secret object
-	secret, err := r.newSecretForCR(instance)
-	if err != nil {
-		return ctrl.Result{RequeueAfter: time.Second * 5}, err
-	}
-
-	// Set ExternalSecret instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, secret, r.Scheme); err != nil {
+		log.Error(err, "Failed to get ExternalSecret")
 		return ctrl.Result{}, err
 	}
 
 	// Check if this Secret already exists
 	found := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: secret.Name, Namespace: secret.Namespace}, found)
+	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Name, Namespace: externalSecret.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
+		// Define a new Secret object
+		secret, err := r.newSecretForCR(externalSecret)
+		if err != nil {
+			return ctrl.Result{RequeueAfter: time.Second * 5}, err
+		}
 		log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
 		err = r.Create(ctx, secret)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 
-		// Secret created successfully - don't requeue
-		return ctrl.Result{}, nil
+		// Secret created successfully - return and requeue
+		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// Secret already exists - don't requeue
-	log.Info("Skip ctrl: Secret already exists", "Secret.Namespace", found.Namespace, "Secret.Name", found.Name)
+	log.Info("Skip Reconcile: Secret already exists", "Secret.Namespace", found.Namespace, "Secret.Name", found.Name)
 
 	return ctrl.Result{}, nil
 }
@@ -136,5 +130,6 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 func (r *ExternalSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&secretsv1alpha1.ExternalSecret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
