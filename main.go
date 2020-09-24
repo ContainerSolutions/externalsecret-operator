@@ -50,6 +50,7 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
+	var LeaderElectionID = "36af4962.externalsecret-operator.container-solutions.com"
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
@@ -63,7 +64,7 @@ func main() {
 		MetricsBindAddress: metricsAddr,
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "36af4962.externalsecret-operator.container-solutions.com",
+		LeaderElectionID:   LeaderElectionID,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -80,7 +81,7 @@ func main() {
 	}
 
 	setupLog.Info("initializing backend")
-	if err := backend.InitFromEnv(); err != nil {
+	if err := backend.InitFromEnv(LeaderElectionID); err != nil {
 		setupLog.Error(err, "Failed to initialize backend")
 		os.Exit(1)
 	}
