@@ -45,7 +45,6 @@ func (g *Backend) Init(parameters map[string]string) error {
 	jsonCredentials, err := sAccount.Marshal(parameters)
 	println(string(jsonCredentials))
 	if err != nil {
-		log.Info("here")
 		return err
 	}
 
