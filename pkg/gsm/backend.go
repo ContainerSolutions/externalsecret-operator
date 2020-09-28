@@ -67,10 +67,10 @@ func (g *Backend) Init(parameters map[string]string) error {
 }
 
 // Get a key and returns a value
-func (g *Backend) Get(key string) (string, error) {
+func (g *Backend) Get(key string, version string) (string, error) {
 	ctx := context.Background()
 
-	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, "latest")
+	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, version)
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: name,
