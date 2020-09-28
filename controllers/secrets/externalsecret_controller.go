@@ -103,7 +103,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 		return nil, fmt.Errorf("Cannot find backend: %v", s.Spec.Backend)
 	}
 
-	value, err := backend.Get(s.Spec.Key)
+	value, err := backend.Get(s.Spec.Key, s.Spec.Version)
 	if err != nil {
 		log.Error(err, "could not create secret due to error from backend")
 	}
