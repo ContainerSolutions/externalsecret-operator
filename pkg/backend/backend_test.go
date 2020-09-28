@@ -23,7 +23,7 @@ func (m *MockBackend) Init(params map[string]string) error {
 	return nil
 }
 
-func (m *MockBackend) Get(key string) (string, error) {
+func (m *MockBackend) Get(key string, version string) (string, error) {
 	return m.Param1, nil
 }
 
@@ -83,7 +83,7 @@ func TestInitFromEnv(t *testing.T) {
 					backend, found := Instances["mock-backend"]
 					So(found, ShouldBeTrue)
 					So(reflect.TypeOf(backend), ShouldEqual, reflect.TypeOf(&MockBackend{}))
-					value, _ := backend.Get("")
+					value, _ := backend.Get("", "")
 					So(value, ShouldEqual, "Value1")
 				})
 			})

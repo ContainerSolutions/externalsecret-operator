@@ -16,7 +16,7 @@ var log = logf.Log.WithName("backend")
 // Backend is an abstract backend interface
 type Backend interface {
 	Init(map[string]string) error
-	Get(string) (string, error)
+	Get(string, string) (string, error)
 }
 
 // Instances are instantiated secret backends
