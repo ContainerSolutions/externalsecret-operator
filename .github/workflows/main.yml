@@ -49,10 +49,10 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Add kubebuilder
-    run:  |
-      curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${{env.KUBEBUILDER_VERSION}}/kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz > kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
-      tar -xvf kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
-      mv kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64 /usr/local/kubebuilder 
+      run:  |
+        curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${{env.KUBEBUILDER_VERSION}}/kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz > kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
+        tar -xvf kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
+        mv kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64 /usr/local/kubebuilder 
 
     - name: Build the Docker image
       run: make docker-build
