@@ -41,7 +41,9 @@ func (s *Backend) Init(parameters map[string]string) error {
 }
 
 // Get retrieves the secret associated with key from AWS Secrets Manager
-func (s *Backend) Get(key string) (string, error) {
+func (s *Backend) Get(key string, version string) (string, error) {
+	_ = version
+
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(key),
 	}
