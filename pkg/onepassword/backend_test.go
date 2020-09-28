@@ -32,7 +32,7 @@ func TestGet(t *testing.T) {
 	backend := &Backend{}
 	backend.OnePassword = &MockOnePassword{value: value}
 
-	actual, err := backend.Get(item)
+	actual, err := backend.Get(item, "")
 
 	if err != nil {
 		t.Fail()
@@ -48,7 +48,7 @@ func TestGet_ErrGet(t *testing.T) {
 	backend := &Backend{}
 	backend.OnePassword = &MockOnePassword{}
 
-	_, err := backend.Get("nonExistentItem")
+	_, err := backend.Get("nonExistentItem", "")
 
 	switch err.(type) {
 	case *ErrGet:

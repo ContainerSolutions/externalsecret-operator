@@ -27,7 +27,7 @@ func TestOnePasswordBackend(t *testing.T) {
 	secretKey, expectedValue := GetKeyAndValue(t)
 
 	// When
-	value, _ := backend.Get(secretKey)
+	value, _ := backend.Get(secretKey, "")
 
 	// Then
 	if expectedValue != value {
