@@ -39,6 +39,15 @@ jobs:
     - name: Test
       run: make test
 
+    - name: Coverage
+      uses: codecov/codecov-action@v1
+      with:
+        # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        file: ./cover.out
+        # flags: unittests # optional
+        name: externalsecret-operator
+        fail_ci_if_error: true 
+
   docker:
     name: Docker
     runs-on: ubuntu-latest
