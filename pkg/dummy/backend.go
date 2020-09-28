@@ -26,6 +26,6 @@ func (d *Backend) Init(parameters map[string]string) error {
 }
 
 // Get a key and returns a fake secrets key + suffix
-func (d *Backend) Get(key string) (string, error) {
-	return key + d.suffix, nil
+func (d *Backend) Get(key string, version string) (string, error) {
+	return key + version + d.suffix, nil
 }
