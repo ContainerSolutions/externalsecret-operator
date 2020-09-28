@@ -30,9 +30,9 @@ jobs:
       env: 
         KUBEBUILDER_VERSION: 2.3.1
       run:  |
-        curl https://github.com/kubernetes-sigs/kubebuilder/releases/download/v$KUBEBUILDER_VERSION/kubebuilder_$KUBEBUILDER_VERSION_linux_amd64.tar.gz
-        tar -xvf kubebuilder_$KUBEBUILDER_VERSION_linux_amd64.tar.gz
-        mv kubebuilder_$KUBEBUILDER_VERSION_linux_amd64 /usr/local/kubebuilder
+        curl https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${{env.KUBEBUILDER_VERSION}}/kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
+        tar -xvf kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64.tar.gz
+        mv kubebuilder_${{env.KUBEBUILDER_VERSION}}_linux_amd64 /usr/local/kubebuilder
 
     - name: Vet and Build
       run: make manager
