@@ -32,9 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
-	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 
 	// trigger secrets backend registration
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	_ "github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
@@ -77,38 +77,39 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		// Define a new Secret object
 		secret, err := r.newSecretForCR(externalSecret)
 		if err != nil {
+			log.Error(err, "Failed to create Secret")
 			return ctrl.Result{RequeueAfter: time.Second * 5}, err
 		}
 		log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
 		err = r.Create(ctx, secret)
 		if err != nil {
+			log.Error(err, "Failed to create Secret", "secret", secret)
 			return ctrl.Result{}, err
 		}
 
 		// Secret created successfully - return and requeue
 		return ctrl.Result{Requeue: true}, nil
 	} else if err != nil {
+		log.Error(err, "Failed to get Secret")
 		return ctrl.Result{}, err
 	}
-
-	// Secret already exists - don't requeue
-	log.Info("Skip Reconcile: Secret already exists", "Secret.Namespace", found.Namespace, "Secret.Name", found.Name)
 
 	return ctrl.Result{}, nil
 }
 
 func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret) (*corev1.Secret, error) {
-	backend, ok := backend.Instances[s.Spec.Backend]
-	if !ok {
-		return nil, fmt.Errorf("Cannot find backend: %v", s.Spec.Backend)
+	if s == nil {
+		log.Error("nil external secret")
+		return nil, fmt.Errorf("nil external secret")
 	}
 
-	value, err := backend.Get(s.Spec.Key, s.Spec.Version)
+	value, err := r.backendGet(s)
 	if err != nil {
-		log.Error(err, "could not create secret due to error from backend")
+		log.Error(err, "ExternalSecret", s)
+		return nil, err
 	}
 
-	secret := map[string][]byte{s.Spec.Key: []byte(value)}
+	secret := map[string][]byte{s.Spec.Key: []byte(value), "version": []byte(s.Spec.Version)}
 
 	secretObject := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -122,9 +123,29 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 		Data: secret,
 	}
 
-	ctrl.SetControllerReference(s, secretObject, r.Scheme)
+	err = ctrl.SetControllerReference(s, secretObject, r.Scheme)
+	if err != nil {
+		log.Error(err, "Secret", secretObject)
+		return nil, err
+	}
 
-	return secretObject, err
+	return secretObject, nil
+}
+
+func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret) (string, error) {
+	backend, ok := backend.Instances[s.Spec.Backend]
+	if !ok {
+		log.Error("Cannot find backend:", s.Spec.Backend)
+		return "", fmt.Errorf("Cannot find backend: %v", s.Spec.Backend)
+	}
+
+	value, err := backend.Get(s.Spec.Key, s.Spec.Version)
+	if err != nil {
+		log.Error(err, "could not create secret due to error from backend")
+		return "", fmt.Errorf("could not create secret due to error from backend: %v", err)
+	}
+
+	return value, nil
 }
 
 func (r *ExternalSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
