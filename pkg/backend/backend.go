@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 
-	// "github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	config "github.com/containersolutions/externalsecret-operator/pkg/config"
 
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -65,11 +64,6 @@ func InitFromEnv(leaderID string) error {
 	if err != nil {
 		return err
 	}
-
-	// operatorName, err := "", nil
-	// if err != nil {
-	// 	return err
-	// }
 
 	err = Instantiate(leaderID, config.Type)
 	if err != nil {
