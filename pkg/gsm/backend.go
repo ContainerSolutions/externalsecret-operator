@@ -39,18 +39,26 @@ func NewBackend() backend.Backend {
 // Init initializes Google secretsmanager backend
 func (g *Backend) Init(parameters map[string]string) error {
 	ctx := context.Background()
-	g.projectID = parameters["projectID"]
+
+	if len(parameters) == 0 {
+		return fmt.Errorf("invalid or empty Config")
+	}
+
+	projectID, ok := parameters["projectID"]
+	if !ok {
+		return fmt.Errorf("invalid parameters")
+	}
+
+	g.projectID = projectID
 
 	sAccount := serviceAccount{}
 	jsonCredentials, err := sAccount.Marshal(parameters)
-	println(string(jsonCredentials))
 	if err != nil {
 		return err
 	}
 
 	config, err := google.JWTConfigFromJSON(jsonCredentials, cloudPlatformRole)
 	if err != nil {
-		log.Info("here")
 		return err
 	}
 
@@ -70,6 +78,10 @@ func (g *Backend) Init(parameters map[string]string) error {
 func (g *Backend) Get(key string, version string) (string, error) {
 	ctx := context.Background()
 
+	if g.SecretManagerClient == nil {
+		return "", fmt.Errorf("backend is not initialized")
+	}
+
 	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, version)
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
@@ -80,8 +92,6 @@ func (g *Backend) Get(key string, version string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to access secret version: %v", err)
 	}
-
-	// fmt.Fprintf(os.Stdout, "Plaintext: %s\n", string(result.Payload.Data))
 
 	return string(result.Payload.Data), nil
 }
