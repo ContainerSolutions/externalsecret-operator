@@ -6,11 +6,49 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// type mockGoogleClient struct {
+// 	// connPool         gtransport.ConnPool
+// 	// disableDeadlines bool
+// 	// client           secretmanagerpb.SecretManagerServiceClient
+// 	// CallOptions      *secretmanager.CallOptions
+// 	// xGoogMetadata    metadata.MD
+// 	client *secretmanager.Client
+// }
+
+// type mockGoogleClientInterface interface {
+// 	AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest) (*secretmanagerpb.AccessSecretVersionResponse, error)
+// }
+
+// func (g *mockGoogleClient) AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error) {
+// 	return &secretmanagerpb.AccessSecretVersionResponse{
+// 		Name: "test",
+// 		Payload: &secretmanagerpb.SecretPayload{
+// 			Data: []byte("Testing"),
+// 		},
+// 	}, nil
+// }
+
 func TestNewBackend(t *testing.T) {
 	Convey("When creating a new GSM backend", t, func() {
 		backend := NewBackend()
 		So(backend, ShouldNotBeNil)
 		So(backend, ShouldHaveSameTypeAs, &Backend{})
+	})
+}
+
+func TestGet(t *testing.T) {
+	secretKey := "secret"
+	keyVersion := ""
+
+	Convey("Given an uninitialized GoogleSecretsManager", t, func() {
+		backend := Backend{}
+		Convey("When retrieving a secret", func() {
+			_, err := backend.Get(secretKey, keyVersion)
+			Convey("Then an error is returned", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "backend is not initialized")
+			})
+		})
 	})
 }
 
