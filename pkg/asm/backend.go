@@ -10,7 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("asm")
 
 // Backend represents a backend for AWS Secrets Manager
 type Backend struct {
@@ -53,11 +56,13 @@ func (s *Backend) Get(key string, version string) (string, error) {
 	}
 
 	if s.SecretsManager == nil {
+		log.Error(fmt.Errorf("error"), "backend not initialized")
 		return "", fmt.Errorf("backend not initialized")
 	}
 
 	output, err := s.SecretsManager.GetSecretValue(input)
 	if err != nil {
+		log.Error(err, "Error getting secret value")
 		return "", err
 	}
 
