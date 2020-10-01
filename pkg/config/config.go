@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("config")
 
 //ConfigEnvVar holds the name of the Environment Variable scanned for config
 const ConfigEnvVar string = "OPERATOR_CONFIG"
@@ -27,7 +31,11 @@ func ConfigFromJSON(data string) (*Config, error) {
 
 //ConfigFromEnv parses Config from environment variable
 func ConfigFromEnv() (*Config, error) {
-	data := os.Getenv(ConfigEnvVar)
+	data, present := os.LookupEnv(ConfigEnvVar)
+	if !present {
+		return nil, fmt.Errorf("cannot find config: `%v` not set", ConfigEnvVar)
+	}
+
 	if len(data) == 0 {
 		return nil, fmt.Errorf("cannot find config: `%v` not set", ConfigEnvVar)
 	}
