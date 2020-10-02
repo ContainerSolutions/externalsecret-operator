@@ -99,8 +99,8 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret) (*corev1.Secret, error) {
 	if s == nil {
-		log.Error("nil external secret")
-		return nil, fmt.Errorf("nil external secret")
+		log.Error("externalsecret is nil")
+		return nil, fmt.Errorf("externalsecret is nil")
 	}
 
 	value, err := r.backendGet(s)
@@ -125,7 +125,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 
 	err = ctrl.SetControllerReference(s, secretObject, r.Scheme)
 	if err != nil {
-		log.Error(err, "Secret", secretObject)
+		log.Error(err, "Error setting owner references", secretObject)
 		return nil, err
 	}
 
@@ -133,6 +133,11 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 }
 
 func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret) (string, error) {
+	if s == nil {
+		log.Error("externalsecret is nil")
+		return "", fmt.Errorf("externalsecret is nil")
+	}
+
 	backend, ok := backend.Instances[s.Spec.Backend]
 	if !ok {
 		log.Error("Cannot find backend:", s.Spec.Backend)
