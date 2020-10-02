@@ -103,13 +103,15 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 		return nil, fmt.Errorf("externalsecret is nil")
 	}
 
-	value, err := r.backendGet(s)
+	secretValue, err := r.backendGet(s)
 	if err != nil {
-		log.Error(err, "ExternalSecret", s)
+		log.Error(err, "backendGet")
 		return nil, err
 	}
 
-	secret := map[string][]byte{s.Spec.Key: []byte(value), "version": []byte(s.Spec.Version)}
+	secret := map[string][]byte{s.Spec.Key: []byte(secretValue)}
+
+	secretLabels := makeVersionAndBackendLabel(s.Spec.Version, s.Spec.Backend)
 
 	secretObject := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -119,6 +121,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      s.Name,
 			Namespace: s.Namespace,
+			Labels:    secretLabels,
 		},
 		Data: secret,
 	}
@@ -151,6 +154,13 @@ func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret)
 	}
 
 	return value, nil
+}
+
+func makeVersionAndBackendLabel(version string, backend string) map[string]string {
+	return map[string]string{
+		"secret-version": version,
+		"secret-backend": backend,
+	}
 }
 
 func (r *ExternalSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
