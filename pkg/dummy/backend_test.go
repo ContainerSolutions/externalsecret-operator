@@ -41,6 +41,15 @@ func TestGet(t *testing.T) {
 				So(actualValue, ShouldEqual, expectedValue)
 			})
 		})
+
+		Convey("When retrieving secret details", func() {
+			_, err := backend.Get("", "")
+			Convey("An  error is returned when key is empty", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "empty key provided")
+
+			})
+		})
 	})
 }
 

@@ -48,5 +48,10 @@ func (d *Backend) Get(key string, version string) (string, error) {
 	if d.suffix == "" {
 		return "", fmt.Errorf("backend is not initialized")
 	}
+
+	if key == "" {
+		return "", fmt.Errorf("empty key provided")
+	}
+
 	return key + version + d.suffix, nil
 }
