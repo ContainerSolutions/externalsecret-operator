@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -79,8 +80,6 @@ var _ = Describe("ExternalsecretController", func() {
 
 			Expect(string(secretValue)).Should(Equal("test-keytest-version-ohlord"))
 
-			By("Fail gracefully with an invalid backend")
-
 			By("Deleting the External Secret")
 			Eventually(func() error {
 				es := &secretsv1alpha1.ExternalSecret{}
@@ -95,8 +94,58 @@ var _ = Describe("ExternalsecretController", func() {
 		})
 	})
 
-	Context("When getting ExternalSecret", func() {
-		It("Should handle a non-existent secret", func() {
+	Context("Errors", func() {
+		r := &ExternalSecretReconciler{}
+
+		It("Should Fail when nil externalsecret is passed", func() {
+			_, err := r.newSecretForCR(nil)
+			Expect(err).ToNot(BeNil())
+			Expect(err.Error()).Should(Equal("externalsecret is nil"))
+
+		})
+
+		It("Should Fail when nil externalsecret is passed", func() {
+			_, err := r.backendGet(nil)
+			Expect(err).ToNot(BeNil())
+			Expect(err.Error()).Should(Equal("externalsecret is nil"))
+
+		})
+
+		It("Should Fail when nil an invalid backend is passed", func() {
+
+			externalSecret := &secretsv1alpha1.ExternalSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ExternalSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: secretsv1alpha1.ExternalSecretSpec{
+					Backend: "invalid backend",
+					Key:     ExternalSecretKey,
+					Version: ExternalSecretVersion,
+				},
+			}
+			_, err := r.backendGet(externalSecret)
+			Expect(err).ToNot(BeNil())
+			Expect(err.Error()).Should(Equal("Cannot find backend: invalid backend"))
+
+		})
+
+		It("Should return an error when Get() fails in the backend", func() {
+
+			externalSecret := &secretsv1alpha1.ExternalSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ExternalSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: secretsv1alpha1.ExternalSecretSpec{
+					Backend: ExternalSecretBackend,
+					Key:     "",
+					Version: "",
+				},
+			}
+			_, err := r.backendGet(externalSecret)
+			Expect(err).ToNot(BeNil())
+			Expect(err.Error()).Should(Equal("could not create secret due to error from backend: empty key provided"))
 
 		})
 
