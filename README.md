@@ -192,11 +192,11 @@ $ make deploy-onepassword
 
 ### GCP/Google Secrets Manager
 #### Prerequisites
-- Enabled and Configured Secrets Manager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
+- Enabled and configured secret panager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
 
 #### Deploying
 
-- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml` with valid valuess from the service account:
+- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml`:
 
 ```yaml
 resources:
