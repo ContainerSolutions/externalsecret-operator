@@ -1,4 +1,4 @@
-name: External Secrets Operator
+name: CI
 
 on:
   push:
