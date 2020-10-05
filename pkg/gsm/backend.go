@@ -6,25 +6,51 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cloud.google.com/go/iam"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	"github.com/googleapis/gax-go"
 	"golang.org/x/oauth2/google"
 	option "google.golang.org/api/option"
+	"google.golang.org/grpc"
 
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
+	iampb "google.golang.org/genproto/googleapis/iam/v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	// iampb "google.golang.org/genproto/googleapis/iam/v1"
 )
 
 const (
 	cloudPlatformRole = "https://www.googleapis.com/auth/cloud-platform"
 )
 
+type GoogleSecretManagerClient interface {
+	AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error)
+	AddSecretVersion(ctx context.Context, req *secretmanagerpb.AddSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
+	Connection() *grpc.ClientConn
+	CreateSecret(ctx context.Context, req *secretmanagerpb.CreateSecretRequest, opts ...gax.CallOption) (*secretmanagerpb.Secret, error)
+	DeleteSecret(ctx context.Context, req *secretmanagerpb.DeleteSecretRequest, opts ...gax.CallOption) error
+	DestroySecretVersion(ctx context.Context, req *secretmanagerpb.DestroySecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
+	DisableSecretVersion(ctx context.Context, req *secretmanagerpb.DisableSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
+	EnableSecretVersion(ctx context.Context, req *secretmanagerpb.EnableSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
+	GetIamPolicy(ctx context.Context, req *iampb.GetIamPolicyRequest, opts ...gax.CallOption) (*iampb.Policy, error)
+	GetSecret(ctx context.Context, req *secretmanagerpb.GetSecretRequest, opts ...gax.CallOption) (*secretmanagerpb.Secret, error)
+	GetSecretVersion(ctx context.Context, req *secretmanagerpb.GetSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.SecretVersion, error)
+	IAM(name string) *iam.Handle
+	ListSecretVersions(ctx context.Context, req *secretmanagerpb.ListSecretVersionsRequest, opts ...gax.CallOption) *secretmanager.SecretVersionIterator
+	ListSecrets(ctx context.Context, req *secretmanagerpb.ListSecretsRequest, opts ...gax.CallOption) *secretmanager.SecretIterator
+	SetIamPolicy(ctx context.Context, req *iampb.SetIamPolicyRequest, opts ...gax.CallOption) (*iampb.Policy, error)
+	TestIamPermissions(ctx context.Context, req *iampb.TestIamPermissionsRequest, opts ...gax.CallOption) (*iampb.TestIamPermissionsResponse, error)
+	UpdateSecret(ctx context.Context, req *secretmanagerpb.UpdateSecretRequest, opts ...gax.CallOption) (*secretmanagerpb.Secret, error)
+	Close() error
+}
+
 var log = logf.Log.WithName("gsm")
 
 // Backend for Google Secrets Manager
 type Backend struct {
 	projectID           string
-	SecretManagerClient *secretmanager.Client
+	SecretManagerClient GoogleSecretManagerClient
 }
 
 func init() {
