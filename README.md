@@ -6,9 +6,9 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 ## Quick start
 
-If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend.
+<!-- If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend. -->
 
-### Helm
+<!-- ### Helm
 
 Here's how you can deploy the External Secret Operator in the `default` namespace.
 
@@ -27,11 +27,33 @@ helm upgrade --install asm1 --wait \
 
 It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
-Look for more deployment options in the [README.md](./deployments/helm/externalsecret-operator/README.md) of the helm chart.
+Look for more deployment options in the [README.md](./deployments/helm/externalsecret-operator/README.md) of the helm chart. -->
 
 ### Manifests
+- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml` with valid valuess:
 
-The `deploy` target in the Makefile will substiute variables and deploy the
+```yaml
+resources:
+# - backend-config-gsm.yaml
+- backend-config-asm.yaml
+# - backend-config-dummy.yaml
+# - backend-config-onepassword.yaml
+```
+
+```yaml
+%cat config/backend-config/backend-config-asm.yaml
+...
+operator-config.json: |-
+  {
+    "Type": "asm",
+    "Parameters": {
+      "accessKeyID": "AWS_ACCESS_KEY_ID",
+      "region": "AWS_DEFAULT_REGION",
+      "secretAccessKey": "AWS_SECRET_ACCESS_KEY"
+    }
+  }
+```
+<!-- The `deploy` target in the Makefile will substiute variables and deploy the
 manifests for you. The following command will deploy the operator in the
 `default` namespace:
 
@@ -43,7 +65,7 @@ export OPERATOR_NAME=asm-example
 export BACKEND=asm
 make deploy
 ```
-It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
+It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager. -->
 
 ## What does it do?
 
@@ -58,22 +80,24 @@ Given a secret defined in AWS Secrets Manager:
 and an `ExternalSecret` resource definition like this one:
 
 ```yaml
-% cat ./deployments/crds/examples/externalsecret-asm.yaml
+% cat config/samples/secrets_v1alpha1_externalsecret.yaml
 apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
-  name: example-externalsecret
+  name: externalsecret-sample
+  namespace: system
 spec:
-  Key: example-externalsecret-key
-  Backend: asm-example
+  key: example-externalsecret-key
+  backend: 36af4962.externalsecret-operator.container-solutions.com
+  version: latest
 ```
 
 The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
-% kubectl apply -f ./deployments/crds/examples/externalsecret-asm.yaml
-% kubectl get secret example-externalsecret \
+% make deploy
+% kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 this string is a secret
 ```
@@ -94,8 +118,9 @@ We would like to support as many backend as possible and it should be rather eas
 * 1Password
 * Keybase
 * Git
+* GCP/Google Secret Manager
 
-A contributing guide is coming soon!
+<!-- A contributing guide is coming soon! -->
 
 ### 1Password
 
@@ -156,13 +181,76 @@ $ eval $(op signin)
 2. Load the 1Password credentials of your _operator_ account into the environment
 
 ```
-$ source deployments/source-onepassword-secrets.sh
+$ source config/scripts/source-onepassword-secrets.sh
 ```
 
 4.  Deploy the operator
 
 ```
 $ make deploy-onepassword
+```
+
+### GCP/Google Secrets Manager
+#### Prerequisites
+- Enabled and Configured Secrets Manager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
+
+#### Deploying
+
+- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml` with valid valuess from the service account:
+
+```yaml
+resources:
+- backend-config-gsm.yaml
+# - backend-config-asm.yaml
+# - backend-config-dummy.yaml
+# - backend-config-onepassword.yaml
+```
+
+- Update the gsm backend config `config/backend-config/backend-config-gsm.yaml` with values from the service account key
+
+```yaml
+%cat config/backend-config/backend-config-gsm.yaml
+...
+operator-config.json: |-
+    {
+      "Type": "gsm",
+      "Parameters": {
+        "projectID": "",
+        "type": "",
+        "privateKeyID": "",
+        "privateKey": "",
+        "clientEmail": "",
+        "clientID": "",
+        "authURI": "",
+        "tokenURI": "",
+        "authProviderX509CertURL": "",
+        "clientX509CertURL": ""
+      }
+    }
+
+```
+
+-  Update the resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
+```yaml
+% cat config/samples/secrets_v1alpha1_externalsecret.yaml
+apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
+kind: ExternalSecret
+metadata:
+  name: externalsecret-sample
+  namespace: system
+spec:
+  key: your-secret-key
+  backend: 36af4962.externalsecret-operator.container-solutions.com
+  version: your-secret-version
+```
+
+- The operator fetches the secret from GCP Secret Manager and injects it as a
+secret:
+
+```shell
+% make deploy
+% kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
+  -o jsonpath='{.data.your-secret-key}' | base64 -d
 ```
 
 ## Contributing
