@@ -1,7 +1,10 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: operator-config
+  name: config
+  namespace: system
+  labels:
+    control-plane: operator-config
 type: Opaque
 stringData:
   operator-config.json: |-
