@@ -192,7 +192,7 @@ $ make deploy-onepassword
 
 ### GCP/Google Secrets Manager
 #### Prerequisites
-- Enabled and configured secret panager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
+- Enabled and configured secret manager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
 
 #### Deploying
 
