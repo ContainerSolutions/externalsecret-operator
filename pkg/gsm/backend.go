@@ -108,7 +108,12 @@ func (g *Backend) Get(key string, version string) (string, error) {
 		return "", fmt.Errorf("backend is not initialized")
 	}
 
-	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, version)
+	validVersion := version
+	if validVersion == "" {
+		validVersion = "latest"
+	}
+
+	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, validVersion)
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: name,

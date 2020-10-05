@@ -125,6 +125,18 @@ func TestGet(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given an initialized GoogleSecretManger Client", t, func() {
+		backend := Backend{}
+		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
+		Convey("When retrieving a secret with a empty version", func() {
+			actualValue, err := backend.Get(secretKey, "")
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+				So(actualValue, ShouldEqual, "Testing")
+			})
+		})
+	})
 }
 
 func TestInit(t *testing.T) {
