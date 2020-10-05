@@ -28,7 +28,6 @@ spec:
         args:
         - --enable-leader-election
         image: controller:latest
-        imagePullPolicy: Never
         name: manager
         resources:
           limits:
