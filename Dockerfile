@@ -3,7 +3,7 @@ FROM golang:1.15 as builder
 
 RUN apt update && apt install unzip -y 
 
-ENV ONEPASSWORD_CLI_VERSION=v0.5.6-003
+ENV ONEPASSWORD_CLI_VERSION=v1.7.0
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -31,7 +31,7 @@ RUN cd /tmp; gpg --verify /tmp/op.sig /usr/local/bin/op || (echo "ERROR: Incorre
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/base-debian10
 WORKDIR /
 COPY --from=builder /workspace/manager .
 
