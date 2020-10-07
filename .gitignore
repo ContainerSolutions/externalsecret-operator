@@ -79,8 +79,8 @@ tags
 coverage.txt
 operator-sdk
 secrets/onepassword/secret-*
-conf.json
-conf-dummy.json
+conf*
+manager
 
 
 # Binaries for programs and plugins
