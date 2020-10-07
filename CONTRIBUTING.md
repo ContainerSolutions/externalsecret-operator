@@ -119,7 +119,7 @@ for more details. -->
 
 The CI/CD approach is very simple and could use some improvements, for now:
 
-* Docker images are built on pull request to master with the ref `pr-<PR number>-merge`
+* Docker images are built on pull request to master with the ref `pr-<PR number>`
 * Docker images are also built on master and on tags with the ref 
 <!-- * If on a feature branch use "branch_name" + "-latest"
 * If on master, tag the image with commit ID and latest
