@@ -1,9 +1,16 @@
 # Build the manager binary
-FROM golang:1.15 as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.15 as builder
 
 RUN apt update && apt install unzip -y 
 
+# ARG GOARCH=amd64
+ENV CGO_ENABLED=0 
+ENV GOOS=linux 
+ENV GO111MODULE=on
 ENV ONEPASSWORD_CLI_VERSION=v1.7.0
+
+ARG TARGETPLATFORM
+RUN go env
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -20,8 +27,7 @@ COPY controllers/ controllers/
 COPY pkg/ pkg/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
-
+RUN go build -a -o manager main.go
 
 # install 1password binary
 RUN cd /tmp; curl https://cache.agilebits.com/dist/1P/op/pkg/${ONEPASSWORD_CLI_VERSION}/op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip -o op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip; unzip op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip; mv ./op /usr/local/bin/
@@ -31,7 +37,7 @@ RUN cd /tmp; gpg --verify /tmp/op.sig /usr/local/bin/op || (echo "ERROR: Incorre
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/base-debian10
+FROM --platform=${TARGETPLATFORM:-linux/amd64}  gcr.io/distroless/base-debian10
 WORKDIR /
 COPY --from=builder /workspace/manager .
 
