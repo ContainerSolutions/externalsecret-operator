@@ -74,7 +74,9 @@ func (b *Backend) Init(parameters map[string]string) error {
 
 // Get retrieves the 1password item whose name matches the key and return the
 // value of the 'password' field.
-func (b *Backend) Get(key string) (string, error) {
+func (b *Backend) Get(key string, version string) (string, error) {
+	_ = version
+
 	fmt.Println("Retrieving 1password item '" + key + "'.")
 
 	item, err := b.OnePassword.GetItem(b.Vault, key)

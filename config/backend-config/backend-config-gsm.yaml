@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config
+  namespace: system
+  labels:
+    control-plane: operator-config
+type: Opaque
+stringData:
+  operator-config.json: |-
+    {
+      "Type": "gsm",
+      "Parameters": {
+        "projectID": "",
+        "type": "",
+        "privateKeyID": "",
+        "privateKey": "",
+        "clientEmail": "",
+        "clientID": "",
+        "authURI": "",
+        "tokenURI": "",
+        "authProviderX509CertURL": "",
+        "clientX509CertURL": ""
+      }
+    }

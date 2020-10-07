@@ -37,13 +37,14 @@ func TestNewBackend(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	secretKey := "secret"
+	keyVersion := ""
 	secretValue := "secretValue"
 	expectedValue := secretValue
 
 	Convey("Given an uninitialized AWSSecretsManagerBackend", t, func() {
 		backend := Backend{}
 		Convey("When retrieving a secret", func() {
-			_, err := backend.Get(secretKey)
+			_, err := backend.Get(secretKey, keyVersion)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "backend not initialized")
@@ -55,7 +56,7 @@ func TestGet(t *testing.T) {
 		backend := Backend{}
 		backend.SecretsManager = &mockedSecretsManager{}
 		Convey("When retrieving a secret", func() {
-			actualValue, err := backend.Get(secretKey)
+			actualValue, err := backend.Get(secretKey, keyVersion)
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
 				So(actualValue, ShouldEqual, expectedValue)
@@ -67,7 +68,7 @@ func TestGet(t *testing.T) {
 		backend := Backend{}
 		backend.SecretsManager = &mockedSecretsManager{withError: true}
 		Convey("When retrieving a secret", func() {
-			_, err := backend.Get(secretKey)
+			_, err := backend.Get(secretKey, keyVersion)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
 			})

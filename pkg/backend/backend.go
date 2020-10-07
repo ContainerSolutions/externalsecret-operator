@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	config "github.com/containersolutions/externalsecret-operator/pkg/config"
 
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -15,7 +15,7 @@ var log = logf.Log.WithName("backend")
 // Backend is an abstract backend interface
 type Backend interface {
 	Init(map[string]string) error
-	Get(string) (string, error)
+	Get(string, string) (string, error)
 }
 
 // Instances are instantiated secret backends
@@ -55,28 +55,23 @@ func Register(name string, function func() Backend) {
 }
 
 // InitFromEnv initializes a backend looking into Env for config data
-func InitFromEnv() error {
+func InitFromEnv(leaderID string) error {
 	initLock.Lock()
 	defer initLock.Unlock()
 	log.Info("initFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
 
-	config, err := ConfigFromEnv()
+	config, err := config.ConfigFromEnv()
 	if err != nil {
 		return err
 	}
 
-	operatorName, err := k8sutil.GetOperatorName()
+	err = Instantiate(leaderID, config.Type)
 	if err != nil {
 		return err
 	}
 
-	err = Instantiate(operatorName, config.Type)
-	if err != nil {
-		return err
-	}
-
-	log.Info("initialize", "name", operatorName)
-	err = Instances[operatorName].Init(config.Parameters)
+	log.Info("initialize", "name", leaderID)
+	err = Instances[leaderID].Init(config.Parameters)
 
 	return err
 }

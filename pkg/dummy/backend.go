@@ -3,7 +3,14 @@
 // key passed to the Get function.
 package dummy
 
-import "github.com/containersolutions/externalsecret-operator/pkg/backend"
+import (
+	"fmt"
+
+	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+)
+
+var log = logf.Log.WithName("dummy")
 
 // Backend is a fake secrets backend for testing purposes
 type Backend struct {
@@ -21,11 +28,30 @@ func NewBackend() backend.Backend {
 
 // Init implements SecretsBackend interface, sets the suffix
 func (d *Backend) Init(parameters map[string]string) error {
-	d.suffix = parameters["suffix"]
+	if len(parameters) == 0 {
+		log.Error(fmt.Errorf("error"), "empty or invalid parameters: ")
+		return fmt.Errorf("empty or invalid parameters")
+	}
+
+	suffix, ok := parameters["Suffix"]
+	if !ok {
+		log.Error(fmt.Errorf("error"), "missing parameters: ")
+		return fmt.Errorf("missing parameters")
+	}
+
+	d.suffix = suffix
 	return nil
 }
 
 // Get a key and returns a fake secrets key + suffix
-func (d *Backend) Get(key string) (string, error) {
-	return key + d.suffix, nil
+func (d *Backend) Get(key string, version string) (string, error) {
+	if d.suffix == "" {
+		return "", fmt.Errorf("backend is not initialized")
+	}
+
+	if key == "" {
+		return "", fmt.Errorf("empty key provided")
+	}
+
+	return key + version + d.suffix, nil
 }
