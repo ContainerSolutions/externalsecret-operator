@@ -30,7 +30,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
+	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 	secretscontroller "github.com/containersolutions/externalsecret-operator/controllers/secrets"
+	storecontroller "github.com/containersolutions/externalsecret-operator/controllers/store"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	// +kubebuilder:scaffold:imports
 )
@@ -44,6 +46,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(secretsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(storev1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -77,6 +80,15 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ExternalSecret")
+		os.Exit(1)
+	}
+
+	if err = (&storecontroller.SecretStoreReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("SecretStore"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SecretStore")
 		os.Exit(1)
 	}
 
