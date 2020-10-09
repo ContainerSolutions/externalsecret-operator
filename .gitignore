@@ -79,7 +79,7 @@ tags
 coverage.txt
 operator-sdk
 secrets/onepassword/secret-*
-conf*
+# conf*
 manager
 
 
@@ -101,3 +101,6 @@ bin
 *.swp
 *.swo
 *~
+conf-dummy.json
+conf-op.json
+conf.json
