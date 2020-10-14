@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-var log = logf.Log.WithName("config")
+var log = ctrl.Log.WithName("config")
 
 //ConfigEnvVar holds the name of the Environment Variable scanned for config
 const ConfigEnvVar string = "OPERATOR_CONFIG"
@@ -16,13 +16,23 @@ const ConfigEnvVar string = "OPERATOR_CONFIG"
 //Config represent configuration information for the secrets backend
 type Config struct {
 	Type       string
-	Parameters map[string]string
+	Parameters map[string]interface{}
+	Auth       map[string]interface{}
 }
 
 // ConfigFromJSON returns a Config object based on the string data passed as parameter
 func ConfigFromJSON(data string) (*Config, error) {
 	backendConfig := &Config{}
 	err := json.Unmarshal([]byte(data), backendConfig)
+	if err != nil {
+		return nil, err
+	}
+	return backendConfig, nil
+}
+
+func ConfigFromCtrl(data []byte) (*Config, error) {
+	backendConfig := &Config{}
+	err := json.Unmarshal(data, backendConfig)
 	if err != nil {
 		return nil, err
 	}
