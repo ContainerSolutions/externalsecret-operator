@@ -23,17 +23,38 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// StoreRef is a reference to the external secret SecretStore
+type StoreRef struct {
+	Name      string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
+// Secret contains Key/Name and Version of keys to be retrieved
+type Secret struct {
+	// The Key/Name of the secret held in the ExternalBackend
+	Key string `json:"key,omitempty"`
+	// Version of the secret to be retrieved
+	Version string `json:"version,omitempty"`
+}
+
 // ExternalSecretSpec defines the desired state of ExternalSecret
 type ExternalSecretSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// Secrets
+	Secrets []Secret `json:"secrets,omitempty"`
+	// SecretStore
+	StoreRef StoreRef `json:"store_ref,omitempty"`
+}
 
-	// The Key of the secret held in the ExternalBackend
-	Key string `json:"key,omitempty"`
-	// Version of the secret to be retrieved
-	Version string `json:"version,omitempty"`
-	// The Backend to use to retrieve the secret
-	Backend string `json:"backend,omitempty"`
+// SecretCondition defines the condition(s) of secret
+type SecretCondition struct {
+	Type               string `json:"type,omitempty"`
+	Status             string `json:"status,omitempty"`
+	Reason             string `json:"reason,omitempty"`
+	Message            string `json:"message,omitempty"`
+	LastTransitionTime string `json:"last_transition_time,omitempty"`
+	LastSyncTime       string `json:"last_sync_time,omitempty"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
@@ -41,11 +62,8 @@ type ExternalSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// The Key of the secret held in the ExternalBackend
-	// Key string `json:"key,omitempty"`
-	// // Version of the secret to be retrieved
-	// Version string `json:"version,omitempty"`
-	// // The Backend to use to retrieve the secret
-	// Backend string `json:"backend,omitempty"`
+	Phase      string            `json:"phase,omitempty"`
+	Conditions []SecretCondition `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true
