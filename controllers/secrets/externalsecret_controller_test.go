@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	// storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
 )
 
@@ -21,7 +22,7 @@ var _ = Describe("ExternalsecretController", func() {
 		ExternalSecretName    = "externalsecret-operator-test"
 		ExternalSecretKey     = "test-key"
 		ExternalSecretVersion = "test-version"
-		ExternalSecretBackend = "test-backend"
+		// ExternalSecretBackend = "test-backend"
 		// SecretName            = "test-secret"
 
 		timeout = time.Second * 30
@@ -43,9 +44,16 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					Backend: ExternalSecretBackend,
-					Key:     ExternalSecretKey,
-					Version: ExternalSecretVersion,
+					StoreRef: secretsv1alpha1.StoreRef{
+						Name:      "",
+						Namespace: "",
+					},
+					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+					},
 				},
 			}
 
@@ -62,9 +70,9 @@ var _ = Describe("ExternalsecretController", func() {
 				return true
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(createdExternalSecret.Spec.Backend).Should(Equal("test-backend"))
-			Expect(createdExternalSecret.Spec.Version).Should(Equal("test-version"))
-			Expect(createdExternalSecret.Spec.Key).Should(Equal("test-key"))
+			// Expect(createdExternalSecret.Spec.Backend).Should(Equal("test-backend"))
+			// Expect(createdExternalSecret.Spec.Version).Should(Equal("test-version"))
+			// Expect(createdExternalSecret.Spec.Key).Should(Equal("test-key"))
 
 			By("Creating a new secret with correct values")
 			secret := &corev1.Secret{}
@@ -98,14 +106,14 @@ var _ = Describe("ExternalsecretController", func() {
 		r := &ExternalSecretReconciler{}
 
 		It("Should Fail when nil externalsecret is passed", func() {
-			_, err := r.newSecretForCR(nil)
+			_, err := r.newSecretForCR(nil, nil)
 			Expect(err).ToNot(BeNil())
 			Expect(err.Error()).Should(Equal("externalsecret is nil"))
 
 		})
 
 		It("Should Fail when nil externalsecret is passed", func() {
-			_, err := r.backendGet(nil)
+			_, err := r.backendGet(nil, nil)
 			Expect(err).ToNot(BeNil())
 			Expect(err.Error()).Should(Equal("externalsecret is nil"))
 
@@ -119,12 +127,19 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					Backend: "invalid backend",
-					Key:     ExternalSecretKey,
-					Version: ExternalSecretVersion,
+					StoreRef: secretsv1alpha1.StoreRef{
+						Name:      "",
+						Namespace: "",
+					},
+					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+					},
 				},
 			}
-			_, err := r.backendGet(externalSecret)
+			_, err := r.backendGet(externalSecret, nil)
 			Expect(err).ToNot(BeNil())
 			Expect(err.Error()).Should(Equal("Cannot find backend: invalid backend"))
 
@@ -138,12 +153,19 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					Backend: ExternalSecretBackend,
-					Key:     "",
-					Version: "",
+					StoreRef: secretsv1alpha1.StoreRef{
+						Name:      "",
+						Namespace: "",
+					},
+					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+					},
 				},
 			}
-			_, err := r.backendGet(externalSecret)
+			_, err := r.backendGet(externalSecret, nil)
 			Expect(err).ToNot(BeNil())
 			Expect(err.Error()).Should(Equal("could not create secret due to error from backend: empty key provided"))
 

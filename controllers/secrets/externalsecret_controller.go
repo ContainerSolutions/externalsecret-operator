@@ -32,8 +32,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
+	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 
 	// trigger secrets backend registration
+
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	_ "github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
@@ -47,6 +49,7 @@ type ExternalSecretReconciler struct {
 
 // +kubebuilder:rbac:groups=secrets.externalsecret-operator.container-solutions.com,resources=externalsecrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=secrets.externalsecret-operator.container-solutions.com,resources=externalsecrets/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=store.externalsecret-operator.container-solutions.com,resources=secretstores,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -63,6 +66,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
+			log.Info("External Secret not found.")
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -70,12 +74,29 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
+	// Fetch referenced store
+	secretStore := &storev1alpha1.SecretStore{}
+	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Spec.StoreRef.Name, Namespace: externalSecret.Spec.StoreRef.Namespace}, secretStore)
+	if err != nil && errors.IsNotFound(err) {
+		if errors.IsNotFound(err) {
+			// Request object not found, could have been deleted after reconcile request.
+			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
+			// Return and don't requeue
+			log.Info("SecretStore not found")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		log.Error(err, "Failed to get SecretStore")
+		return ctrl.Result{}, err
+
+	}
+
 	// Check if this Secret already exists
 	found := &corev1.Secret{}
 	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Name, Namespace: externalSecret.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new Secret object
-		secret, err := r.newSecretForCR(externalSecret)
+		secret, err := r.newSecretForCR(externalSecret, secretStore)
 		if err != nil {
 			log.Error(err, "Failed to create Secret")
 			return ctrl.Result{RequeueAfter: time.Second * 5}, err
@@ -97,21 +118,19 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	return ctrl.Result{}, nil
 }
 
-func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret) (*corev1.Secret, error) {
+func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (*corev1.Secret, error) {
 	if s == nil {
 		log.Error("externalsecret is nil")
 		return nil, fmt.Errorf("externalsecret is nil")
 	}
 
-	secretValue, err := r.backendGet(s)
+	secretMap, err := r.backendGet(s, st)
 	if err != nil {
 		log.Error(err, "backendGet")
 		return nil, err
 	}
 
-	secret := map[string][]byte{s.Spec.Key: []byte(secretValue)}
-
-	secretLabels := makeVersionAndBackendLabel(s.Spec.Version, s.Spec.Backend)
+	secretLabels := makeLabels(st.Spec.Controller, s.Spec.StoreRef.Name)
 
 	secretObject := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -123,7 +142,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 			Namespace: s.Namespace,
 			Labels:    secretLabels,
 		},
-		Data: secret,
+		Data: secretMap,
 	}
 
 	err = ctrl.SetControllerReference(s, secretObject, r.Scheme)
@@ -135,31 +154,39 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 	return secretObject, nil
 }
 
-func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret) (string, error) {
+func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (map[string][]byte, error) {
+	secrets := s.Spec.Secrets
+	secretMap := make(map[string][]byte)
+
 	if s == nil {
 		log.Error("externalsecret is nil")
-		return "", fmt.Errorf("externalsecret is nil")
+		return secretMap, fmt.Errorf("externalsecret is nil")
 	}
 
-	backend, ok := backend.Instances[s.Spec.Backend]
+	stCtrl := st.Spec.Controller
+	backend, ok := backend.Instances[stCtrl]
 	if !ok {
-		log.Error("Cannot find backend:", s.Spec.Backend)
-		return "", fmt.Errorf("Cannot find backend: %v", s.Spec.Backend)
+		log.Error("Cannot find controller:", stCtrl)
+		return secretMap, fmt.Errorf("Cannot find backend: %v", stCtrl)
 	}
 
-	value, err := backend.Get(s.Spec.Key, s.Spec.Version)
-	if err != nil {
-		log.Error(err, "could not create secret due to error from backend")
-		return "", fmt.Errorf("could not create secret due to error from backend: %v", err)
+	for _, secret := range secrets {
+		retrievedValue, err := backend.Get(secret.Key, secret.Version)
+		if err != nil {
+			log.Error(err, "could not create secret due to error from backend")
+			return secretMap, fmt.Errorf("could not create secret due to error from backend: %v", err)
+		}
+
+		secretMap[secret.Key] = []byte(retrievedValue)
 	}
 
-	return value, nil
+	return secretMap, nil
 }
 
-func makeVersionAndBackendLabel(version string, backend string) map[string]string {
+func makeLabels(contrl string, storeRef string) map[string]string {
 	return map[string]string{
-		"secret-version": version,
-		"secret-backend": backend,
+		"secret-controller": contrl,
+		"secret-storeRef":   storeRef,
 	}
 }
 
