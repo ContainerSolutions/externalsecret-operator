@@ -18,8 +18,8 @@ func NewBackend() Backend {
 	return &MockBackend{}
 }
 
-func (m *MockBackend) Init(params map[string]string) error {
-	m.Param1 = params["Param1"]
+func (m *MockBackend) Init(params map[string]interface{}, credentials []byte) error {
+	m.Param1 = params["Param1"].(string)
 	return nil
 }
 
@@ -66,7 +66,7 @@ func TestInitFromEnv(t *testing.T) {
 
 	configStruct := config.Config{
 		Type: "mock",
-		Parameters: map[string]string{
+		Parameters: map[string]interface{}{
 			"Param1": "Value1",
 		},
 	}
