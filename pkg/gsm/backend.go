@@ -16,13 +16,15 @@ import (
 
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	iampb "google.golang.org/genproto/googleapis/iam/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 	// iampb "google.golang.org/genproto/googleapis/iam/v1"
 )
 
 const (
 	cloudPlatformRole = "https://www.googleapis.com/auth/cloud-platform"
 )
+
+var log = ctrl.Log.WithName("gsm")
 
 type GoogleSecretManagerClient interface {
 	AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error)
@@ -45,8 +47,6 @@ type GoogleSecretManagerClient interface {
 	Close() error
 }
 
-var log = logf.Log.WithName("gsm")
-
 // Backend for Google Secrets Manager
 type Backend struct {
 	projectID           string
@@ -63,27 +63,24 @@ func NewBackend() backend.Backend {
 }
 
 // Init initializes Google secretsmanager backend
-func (g *Backend) Init(parameters map[string]string) error {
+func (g *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	ctx := context.Background()
 
 	if len(parameters) == 0 {
 		return fmt.Errorf("invalid or empty Config")
 	}
 
-	projectID, ok := parameters["projectID"]
+	projectID, ok := parameters["projectID"].(string)
 	if !ok {
 		return fmt.Errorf("invalid parameters")
 	}
 
 	g.projectID = projectID
 
-	sAccount := serviceAccount{}
-	jsonCredentials, err := sAccount.Marshal(parameters)
-	if err != nil {
-		return err
-	}
+	// sAccount := serviceAccount{}
+	// jsonCredentials := string(credentials)
 
-	config, err := google.JWTConfigFromJSON(jsonCredentials, cloudPlatformRole)
+	config, err := google.JWTConfigFromJSON(credentials, cloudPlatformRole)
 	if err != nil {
 		return err
 	}

@@ -143,10 +143,11 @@ func TestInit(t *testing.T) {
 
 	Convey("During initilization", t, func() {
 		backend := Backend{}
-		params := make(map[string]string)
+		params := make(map[string]interface{})
+		credentials := make([]byte, 1, 1)
 
 		Convey("When parameters are blank", func() {
-			err := backend.Init(params)
+			err := backend.Init(params, credentials)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "invalid or empty Config")
@@ -156,11 +157,13 @@ func TestInit(t *testing.T) {
 
 	Convey("During initilization", t, func() {
 		backend := Backend{}
-		params := make(map[string]string)
+		params := make(map[string]interface{})
+		credentials := make([]byte, 1, 1)
+
 		params["invalid"] = "invalid value"
 
 		Convey("When parameters are invalid", func() {
-			err := backend.Init(params)
+			err := backend.Init(params, credentials)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "invalid parameters")
@@ -170,11 +173,13 @@ func TestInit(t *testing.T) {
 
 	Convey("During initilization", t, func() {
 		backend := Backend{}
-		params := make(map[string]string)
+		params := make(map[string]interface{})
+		credentials := make([]byte, 1, 1)
+
 		params["projectID"] = "test-project"
 
 		Convey("When service account values are blank or invalid", func() {
-			err := backend.Init(params)
+			err := backend.Init(params, credentials)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldContainSubstring, "google: read JWT from JSON credentials:")
