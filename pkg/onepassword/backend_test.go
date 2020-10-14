@@ -71,9 +71,10 @@ func TestInit(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
+	credentials := []byte{}
 	backend.OnePassword = &MockOnePassword{signInOk: true}
 
-	params := map[string]string{
+	params := map[string]interface{}{
 		"domain":         domain,
 		"email":          email,
 		"secretKey":      secretKey,
@@ -81,7 +82,7 @@ func TestInit(t *testing.T) {
 		"vault":          vault,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, credentials)
 	if err != nil {
 		t.Fail()
 		fmt.Println("expected signin to succeed")
@@ -96,9 +97,11 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
+	credentials := []byte{}
+
 	backend.OnePassword = &MockOnePassword{signInOk: false}
 
-	params := map[string]string{
+	params := map[string]interface{}{
 		"domain":         domain,
 		"email":          email,
 		"secretKey":      secretKey,
@@ -106,7 +109,7 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 		"vault":          vault,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, credentials)
 	switch err.(type) {
 	case *ErrInitFailed:
 		actual := err.Error()
@@ -127,14 +130,15 @@ func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
 	masterPassword := "MasterPassword12346!"
 
 	backend := NewBackend()
+	credentials := make([]byte, 1, 1)
 
-	params := map[string]string{
+	params := map[string]interface{}{
 		"domain":         domain,
 		"secretKey":      secretKey,
 		"masterPassword": masterPassword,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, credentials)
 	switch err.(type) {
 	case *ErrInitFailed:
 		actual := err.Error()

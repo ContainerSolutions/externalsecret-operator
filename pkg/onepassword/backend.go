@@ -2,11 +2,15 @@
 package onepassword
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	"github.com/pkg/errors"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var log = ctrl.Log.WithName("onepassword")
 
 type ErrInitFailed struct {
 	message string
@@ -56,14 +60,20 @@ func NewBackend() backend.Backend {
 }
 
 // Init reads secrets from the parameters and sign in to 1password.
-func (b *Backend) Init(parameters map[string]string) error {
+func (b *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	err := validateParameters(parameters)
 	if err != nil {
 		return err
 	}
-	b.Vault = parameters[paramVault]
+	b.Vault = parameters[paramVault].(string)
 
-	err = b.OnePassword.Authenticate(parameters[paramDomain], parameters[paramEmail], parameters[paramMasterPassword], parameters[paramSecretKey])
+	opCreds := &OnePasswordCredentials{}
+	if err := json.Unmarshal(credentials, opCreds); err != nil {
+		log.Error(err, "Unmarshalling failed")
+		return err
+	}
+
+	err = b.OnePassword.Authenticate(parameters[paramDomain].(string), parameters[paramEmail].(string), opCreds.MasterPassword, opCreds.SecretKey)
 	if err != nil {
 		return &ErrInitFailed{message: err.Error()}
 	}
@@ -87,9 +97,9 @@ func (b *Backend) Get(key string, version string) (string, error) {
 	return item, nil
 }
 
-func validateParameters(parameters map[string]string) error {
+func validateParameters(parameters map[string]interface{}) error {
 	for _, key := range paramKeys {
-		value, found := parameters[key]
+		value, found := parameters[key].(string)
 		fmt.Printf("parameter '%s' has length: '%d'\n", key, len(value))
 
 		if !found {
@@ -99,6 +109,11 @@ func validateParameters(parameters map[string]string) error {
 		}
 	}
 	return nil
+}
+
+type OnePasswordCredentials struct {
+	MasterPassword string
+	SecretKey      string
 }
 
 type OnePassword interface {
