@@ -2,6 +2,7 @@
 package asm
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,10 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
+	// logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-var log = logf.Log.WithName("asm")
+var log = ctrl.Log.WithName("asm")
 
 // Backend represents a backend for AWS Secrets Manager
 type Backend struct {
@@ -31,10 +33,10 @@ func NewBackend() backend.Backend {
 }
 
 // Init initializes the Backend for AWS Secret Manager
-func (s *Backend) Init(parameters map[string]string) error {
+func (s *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	var err error
 
-	s.session, err = getAWSSession(parameters)
+	s.session, err = getAWSSession(parameters, credentials)
 	if err != nil {
 		return err
 	}
@@ -69,27 +71,29 @@ func (s *Backend) Get(key string, version string) (string, error) {
 	return *output.SecretString, nil
 }
 
+type AWSCredentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+}
+
 /* getAWSSession returns an aws.session.Session based on the parameters or environment variables
 * If parameters are not present or incomplete (secret key, access key AND region)
 * then let default config loading order to go on:
 * https://docs.aws.amazon.com/sdk-for-go/api/aws/session/
  */
-func getAWSSession(parameters map[string]string) (*session.Session, error) {
-
-	keys := []string{"accessKeyID", "secretAccessKey", "region"}
-
-	for _, key := range keys {
-		_, found := parameters[key]
-		if !found {
-			return session.NewSession()
-		}
+func getAWSSession(parameters map[string]interface{}, creds []byte) (*session.Session, error) {
+	awsCreds := &AWSCredentials{}
+	if err := json.Unmarshal(creds, awsCreds); err != nil {
+		log.Error(err, "Unmarshalling failed")
+		return nil, err
 	}
 
 	return session.NewSession(&aws.Config{
-		Region: aws.String(parameters["region"]),
+		Region: aws.String(parameters["region"].(string)),
 		Credentials: credentials.NewStaticCredentials(
-			parameters["accessKeyID"],
-			parameters["secretAccessKey"],
+			awsCreds.AccessKeyID,
+			awsCreds.SecretAccessKey,
 			""),
 	})
 }

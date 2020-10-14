@@ -54,26 +54,27 @@ func TestGet(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	params := make(map[string]string)
-
+	params := make(map[string]interface{})
+	credentials := []byte{}
 	params["Suffix"] = "dummy init"
 
 	Convey("Should initialize backend", t, func() {
 		backend := Backend{}
-		err := backend.Init(params)
+		credentials = []byte{}
+		err := backend.Init(params, credentials)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Should fail initialize backend with invalid config", t, func() {
 		backend := Backend{}
-		err := backend.Init(make(map[string]string))
+		err := backend.Init(make(map[string]interface{}), credentials)
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldEqual, "empty or invalid parameters")
 	})
 
 	Convey("Should fail initialize backend with invalid parameter suffix", t, func() {
 		backend := Backend{}
-		err := backend.Init(map[string]string{"uknown": "fail"})
+		err := backend.Init(map[string]interface{}{"unknown": "fail"}, credentials)
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldEqual, "missing parameters")
 	})

@@ -78,7 +78,7 @@ func TestGet(t *testing.T) {
 
 type envVariablesTest struct {
 	envVariables            map[string]string
-	parameters              map[string]string
+	parameters              map[string]interface{}
 	expectedAccessKeyID     string
 	expectedRegion          string
 	expectedSecretAccessKey string
@@ -107,7 +107,7 @@ func TestInit(t *testing.T) {
 				"AWS_REGION":            "eu-mediterranean-1",
 				"AWS_SECRET_ACCESS_KEY": "SMMSsecrets",
 			},
-			parameters:              map[string]string{},
+			parameters:              make(map[string]interface{}),
 			expectedAccessKeyID:     "AKIABLABLA",
 			expectedRegion:          "eu-mediterranean-1",
 			expectedSecretAccessKey: "SMMSsecrets",
@@ -118,7 +118,7 @@ func TestInit(t *testing.T) {
 				"AWS_SECRET_ACCESS_KEY": "eu-mediterranean-1",
 				"AWS_REGION":            "SMMSsecrets",
 			},
-			parameters: map[string]string{
+			parameters: map[string]interface{}{
 				"accessKeyID":     "some",
 				"region":          "other",
 				"secretAccessKey": "value",
@@ -136,7 +136,8 @@ func TestInit(t *testing.T) {
 			}
 			Convey("When initializing an ASM backend", func() {
 				b := Backend{}
-				err := b.Init(test.parameters)
+				credentials := []byte{}
+				err := b.Init(test.parameters, credentials)
 				So(err, ShouldBeNil)
 				Convey("Then credentials are reflected in the AWS session", func() {
 					actualCredentials, err := b.session.Config.Credentials.Get()

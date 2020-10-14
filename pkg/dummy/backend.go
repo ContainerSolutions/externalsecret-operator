@@ -7,10 +7,10 @@ import (
 	"fmt"
 
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-var log = logf.Log.WithName("dummy")
+var log = ctrl.Log.WithName("dummy")
 
 // Backend is a fake secrets backend for testing purposes
 type Backend struct {
@@ -27,13 +27,14 @@ func NewBackend() backend.Backend {
 }
 
 // Init implements SecretsBackend interface, sets the suffix
-func (d *Backend) Init(parameters map[string]string) error {
+func (d *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
+	println("creds %v", credentials)
 	if len(parameters) == 0 {
 		log.Error(fmt.Errorf("error"), "empty or invalid parameters: ")
 		return fmt.Errorf("empty or invalid parameters")
 	}
 
-	suffix, ok := parameters["Suffix"]
+	suffix, ok := parameters["Suffix"].(string)
 	if !ok {
 		log.Error(fmt.Errorf("error"), "missing parameters: ")
 		return fmt.Errorf("missing parameters")
