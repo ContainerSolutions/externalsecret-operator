@@ -104,3 +104,5 @@ bin
 conf-dummy.json
 conf-op.json
 conf.json
+encrypt.key
+encrypt.key.enc
