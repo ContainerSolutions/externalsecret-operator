@@ -2,6 +2,7 @@
 package asm
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -62,13 +63,27 @@ func (s *Backend) Get(key string, version string) (string, error) {
 		return "", fmt.Errorf("backend not initialized")
 	}
 
-	output, err := s.SecretsManager.GetSecretValue(input)
+	result, err := s.SecretsManager.GetSecretValue(input)
 	if err != nil {
 		log.Error(err, "Error getting secret value")
 		return "", err
 	}
 
-	return *output.SecretString, nil
+	// https: //docs.aws.amazon.com/secretsmanager/latest/apireference/API_CreateSecret.html
+	// TLDR: Either SecretString or SecretBinary must have a value, but not both. They cannot both be empty.
+	var secretValue string
+	if result.SecretString != nil {
+		secretValue = *result.SecretString
+	} else {
+		decodedBinarySecretBytes := make([]byte, base64.StdEncoding.DecodedLen(len(result.SecretBinary)))
+		len, err := base64.StdEncoding.Decode(decodedBinarySecretBytes, result.SecretBinary)
+		if err != nil {
+			log.Error(err, "Base64 Decode Error:")
+			return "", err
+		}
+		secretValue = string(decodedBinarySecretBytes[:len])
+	}
+	return secretValue, nil
 }
 
 type AWSCredentials struct {
