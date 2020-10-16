@@ -86,6 +86,7 @@ func (s *Backend) Get(key string, version string) (string, error) {
 	return secretValue, nil
 }
 
+// AWSCredentials represents expected credentials for AWS
 type AWSCredentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
@@ -109,6 +110,6 @@ func getAWSSession(parameters map[string]interface{}, creds []byte) (*session.Se
 		Credentials: credentials.NewStaticCredentials(
 			awsCreds.AccessKeyID,
 			awsCreds.SecretAccessKey,
-			""),
+			awsCreds.SessionToken),
 	})
 }
