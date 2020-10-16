@@ -77,7 +77,7 @@ func (b *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 	if err != nil {
 		return &ErrInitFailed{message: err.Error()}
 	}
-	fmt.Println("signed into 1password successfully")
+	log.Info("signed into 1password successfully")
 
 	return nil
 }
@@ -87,7 +87,7 @@ func (b *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 func (b *Backend) Get(key string, version string) (string, error) {
 	_ = version
 
-	fmt.Println("Retrieving 1password item '" + key + "'.")
+	log.Info("Retrieving 1password item '" + key + "'.")
 
 	item, err := b.OnePassword.GetItem(b.Vault, key)
 	if err != nil {
@@ -100,7 +100,7 @@ func (b *Backend) Get(key string, version string) (string, error) {
 func validateParameters(parameters map[string]interface{}) error {
 	for _, key := range paramKeys {
 		value, found := parameters[key].(string)
-		fmt.Printf("parameter '%s' has length: '%d'\n", key, len(value))
+		log.Info("parameter '%s' has length: '%d'\n", key, len(value))
 
 		if !found {
 			return &ErrInitFailed{message: fmt.Sprintf("expected parameter '%s'", key)}
