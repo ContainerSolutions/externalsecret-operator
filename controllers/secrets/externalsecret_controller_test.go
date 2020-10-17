@@ -130,6 +130,25 @@ var _ = Describe("ExternalsecretController", func() {
 
 		})
 
+		It("Should fail when backend with empty key is passed", func() {
+			externalSecret := &secretsv1alpha1.ExternalSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ExternalSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: secretsv1alpha1.ExternalSecretSpec{
+					Backend: ExternalSecretBackend,
+					Key:     "",
+					Version: ExternalSecretVersion,
+				},
+			}
+
+			_, err := r.newSecretForCR(externalSecret)
+			Expect(err).ToNot(BeNil())
+			Expect(err.Error()).Should(Equal("could not create secret due to error from backend: empty key provided"))
+
+		})
+
 		It("Should return an error when Get() fails in the backend", func() {
 
 			externalSecret := &secretsv1alpha1.ExternalSecret{
