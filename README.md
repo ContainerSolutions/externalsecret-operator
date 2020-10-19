@@ -5,6 +5,22 @@
 This operator reads information from a third party service
 like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and automatically injects the values as [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
 
+# Table of Contents
+
+ * [Quick start](#quick-start)
+ * [Manifests](#manifests)
+ * [What does it do?](#what-does-it-do)
+ * [Architecture](#architecture)
+ * [Secrets Backends](#secrets-backends)
+    * [1Password](#1password)
+        * [Prerequisites](#prerequisites)
+        * [Integration Test](#integration-test)
+        * [Operator Deployment](#operator-deployment)
+    * [GCP/Google Secrets Manager](#gcpgoogle-secrets-manager)
+        * [Prerequisites](#prerequisites)
+        * [Deploying](#deploying)
+ * [Contributing](#contributing)
+ 
 ## Quick start
 
 <!-- If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend. -->
