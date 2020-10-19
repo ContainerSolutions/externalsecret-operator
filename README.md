@@ -5,13 +5,13 @@
 This operator reads information from a third party service
 like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and automatically injects the values as [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
 
-## Quick start
+## Quickstart
 
 <!-- If you want to jump right into action you can deploy the External Secrets Operator using the provided [helm chart](./deployments/helm/externalsecret-operator/README.md) or [manifests](./deploy). The following examples are specific to the AWS Secret Manager backend. -->
 
 <!-- ### Helm
 
-Here's how you can deploy the External Secret Operator in the `default` namespace.
+Here is how you can deploy the External Secret Operator in the `default` namespace.
 
 ```shell
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
@@ -26,7 +26,7 @@ helm upgrade --install asm1 --wait \
     ./deployments/helm/externalsecret-operator/.
 ```
 
-It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
+It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace, and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager.
 
 Look for more deployment options in the [README.md](./deployments/helm/externalsecret-operator/README.md) of the helm chart. -->
 
@@ -54,7 +54,7 @@ operator-config.json: |-
     }
   }
 ```
-<!-- The `deploy` target in the Makefile will substiute variables and deploy the
+<!-- The `deploy` target in the Makefile will substitute variables and deploy the
 manifests for you. The following command will deploy the operator in the
 `default` namespace:
 
@@ -66,7 +66,7 @@ export OPERATOR_NAME=asm-example
 export BACKEND=asm
 make deploy
 ```
-It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager. -->
+It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace, and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager. -->
 
 ## What does it do?
 
@@ -107,13 +107,13 @@ this string is a secret
 
 In [this](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkEmDFo5GWNzJ2N398cI) you can find more information about the architecture and design choices. 
 
-Here's a high-level diagram of how things are put together.
+Here is a high-level diagram of how things are put together.
 
 ![architecture](./assets/architecture.png)
 
 ## Secrets Backends
 
-We would like to support as many backend as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
+We would like to support as many backends as possible, and it should be relatively easy to write new ones. Currently supported or planned backends are:
 
 * AWS Secrets Manager
 * 1Password
@@ -130,7 +130,7 @@ We would like to support as many backend as possible and it should be rather eas
 * An existing 1Password team account.
 * A 1Password account specifically for the operator. Tip: Setup an email with the `+` convention: `john.doe+operator@example.org`
 * Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
-* Our naming convention for the item account is 'External Secret Operator' concatenated with name of the Kubernetes cluster for instance 'External Secret Operator minikube'. This item name is also used for development.
+* Our naming convention for the item account is 'External Secret Operator' concatenated with the name of the Kubernetes cluster for instance 'External Secret Operator minikube'. This item name is also used for development.
   
 ![1Password operator account](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/assets/1password-operator-account.png)
 
@@ -142,7 +142,7 @@ Create a secret in 1Password as follow. Create a vault called `test vault one`. 
 
 ![1Password secret](https://raw.githubusercontent.com/containersolutions/externalsecret-operator/master/assets/1password-secret.png)
 
-To run the integration test do the following.
+To run the integration test, do the following.
 
 1. Sign in to your _existing_ 1password
 
@@ -150,14 +150,14 @@ To run the integration test do the following.
 $ eval $(op signin)
 ```
 
-2. Set the `ITEM_VAULT` and `ITEM_NAME` environment variables to select the right 1Password item that contains credentials fo your _operator_ 1Password account.
+2. Set the `ITEM_VAULT` and `ITEM_NAME` environment variables to select the right 1Password item that contains credentials for your _operator_ 1Password account.
 
 ```
 $ export ITEM_NAME=External Secret Operator mykubernetescluster
 $ export ITEM_VAULT=myvault
 ```
 
-Now load the 1Password credentials of your _operator_ account into the environment
+Now load the 1Password credentials of your _operator_ account into the environment.
 
 ```
 $ . deployments/source-onepassword-secrets.sh
