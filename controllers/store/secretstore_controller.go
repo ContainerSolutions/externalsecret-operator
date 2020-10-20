@@ -49,7 +49,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ctx := context.Background()
 	log := r.Log.WithValues("secretstore", req.NamespacedName)
 
-	// Fetch the ExternalSecret instance
+	// Fetch the SecretStore instance
 	secretStore := &storev1alpha1.SecretStore{}
 	err := r.Get(ctx, req.NamespacedName, secretStore)
 	if err != nil {
@@ -90,7 +90,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	credentials := credentialsSecret.Data["operator-config.json"]
+	credentials := credentialsSecret.Data["operator-credentials.json"]
 
 	err = backend.InitFromCtrl(contrl, config, credentials)
 	if err != nil {
