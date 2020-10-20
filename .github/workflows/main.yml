@@ -73,9 +73,10 @@ jobs:
         fi
 
         PUSH_IMAGE=true
+        REPO_FULL_NAME="${{ github.event.pull_request.head.repo.full_name }}"
         # If this is both a pull request and a fork, then don't push the image
         if [[ ${{ github.event_name }} == pull_request ]]; then
-          if [[ ${{ github.event.pull_request.head.repo.full_name }} != ContainerSolutions/externalsecret-operator ]]; then
+          if [[ $REPO_FULL_NAME != ContainerSolutions/externalsecret-operator ]]; then
             PUSH_IMAGE=false
           fi
         fi
