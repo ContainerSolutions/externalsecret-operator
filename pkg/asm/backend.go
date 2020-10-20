@@ -13,10 +13,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	ctrl "sigs.k8s.io/controller-runtime"
-	// logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-var log = ctrl.Log.WithName("asm")
+var (
+	log           = ctrl.Log.WithName("asm")
+	defaultRegion = "eu-west-2"
+)
 
 // Backend represents a backend for AWS Secrets Manager
 type Backend struct {
@@ -86,7 +88,7 @@ func (s *Backend) Get(key string, version string) (string, error) {
 	return secretValue, nil
 }
 
-// AWSCredentials represents expected credentials for AWS
+// AWSCredentials represents expected credentials
 type AWSCredentials struct {
 	AccessKeyID     string
 	SecretAccessKey string
@@ -105,8 +107,18 @@ func getAWSSession(parameters map[string]interface{}, creds []byte) (*session.Se
 		return nil, err
 	}
 
+	region, ok := parameters["region"].(string)
+	if !ok {
+		log.Error(nil, "AWS region parameter missing")
+		return nil, fmt.Errorf("AWS region parameter missing")
+	}
+
+	if region == "" {
+		region = defaultRegion
+	}
+
 	return session.NewSession(&aws.Config{
-		Region: aws.String(parameters["region"].(string)),
+		Region: aws.String(region),
 		Credentials: credentials.NewStaticCredentials(
 			awsCreds.AccessKeyID,
 			awsCreds.SecretAccessKey,
