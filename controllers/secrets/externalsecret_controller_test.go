@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"math/rand"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -9,10 +10,12 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
-	// storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
+	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
+	"github.com/containersolutions/externalsecret-operator/pkg/utils"
 )
 
 const ExternalSecretNamespace = "default"
@@ -24,10 +27,27 @@ var _ = Describe("ExternalsecretController", func() {
 		ExternalSecretVersion = "test-version"
 		// ExternalSecretBackend = "test-backend"
 		// SecretName            = "test-secret"
+		SecretStoreName      = "test-store"
+		StoreControllerName  = "test-store-ctrl"
+		CredentialSecretName = "credential-secret"
 
 		timeout = time.Second * 30
 		// duration = time.Second * 10
 		interval = time.Millisecond * 250
+
+		StoreConfig = `
+		{
+			"type": "dummy",
+			"auth": {
+				"secretRef": {
+					"name": "credential-secret",
+					"namespace": "default"
+				}
+			},
+			"parameters": {
+				"Suffix": "I am definitely a param"
+			}
+		}`
 	)
 
 	BeforeEach(func() {})
@@ -38,6 +58,59 @@ var _ = Describe("ExternalsecretController", func() {
 		It("Should handle ExternalSecret correctly", func() {
 			By("Creating a new ExternalSecret")
 			ctx := context.Background()
+
+			credentialsSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      CredentialSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				StringData: map[string]string{
+					"operator-config.json": `{
+						"Credential": "-dummyvalue"
+					}`,
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, credentialsSecret)).Should(Succeed())
+
+			credentialsSecretLookupKey := types.NamespacedName{Name: CredentialSecretName, Namespace: ExternalSecretNamespace}
+			createdCredentialsSecret := &corev1.Secret{}
+
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, credentialsSecretLookupKey, createdCredentialsSecret)
+				if err != nil {
+					return false
+				}
+				return true
+			}, timeout, interval).Should(BeTrue())
+
+			secretStore := &storev1alpha1.SecretStore{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      SecretStoreName,
+					Namespace: ExternalSecretNamespace,
+				},
+
+				Spec: storev1alpha1.SecretStoreSpec{
+					Controller: StoreControllerName,
+					Store: runtime.RawExtension{
+						Raw: []byte(StoreConfig),
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, secretStore)).Should(Succeed())
+
+			secretStoreLookupKey := types.NamespacedName{Name: SecretStoreName, Namespace: ExternalSecretNamespace}
+			createdSecretStore := &storev1alpha1.SecretStore{}
+
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, secretStoreLookupKey, createdSecretStore)
+				if err != nil {
+					return false
+				}
+				return true
+			}, timeout, interval).Should(BeTrue())
+
 			externalSecret := &secretsv1alpha1.ExternalSecret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      ExternalSecretName,
@@ -45,10 +118,20 @@ var _ = Describe("ExternalsecretController", func() {
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
 					StoreRef: secretsv1alpha1.StoreRef{
-						Name:      "",
-						Namespace: "",
+						Name:      SecretStoreName,
+						Namespace: ExternalSecretNamespace,
 					},
 					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+
 						{
 							Key:     ExternalSecretKey,
 							Version: ExternalSecretVersion,
@@ -70,7 +153,6 @@ var _ = Describe("ExternalsecretController", func() {
 				return true
 			}, timeout, interval).Should(BeTrue())
 
-			// Expect(createdExternalSecret.Spec.Backend).Should(Equal("test-backend"))
 			// Expect(createdExternalSecret.Spec.Version).Should(Equal("test-version"))
 			// Expect(createdExternalSecret.Spec.Key).Should(Equal("test-key"))
 
@@ -86,7 +168,7 @@ var _ = Describe("ExternalsecretController", func() {
 
 			secretValue := string(secret.Data[ExternalSecretKey])
 
-			Expect(string(secretValue)).Should(Equal("test-keytest-version-ohlord"))
+			Expect(string(secretValue)).Should(Equal("test-keytest-versionI am definitely a param"))
 
 			By("Deleting the External Secret")
 			Eventually(func() error {
@@ -102,24 +184,57 @@ var _ = Describe("ExternalsecretController", func() {
 		})
 	})
 
-	Context("Errors", func() {
+	Context("SecretStore does not exist", func() {
+		ctx := context.Background()
+		It("Should handle gracefully", func() {
+			externalSecret := &secretsv1alpha1.ExternalSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ExternalSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: secretsv1alpha1.ExternalSecretSpec{
+					StoreRef: secretsv1alpha1.StoreRef{
+						Name:      "NonExistentStore",
+						Namespace: ExternalSecretNamespace,
+					},
+					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, externalSecret)).Should(Succeed())
+
+		})
+	})
+
+	Context("When interacting with Backend", func() {
 		r := &ExternalSecretReconciler{}
+		ctx := context.Background()
 
-		It("Should Fail when nil externalsecret is passed", func() {
-			_, err := r.newSecretForCR(nil, nil)
-			Expect(err).ToNot(BeNil())
-			Expect(err.Error()).Should(Equal("externalsecret is nil"))
+		It("Should Fail when a backend is uninitialized/Not ready", func() {
 
-		})
-
-		It("Should Fail when nil externalsecret is passed", func() {
-			_, err := r.backendGet(nil, nil)
-			Expect(err).ToNot(BeNil())
-			Expect(err.Error()).Should(Equal("externalsecret is nil"))
-
-		})
-
-		It("Should Fail when nil an invalid backend is passed", func() {
+			randomSecretStoreName := "test-store" + utils.RandomString(rand.Intn(20))
+			randomControllerName := "test-ctrl" + utils.RandomString(rand.Intn(20))
+			secretStore := &storev1alpha1.SecretStore{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      randomSecretStoreName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: storev1alpha1.SecretStoreSpec{
+					Controller: randomControllerName,
+					Store: runtime.RawExtension{
+						Raw: []byte(StoreConfig),
+					},
+				},
+			}
 
 			externalSecret := &secretsv1alpha1.ExternalSecret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -128,10 +243,14 @@ var _ = Describe("ExternalsecretController", func() {
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
 					StoreRef: secretsv1alpha1.StoreRef{
-						Name:      "",
-						Namespace: "",
+						Name:      secretStore.ObjectMeta.Name,
+						Namespace: ExternalSecretNamespace,
 					},
 					Secrets: []secretsv1alpha1.Secret{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
 						{
 							Key:     ExternalSecretKey,
 							Version: ExternalSecretVersion,
@@ -139,14 +258,45 @@ var _ = Describe("ExternalsecretController", func() {
 					},
 				},
 			}
-			_, err := r.backendGet(externalSecret, nil)
+			_, err := r.backendGet(externalSecret, secretStore)
 			Expect(err).ToNot(BeNil())
-			Expect(err.Error()).Should(Equal("Cannot find backend: invalid backend"))
+			Expect(err.Error()).Should(Equal("Cannot find backend:" + " " + randomControllerName))
 
 		})
 
 		It("Should return an error when Get() fails in the backend", func() {
 
+			randomSecretStoreName := "test-store" + utils.RandomString(rand.Intn(20))
+			randomControllerName := "test-ctrl" + utils.RandomString(rand.Intn(20))
+			secretStore := &storev1alpha1.SecretStore{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      randomSecretStoreName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: storev1alpha1.SecretStoreSpec{
+					Controller: randomControllerName,
+					Store: runtime.RawExtension{
+						Raw: []byte(StoreConfig),
+					},
+				},
+			}
+
+			/**
+				Create the store so that the backend is intialized
+			**/
+			Expect(k8sClient.Create(ctx, secretStore)).Should(Succeed())
+
+			secretStoreLookupKey := types.NamespacedName{Name: randomSecretStoreName, Namespace: ExternalSecretNamespace}
+			createdSecretStore := &storev1alpha1.SecretStore{}
+
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, secretStoreLookupKey, createdSecretStore)
+				if err != nil {
+					return false
+				}
+				return true
+			}, timeout, interval).Should(BeTrue())
+
 			externalSecret := &secretsv1alpha1.ExternalSecret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      ExternalSecretName,
@@ -154,20 +304,25 @@ var _ = Describe("ExternalsecretController", func() {
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
 					StoreRef: secretsv1alpha1.StoreRef{
-						Name:      "",
-						Namespace: "",
+						Name:      randomSecretStoreName,
+						Namespace: ExternalSecretNamespace,
 					},
 					Secrets: []secretsv1alpha1.Secret{
 						{
-							Key:     ExternalSecretKey,
-							Version: ExternalSecretVersion,
+							Key:     "",
+							Version: "",
 						},
 					},
 				},
 			}
-			_, err := r.backendGet(externalSecret, nil)
-			Expect(err).ToNot(BeNil())
-			Expect(err.Error()).Should(Equal("could not create secret due to error from backend: empty key provided"))
+
+			/**
+				We need to wait for the store reconciler to intialize the backend
+			**/
+			Eventually(func() string {
+				_, err := r.backendGet(externalSecret, secretStore)
+				return err.Error()
+			}, timeout, interval).Should(Equal("could not create secret due to error from backend: empty key provided"))
 
 		})
 

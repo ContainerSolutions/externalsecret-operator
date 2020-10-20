@@ -17,7 +17,6 @@ limitations under the License.
 package controllers
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -36,7 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
-	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
+	storecontroller "github.com/containersolutions/externalsecret-operator/controllers/store"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -67,8 +67,8 @@ var _ = BeforeSuite(func(done Done) {
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
-		// UseExistingCluster:       &useExistingCluster,
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "bases")},
+		// UseExistingCluster:       &useExistingCluster,
 		// AttachControlPlaneOutput: true,
 	}
 
@@ -80,6 +80,8 @@ var _ = BeforeSuite(func(done Done) {
 	err = secretsv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = storev1alpha1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
 	// +kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
@@ -87,8 +89,16 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(k8sClient).ToNot(BeNil())
 
 	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme: scheme.Scheme,
+		Scheme:             scheme.Scheme,
+		MetricsBindAddress: ":8081",
 	})
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&storecontroller.SecretStoreReconciler{
+		Client: k8sManager.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("SecretStore"),
+		Scheme: k8sManager.GetScheme(),
+	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&ExternalSecretReconciler{
@@ -99,27 +109,7 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(err).ToNot(HaveOccurred())
 
 	go func() {
-		// defer GinkgoRecover()
-
-		// env
-		configValue := `{
-			"Type": "dummy",
-			"Parameters": {
-				"Suffix": "-ohlord"
-				}
-		}`
-		configKey := "OPERATOR_CONFIG"
-
-		os.Setenv(configKey, configValue)
-
-		_, configKeyPresent := os.LookupEnv(configKey)
-		Expect(configKeyPresent).To(BeTrue())
-		Expect(os.Getenv(configKey)).ToNot(BeEmpty())
-		// end env
-
-		err = backend.InitFromEnv("test-backend")
-		Expect(err).ToNot(HaveOccurred())
-
+		defer GinkgoRecover()
 		err = k8sManager.Start(ctrl.SetupSignalHandler())
 
 		Expect(err).ToNot(HaveOccurred())
