@@ -30,6 +30,7 @@ func ConfigFromJSON(data string) (*Config, error) {
 	return backendConfig, nil
 }
 
+// ConfigFromCtrl returns a Config object based on the byte data passed as parameter
 func ConfigFromCtrl(data []byte) (*Config, error) {
 	backendConfig := &Config{}
 	err := json.Unmarshal(data, backendConfig)
