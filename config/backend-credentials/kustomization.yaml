@@ -1,0 +1,5 @@
+resources:
+# - backend-credentials-gsm.yaml
+- backend-credentials-asm.yaml
+# - backend-credentials-dummy.yaml
+# - backend-credentials-onepassword.yaml

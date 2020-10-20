@@ -1,5 +1,0 @@
-resources:
-# - backend-config-gsm.yaml
-# - backend-config-asm.yaml
-- backend-config-dummy.yaml
-# - backend-config-onepassword.yaml
