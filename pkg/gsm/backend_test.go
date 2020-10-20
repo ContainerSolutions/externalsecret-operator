@@ -2,6 +2,8 @@ package gsm
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 
 	"cloud.google.com/go/iam"
@@ -17,6 +19,9 @@ import (
 type mockGoogleSecretManagerClient struct{}
 
 func (g *mockGoogleSecretManagerClient) AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error) {
+	if strings.Contains(req.Name, "invalid") {
+		return nil, errors.New("mock error")
+	}
 	return &secretmanagerpb.AccessSecretVersionResponse{
 		Name: "test",
 		Payload: &secretmanagerpb.SecretPayload{
@@ -136,7 +141,16 @@ func TestGet(t *testing.T) {
 				So(actualValue, ShouldEqual, "Testing")
 			})
 		})
+
+		Convey("When an error occurs while retrieving external secret", func() {
+			actualValue, err := backend.Get("invalid", keyVersion)
+			Convey("Then an error is returned", func() {
+				So(err.Error(), ShouldEqual, "failed to access secret version: mock error")
+				So(actualValue, ShouldBeEmpty)
+			})
+		})
 	})
+
 }
 
 func TestInit(t *testing.T) {
