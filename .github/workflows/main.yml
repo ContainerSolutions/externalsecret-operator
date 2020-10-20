@@ -72,11 +72,12 @@ jobs:
           TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
         fi
 
-        # Only push the image to Docker Hub if we're not building a fork
-        if [[ ${{ github.event.pull_request.head.repo.full_name }} == ContainerSolutions/externalsecret-operator ]]; then
-          PUSH_IMAGE=true
-        else
-          PUSH_IMAGE=false
+        PUSH_IMAGE=true
+        # If this is both a pull request and a fork, then don't push the image
+        if [[ ${{ github.event_name }} == pull_request ]]; then
+          if [[ ${{ github.event.pull_request.head.repo.full_name }} != ContainerSolutions/externalsecret-operator ]]; then
+            PUSH_IMAGE=false
+          fi
         fi
 
         echo ::set-output name=version::${VERSION}
