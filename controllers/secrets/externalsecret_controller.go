@@ -34,10 +34,7 @@ import (
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
 	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 
-	// trigger secrets backend registration
-
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
-	_ "github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
 // ExternalSecretReconciler reconciles a ExternalSecret object
@@ -119,11 +116,6 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 }
 
 func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (*corev1.Secret, error) {
-	if s == nil {
-		log.Error("externalsecret is nil")
-		return nil, fmt.Errorf("externalsecret is nil")
-	}
-
 	secretMap, err := r.backendGet(s, st)
 	if err != nil {
 		log.Error(err, "backendGet")
@@ -157,11 +149,6 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (map[string][]byte, error) {
 	secrets := s.Spec.Secrets
 	secretMap := make(map[string][]byte)
-
-	if s == nil {
-		log.Error("externalsecret is nil")
-		return secretMap, fmt.Errorf("externalsecret is nil")
-	}
 
 	stCtrl := st.Spec.Controller
 	backend, ok := backend.Instances[stCtrl]
