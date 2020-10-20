@@ -71,7 +71,10 @@ func TestInit(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
-	credentials := []byte{}
+	credentials := `{
+		"secretKey": "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ",
+		"masterPassword": "MasterPassword12346!"
+	}`
 	backend.OnePassword = &MockOnePassword{signInOk: true}
 
 	params := map[string]interface{}{
@@ -82,7 +85,7 @@ func TestInit(t *testing.T) {
 		"vault":          vault,
 	}
 
-	err := backend.Init(params, credentials)
+	err := backend.Init(params, []byte(credentials))
 	if err != nil {
 		t.Fail()
 		fmt.Println("expected signin to succeed")
@@ -97,7 +100,10 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 	vault := "production"
 
 	backend := &Backend{}
-	credentials := []byte{}
+	credentials := `{
+		"secretKey": "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ",
+		"masterPassword": "MasterPassword12346!"
+	}`
 
 	backend.OnePassword = &MockOnePassword{signInOk: false}
 
@@ -109,7 +115,7 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 		"vault":          vault,
 	}
 
-	err := backend.Init(params, credentials)
+	err := backend.Init(params, []byte(credentials))
 	switch err.(type) {
 	case *ErrInitFailed:
 		actual := err.Error()
