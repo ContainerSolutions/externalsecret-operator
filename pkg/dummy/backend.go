@@ -28,7 +28,6 @@ func NewBackend() backend.Backend {
 
 // Init implements SecretsBackend interface, sets the suffix
 func (d *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
-	println("creds %v", credentials)
 	if len(parameters) == 0 {
 		log.Error(fmt.Errorf("error"), "empty or invalid parameters: ")
 		return fmt.Errorf("empty or invalid parameters")
