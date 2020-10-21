@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"math/rand"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -22,14 +21,16 @@ const ExternalSecretNamespace = "default"
 
 var _ = Describe("ExternalsecretController", func() {
 	var (
-		ExternalSecretName    = "externalsecret-operator-test"
-		ExternalSecretKey     = "test-key"
-		ExternalSecretVersion = "test-version"
-		// ExternalSecretBackend = "test-backend"
-		// SecretName            = "test-secret"
-		SecretStoreName      = "test-store"
-		StoreControllerName  = "test-store-ctrl"
-		CredentialSecretName = "credential-secret"
+		ExternalSecretName     = "externalsecret-operator-test"
+		ExternalSecretKey      = "test-key"
+		ExternalSecretVersion  = "test-version"
+		ExternalSecret2Key     = "test-key-2"
+		ExternalSecret2Version = "test-version-2"
+		ExternalSecret3Key     = "test-key-3"
+		ExternalSecret3Version = "test-version-3"
+		SecretStoreName        = "test-externalsecret-store"
+		StoreControllerName    = "test-externalsecret-ctrl"
+		CredentialSecretName   = "credential-secret-external-secret"
 
 		timeout = time.Second * 30
 		// duration = time.Second * 10
@@ -40,12 +41,12 @@ var _ = Describe("ExternalsecretController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret",
+					"name": "credential-secret-external-secret",
 					"namespace": "default"
 				}
 			},
 			"parameters": {
-				"Suffix": "I am definitely a param"
+				"Suffix": "TestParameter"
 			}
 		}`
 	)
@@ -128,13 +129,13 @@ var _ = Describe("ExternalsecretController", func() {
 						},
 
 						{
-							Key:     ExternalSecretKey,
-							Version: ExternalSecretVersion,
+							Key:     ExternalSecret2Key,
+							Version: ExternalSecret2Version,
 						},
 
 						{
-							Key:     ExternalSecretKey,
-							Version: ExternalSecretVersion,
+							Key:     ExternalSecret3Key,
+							Version: ExternalSecret3Version,
 						},
 					},
 				},
@@ -153,8 +154,16 @@ var _ = Describe("ExternalsecretController", func() {
 				return true
 			}, timeout, interval).Should(BeTrue())
 
-			// Expect(createdExternalSecret.Spec.Version).Should(Equal("test-version"))
-			// Expect(createdExternalSecret.Spec.Key).Should(Equal("test-key"))
+			Expect(len(createdExternalSecret.Spec.Secrets)).Should(BeNumerically("==", 3))
+
+			Expect(createdExternalSecret.Spec.Secrets[0].Key).Should(Equal(ExternalSecretKey))
+			Expect(createdExternalSecret.Spec.Secrets[0].Version).Should(Equal(ExternalSecretVersion))
+
+			Expect(createdExternalSecret.Spec.Secrets[1].Key).Should(Equal(ExternalSecret2Key))
+			Expect(createdExternalSecret.Spec.Secrets[1].Version).Should(Equal(ExternalSecret2Version))
+
+			Expect(createdExternalSecret.Spec.Secrets[2].Key).Should(Equal(ExternalSecret3Key))
+			Expect(createdExternalSecret.Spec.Secrets[2].Version).Should(Equal(ExternalSecret3Version))
 
 			By("Creating a new secret with correct values")
 			secret := &corev1.Secret{}
@@ -167,8 +176,13 @@ var _ = Describe("ExternalsecretController", func() {
 			}, timeout, interval).Should(BeTrue())
 
 			secretValue := string(secret.Data[ExternalSecretKey])
+			Expect(string(secretValue)).Should(Equal("test-keytest-versionTestParameter"))
 
-			Expect(string(secretValue)).Should(Equal("test-keytest-versionI am definitely a param"))
+			secretValue2 := string(secret.Data[ExternalSecret2Key])
+			Expect(string(secretValue2)).Should(Equal("test-key-2test-version-2TestParameter"))
+
+			secretValue3 := string(secret.Data[ExternalSecret3Key])
+			Expect(string(secretValue3)).Should(Equal("test-key-3test-version-3TestParameter"))
 
 			By("Deleting the External Secret")
 			Eventually(func() error {
@@ -187,9 +201,12 @@ var _ = Describe("ExternalsecretController", func() {
 	Context("SecretStore does not exist", func() {
 		ctx := context.Background()
 		It("Should handle gracefully", func() {
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(25)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
 			externalSecret := &secretsv1alpha1.ExternalSecret{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      ExternalSecretName,
+					Name:      randomSecretStoreName,
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
@@ -203,8 +220,8 @@ var _ = Describe("ExternalsecretController", func() {
 							Version: ExternalSecretVersion,
 						},
 						{
-							Key:     ExternalSecretKey,
-							Version: ExternalSecretVersion,
+							Key:     ExternalSecret2Key,
+							Version: ExternalSecret3Version,
 						},
 					},
 				},
@@ -220,9 +237,10 @@ var _ = Describe("ExternalsecretController", func() {
 		ctx := context.Background()
 
 		It("Should Fail when a backend is uninitialized/Not ready", func() {
-
-			randomSecretStoreName := "test-store" + utils.RandomString(rand.Intn(20))
-			randomControllerName := "test-ctrl" + utils.RandomString(rand.Intn(20))
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(30)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
+			randomControllerName := StoreControllerName + randomObjSafeStr
 			secretStore := &storev1alpha1.SecretStore{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      randomSecretStoreName,
@@ -252,22 +270,23 @@ var _ = Describe("ExternalsecretController", func() {
 							Version: ExternalSecretVersion,
 						},
 						{
-							Key:     ExternalSecretKey,
-							Version: ExternalSecretVersion,
+							Key:     ExternalSecret2Key,
+							Version: ExternalSecret3Version,
 						},
 					},
 				},
 			}
-			_, err := r.backendGet(externalSecret, secretStore)
+			_, err = r.backendGet(externalSecret, secretStore)
 			Expect(err).ToNot(BeNil())
 			Expect(err.Error()).Should(Equal("Cannot find backend:" + " " + randomControllerName))
 
 		})
 
 		It("Should return an error when Get() fails in the backend", func() {
-
-			randomSecretStoreName := "test-store" + utils.RandomString(rand.Intn(20))
-			randomControllerName := "test-ctrl" + utils.RandomString(rand.Intn(20))
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(30)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
+			randomControllerName := StoreControllerName + randomObjSafeStr
 			secretStore := &storev1alpha1.SecretStore{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      randomSecretStoreName,
