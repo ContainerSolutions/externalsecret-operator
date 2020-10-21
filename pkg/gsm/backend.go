@@ -21,6 +21,7 @@ import (
 
 const (
 	cloudPlatformRole = "https://www.googleapis.com/auth/cloud-platform"
+	defaultVersion    = "latest"
 )
 
 var log = ctrl.Log.WithName("gsm")
@@ -61,7 +62,7 @@ func NewBackend() backend.Backend {
 	return &Backend{}
 }
 
-// Init initializes Google secretsmanager backend
+// Init initializes Google secretmanager backend
 func (g *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	ctx := context.Background()
 
@@ -93,20 +94,20 @@ func (g *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 	return nil
 }
 
-// Get a key and returns a value
+// Get retrieves key from Google SecretManager
 func (g *Backend) Get(key string, version string) (string, error) {
 	ctx := context.Background()
 
-	if g.SecretManagerClient == nil {
+	if g.SecretManagerClient == nil || g.projectID == "" {
+		log.Error(fmt.Errorf("error"), "backend is not initialized")
 		return "", fmt.Errorf("backend is not initialized")
 	}
 
-	validVersion := version
-	if validVersion == "" {
-		validVersion = "latest"
+	if version == "" {
+		version = defaultVersion
 	}
 
-	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, validVersion)
+	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, version)
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: name,
