@@ -106,9 +106,12 @@ func TestNewBackend(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	secretKey := "SecretKey"
-	secretKeyError := "SecretKeyError"
-	keyVersion := "latest"
+	var (
+		secretKey      = "SecretKey"
+		secretKeyError = "SecretKeyError"
+		keyVersion     = "latest"
+		testProject    = "test-project-gsm"
+	)
 
 	Convey("Given an uninitialized GoogleSecretsManager", t, func() {
 		backend := Backend{}
@@ -123,7 +126,7 @@ func TestGet(t *testing.T) {
 
 	Convey("Given an initialized GoogleSecretManger Client", t, func() {
 		backend := Backend{}
-		backend.projectID = "test-project-gsm"
+		backend.projectID = testProject
 		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey, keyVersion)
@@ -136,7 +139,7 @@ func TestGet(t *testing.T) {
 
 	Convey("Given an initialized GoogleSecretManger Client", t, func() {
 		backend := Backend{}
-		backend.projectID = "test-project-gsm"
+		backend.projectID = testProject
 		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
 		Convey("When retrieving a secret with a empty version", func() {
 			actualValue, err := backend.Get(secretKey, "")
@@ -149,7 +152,7 @@ func TestGet(t *testing.T) {
 
 	Convey("Given an initialized GoogleSecretManger Client", t, func() {
 		backend := Backend{}
-		backend.projectID = "test-project-gsm"
+		backend.projectID = testProject
 		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
 		Convey("When GetSecretValue() fails", func() {
 			_, err := backend.Get(secretKeyError, "")
@@ -164,9 +167,11 @@ func TestGet(t *testing.T) {
 func TestInit(t *testing.T) {
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]interface{})
-		credentials := make([]byte, 1, 1)
+		var (
+			backend     = Backend{}
+			params      = make(map[string]interface{})
+			credentials = make([]byte, 1, 1)
+		)
 
 		Convey("When parameters are blank", func() {
 			err := backend.Init(params, credentials)
@@ -178,9 +183,11 @@ func TestInit(t *testing.T) {
 	})
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]interface{})
-		credentials := make([]byte, 1, 1)
+		var (
+			backend     = Backend{}
+			params      = make(map[string]interface{})
+			credentials = make([]byte, 1, 1)
+		)
 
 		params["invalid"] = "invalid value"
 
@@ -194,8 +201,10 @@ func TestInit(t *testing.T) {
 	})
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]interface{})
+		var (
+			backend = Backend{}
+			params  = make(map[string]interface{})
+		)
 
 		params["projectID"] = "test-project"
 
@@ -209,12 +218,14 @@ func TestInit(t *testing.T) {
 	})
 
 	Convey("During initilization", t, func() {
-		serviceAccount := `{
-			"project_id": "external-secrets-operator",
-			"private_key_id": ""
-		}`
-		backend := Backend{}
-		params := make(map[string]interface{})
+		var (
+			serviceAccount = `{
+				"project_id": "external-secrets-operator",
+				"private_key_id": ""
+			}`
+			backend = Backend{}
+			params  = make(map[string]interface{})
+		)
 
 		params["projectID"] = "test-project"
 
@@ -228,22 +239,23 @@ func TestInit(t *testing.T) {
 	})
 
 	Convey("During initilization", t, func() {
-		serviceAccount := `{
-			"type": "service_account",
-			"project_id": "test-project",
-			"private_key_id": "",
-			"private_key": "-----BEGIN PRIVATE KEY-----\nA KEy\n-----END PRIVATE KEY-----\n",
-			"client_email": "test-service-account@test-project.iam.gserviceaccount.com",
-			"client_id": "",
-			"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-			"token_uri": "https://oauth2.googleapis.com/token",
-			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/operator-service-account%40external-secrets-operator.iam.gserviceaccount.com"
-		}`
-		backend := Backend{}
-		testClient := secretmanager.Client{}
-
-		params := make(map[string]interface{})
+		var (
+			serviceAccount = `{
+				"type": "service_account",
+				"project_id": "test-project",
+				"private_key_id": "",
+				"private_key": "-----BEGIN PRIVATE KEY-----\nA KEy\n-----END PRIVATE KEY-----\n",
+				"client_email": "test-service-account@test-project.iam.gserviceaccount.com",
+				"client_id": "",
+				"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+				"token_uri": "https://oauth2.googleapis.com/token",
+				"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+				"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/operator-service-account%40external-secrets-operator.iam.gserviceaccount.com"
+			}`
+			backend    = Backend{}
+			testClient = secretmanager.Client{}
+			params     = make(map[string]interface{})
+		)
 
 		params["projectID"] = "test-project"
 
