@@ -22,11 +22,11 @@ const SecretStoreNamespace = "default"
 
 var _ = Describe("SecretstoreController", func() {
 	var (
-		SecretStoreName           = "externalsecret-operator-test"
+		SecretStoreName           = "externalsecret-operator-store-test"
 		SecretStoreControllerName = "test-store-ctrl"
-		KeyName                   = "test-secret"
-		KeyVersion                = "test-version"
-		CredentialSecretName      = "credential-secret"
+		KeyName                   = "test-store-secret"
+		KeyVersion                = "test-store-version"
+		CredentialSecretName      = "credential-secret-store"
 
 		timeout = time.Second * 30
 		// duration = time.Second * 10
@@ -37,12 +37,12 @@ var _ = Describe("SecretstoreController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret",
+					"name": "credential-secret-store",
 					"namespace": "default"
 				}
 			},
 			"parameters": {
-				"Suffix": "I am definitely a param"
+				"Suffix": "TestParameter"
 			}
 		}`
 	)
@@ -102,6 +102,14 @@ var _ = Describe("SecretstoreController", func() {
 				return true
 			}, timeout, interval).Should(BeTrue())
 
+			Expect(createdSecretStore.Spec.Controller).To(Equal(SecretStoreControllerName))
+
+			Eventually(func() bool {
+				_, found := backend.Instances[SecretStoreControllerName]
+
+				return found
+			}, timeout, interval).Should(BeTrue())
+
 			Eventually(func() string {
 				backend := backend.Instances[SecretStoreControllerName]
 				if backend == nil {
@@ -112,7 +120,7 @@ var _ = Describe("SecretstoreController", func() {
 					return ""
 				}
 				return secretValue
-			}, timeout, interval).Should(Equal("test-secrettest-versionI am definitely a param"))
+			}, timeout, interval).Should(Equal("test-store-secrettest-store-versionTestParameter"))
 
 		})
 	})
@@ -121,14 +129,14 @@ var _ = Describe("SecretstoreController", func() {
 		ctx := context.Background()
 
 		It("Should handle a missing secret store gracefully", func() {
-			randomSecretName := "Non existernt Secret Store" + utils.RandomString(20)
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(30)
+			Expect(err).To(BeNil())
+			randomSecretName := "Non existernt Secret Store" + randomObjSafeStr
 
 			secretStoreLookupKey := types.NamespacedName{Name: randomSecretName, Namespace: SecretStoreNamespace}
 			nonExistentSecretStore := &storev1alpha1.SecretStore{}
 
-			// secretStore := &storev1alpha1.SecretStore{}
-
-			err := k8sClient.Get(ctx, secretStoreLookupKey, nonExistentSecretStore)
+			err = k8sClient.Get(ctx, secretStoreLookupKey, nonExistentSecretStore)
 
 			Expect(err).ToNot(BeNil())
 			Expect(errors.IsNotFound(err)).To(BeTrue())
@@ -148,12 +156,14 @@ var _ = Describe("SecretstoreController", func() {
 				}
 			},
 			"parameters": {
-				"Suffix": "I am definitely a param"
+				"Suffix": "TestParameter"
 			}
 		}`
 
 		It("Should handle a missing credential secret", func() {
-			randomSecretStoreName := SecretStoreName + utils.RandomString(20)
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(30)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
 
 			secretStore := &storev1alpha1.SecretStore{}
 
@@ -181,6 +191,9 @@ var _ = Describe("SecretstoreController", func() {
 				}
 				return true
 			}, timeout, interval).Should(BeTrue())
+
+			Expect(createdSecretStore.Spec.Controller).To(Equal(SecretStoreControllerName))
+
 		})
 	})
 
@@ -192,7 +205,7 @@ var _ = Describe("SecretstoreController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret",
+					"name": "credential-secret-store",
 					"namespace": "default"
 				}
 			},
@@ -200,8 +213,9 @@ var _ = Describe("SecretstoreController", func() {
 		}`
 
 		It("Should handle Init() failure", func() {
-
-			randomSecretStoreName := SecretStoreName + utils.RandomString(20)
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(35)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
 
 			secretStore := &storev1alpha1.SecretStore{}
 
