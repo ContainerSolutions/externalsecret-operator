@@ -33,6 +33,7 @@ func Instantiate(name string, backendType string) error {
 
 	function, found := Functions[backendType]
 	if !found {
+		log.Error(fmt.Errorf("error"), fmt.Sprintf("unknown backend type: '%v'", backendType))
 		return fmt.Errorf("unknown backend type: '%v'", backendType)
 	}
 
@@ -66,6 +67,7 @@ func InitFromEnv(leaderID string) error {
 
 	err = Instantiate(leaderID, config.Type)
 	if err != nil {
+		log.Error(err, "")
 		return err
 	}
 
@@ -83,6 +85,7 @@ func InitFromCtrl(contrl string, config *config.Config, credentials []byte) erro
 
 	err := Instantiate(contrl, config.Type)
 	if err != nil {
+		log.Error(err, "")
 		return err
 	}
 
