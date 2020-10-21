@@ -15,10 +15,12 @@ func TestNewBackend(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	secretKey := "secret"
-	keyVersion := "latest"
-	testSuffix := "test-suffix"
-	expectedValue := secretKey + keyVersion + testSuffix
+	var (
+		secretKey     = "secret"
+		keyVersion    = "latest"
+		testSuffix    = "test-suffix"
+		expectedValue = secretKey + keyVersion + testSuffix
+	)
 
 	Convey("Given an uninitialized dummy backend", t, func() {
 		backend := Backend{}
@@ -54,10 +56,12 @@ func TestGet(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	params := make(map[string]interface{})
-	credentials := []byte{}
-	params["Suffix"] = "dummy init"
+	var (
+		params      = make(map[string]interface{})
+		credentials = []byte{}
+	)
 
+	params["Suffix"] = "dummy init"
 	Convey("Should initialize backend", t, func() {
 		backend := Backend{}
 		credentials = []byte{}
