@@ -48,44 +48,33 @@ Look for more deployment options in the [README.md](./deployments/helm/externals
 
 ### Manifests
 ### Install CRDS
-- Run `make install` to install CRDS
+- Install CRDS
+```
+make install
+```
 
-- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml` with valid valuess:
+#### AWS
+- Uncomment and update aws backend credentials to be used in `config/backend-credentials/kustomization.yaml` with valid valuess:
 
 ```yaml
 resources:
-# - backend-config-gsm.yaml
-- backend-config-asm.yaml
-# - backend-config-dummy.yaml
-# - backend-config-onepassword.yaml
+# - backend-credentials-gsm.yaml
+- backend-credentials-asm.yaml
+# - backend-credentials-dummy.yaml
+# - backend-credentials-onepassword.yaml
 ```
 
 ```yaml
-%cat config/backend-config/backend-config-asm.yaml
+%cat config/backend-credentials/backend-credentials-asm.yaml
 ...
-operator-config.json: |-
-  {
-    "Type": "asm",
-    "Parameters": {
-      "accessKeyID": "AWS_ACCESS_KEY_ID",
-      "region": "AWS_DEFAULT_REGION",
-      "secretAccessKey": "AWS_SECRET_ACCESS_KEY"
+operator-credentials.json: |-
+    {
+      "accessKeyID": "",
+      "secretAccessKey": "",
+      "sessionToken": "" 
     }
-  }
 ```
-<!-- The `deploy` target in the Makefile will substiute variables and deploy the
-manifests for you. The following command will deploy the operator in the
-`default` namespace:
 
-```shell
-export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
-export AWS_DEFAULT_REGION="eu-west-1"
-export AWS_SECRET_ACCESS_KEY="OoXie5Mai6Qu3fakemeezoo4ahfoo6IHahch0rai"
-export OPERATOR_NAME=asm-example
-export BACKEND=asm
-make deploy
-```
-It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the `default` namespace and it will inject a corresponding `Secret` with the value retrieved from AWS Secret Manager. -->
 
 ## What does it do?
 
@@ -95,6 +84,26 @@ Given a secret defined in AWS Secrets Manager:
 % aws secretsmanager create-secret \
   --name=example-externalsecret-key \
   --secret-string='this string is a secret'
+```
+
+and an `SecretStore` resource definition like this one:
+
+```yaml
+% cat config/samples/store_v1alpha1_secretstore.yaml
+apiVersion: store.externalsecret-operator.container-solutions.com/v1alpha1
+kind: SecretStore
+metadata:
+  name: secretstore-sample
+spec:
+  controller: staging
+  store:
+      type: asm
+      auth: 
+        secretRef: 
+          name: externalsecret-operator-credentials
+          namespace: externalsecret-operator-system
+      parameters:
+        region: eu-west-2
 ```
 
 and an `ExternalSecret` resource definition like this one:
@@ -107,9 +116,12 @@ metadata:
   name: externalsecret-sample
   namespace: system
 spec:
-  key: example-externalsecret-key
-  backend: 36af4962.externalsecret-operator.container-solutions.com
-  version: latest
+  store_ref: 
+    name: externalsecret-operator-secretstore-sample
+    namespace: externalsecret-operator-system
+  secrets:
+    - key: example-externalsecret-key
+      version: latest
 ```
 
 The operator fetches the secret from AWS Secrets Manager and injects it as a
@@ -142,7 +154,7 @@ We would like to support as many backend as possible and it should be rather eas
 
 <!-- A contributing guide is coming soon! -->
 
-### 1Password
+### 1Password [REVIEWING]
 
 #### Prerequisites
 
@@ -207,50 +219,61 @@ $ source config/scripts/source-onepassword-secrets.sh
 4.  Deploy the operator
 
 ```
-$ make deploy-onepassword
+$ make deploy-onepasswordconfig/samples/secrets_v1alpha1_externalsecret.yaml
 ```
 
 ### GCP/Google Secrets Manager
 #### Prerequisites
 - Enabled and configured secret manager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
+- Install CRDs 
+```
+  make install
+```
 
 #### Deploying
 
-- Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml`:
+- Uncomment and update backend credentials to be used in `config/backend-credentials/kustomization.yaml`:
 
 ```yaml
 resources:
-- backend-config-gsm.yaml
-# - backend-config-asm.yaml
-# - backend-config-dummy.yaml
-# - backend-config-onepassword.yaml
+- backend-credentials-gsm.yaml
+# - backend-credentials-asm.yaml
+# - backend-credentials-dummy.yaml
+# - backend-credentials-onepassword.yaml
 ```
 
-- Update the gsm backend config `config/backend-config/backend-config-gsm.yaml` with values from the service account key
+- Update the gsm backend config `config/backend-credentials/backend-credentials-gsm.yaml`  service account key JSON
 
 ```yaml
-%cat config/backend-config/backend-config-gsm.yaml
+%cat config/backend-credentials/backend-credentials-gsm.yaml
 ...
-operator-config.json: |-
+operator-credentials.json: |-
     {
-      "Type": "gsm",
-      "Parameters": {
-        "projectID": "",
-        "type": "",
-        "privateKeyID": "",
-        "privateKey": "",
-        "clientEmail": "",
-        "clientID": "",
-        "authURI": "",
-        "tokenURI": "",
-        "authProviderX509CertURL": "",
-        "clientX509CertURL": ""
-      }
+      "type": "service_account"
+      ....
     }
 
 ```
+-  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
+```yaml
+% cat  `config/samples/store_v1alpha1_secretstore.yaml
+apiVersion: store.externalsecret-operator.container-solutions.com/v1alpha1
+kind: SecretStore
+metadata:
+  name: secretstore-sample
+spec:
+  controller: staging
+  store:
+    type: gsm
+    auth: 
+      secretRef: 
+        name: externalsecret-operator-credentials
+        namespace: externalsecret-operator-system
+    parameters:
+      projectID: external-secrets-operator
+```
 
--  Update the resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
+-  Update the `ExternalSecret` resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
 ```yaml
 % cat config/samples/secrets_v1alpha1_externalsecret.yaml
 apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
@@ -259,9 +282,12 @@ metadata:
   name: externalsecret-sample
   namespace: system
 spec:
-  key: your-secret-key
-  backend: 36af4962.externalsecret-operator.container-solutions.com
-  version: your-secret-version
+  store_ref: 
+    name: externalsecret-operator-secretstore-sample
+    namespace: externalsecret-operator-system
+  secrets:
+    - key: example-externalsecret-key
+      version: latest
 ```
 
 - The operator fetches the secret from GCP Secret Manager and injects it as a
@@ -270,7 +296,7 @@ secret:
 ```shell
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
-  -o jsonpath='{.data.your-secret-key}' | base64 -d
+  -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
 ```
 
 ## Contributing
