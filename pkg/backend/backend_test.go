@@ -93,7 +93,6 @@ func TestInitFromEnv(t *testing.T) {
 			configStruct.Type = "unknown"
 			configData, _ := json.Marshal(configStruct)
 			os.Setenv("OPERATOR_CONFIG", string(configData))
-			// os.Setenv("OPERATOR_NAME", "mock-backend")
 			Convey("When initializing backend from env", func() {
 				err := InitFromEnv("mock-backend")
 				So(err, ShouldNotBeNil)
@@ -125,4 +124,50 @@ func TestInitFromEnv(t *testing.T) {
 			})
 		})
 	})
+}
+
+func TestInitFromCtrl(t *testing.T) {
+	var (
+		initConfig = config.Config{
+			Type: "mock",
+			Parameters: map[string]interface{}{
+				"Param1": "Value1",
+			},
+			Auth: map[string]interface{}{},
+		}
+
+		credentials = `{
+			Credential: "dummy-creds"
+		}`
+	)
+
+	Convey("Given a registered backend type", t, func() {
+		Register("mock", NewBackend)
+		Convey("Given a valid config", func() {
+			Convey("When initializing backend from contrl", func() {
+				err := InitFromCtrl("test-ctrl", &initConfig, []byte(credentials))
+				So(err, ShouldBeNil)
+				Convey("Then a backend is instantiated and initialized correctly", func() {
+					backend, found := Instances["test-ctrl"]
+					So(found, ShouldBeTrue)
+					So(reflect.TypeOf(backend), ShouldEqual, reflect.TypeOf(&MockBackend{}))
+					value, _ := backend.Get("", "")
+					So(value, ShouldEqual, "Value1")
+				})
+			})
+		})
+
+		Convey("Given a valid config with unknown backend type", func() {
+			initConfig.Type = "unknown"
+
+			Convey("When initializing backend from env", func() {
+				err := InitFromCtrl("test-ctrl", &initConfig, []byte(credentials))
+				So(err, ShouldNotBeNil)
+				Convey("Then an error message is returned", func() {
+					So(err.Error(), ShouldEqual, "unknown backend type: 'unknown'")
+				})
+			})
+		})
+	})
+
 }
