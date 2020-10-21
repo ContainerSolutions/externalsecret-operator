@@ -57,6 +57,7 @@ jobs:
       id: prep
       run: |
         DOCKER_IMAGE=containersol/externalsecret-operator
+
         VERSION=edge
         if [[ $GITHUB_REF == refs/tags/* ]]; then
           VERSION=${GITHUB_REF#refs/tags/}
@@ -65,13 +66,26 @@ jobs:
         elif [[ $GITHUB_REF == refs/pull/* ]]; then
           VERSION=pr-${{ github.event.number }}
         fi
+
         TAGS="${DOCKER_IMAGE}:${VERSION}"
         if [ "${{ github.event_name }}" = "push" ]; then
           TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
         fi
+
+        PUSH_IMAGE=true
+        REPO_FULL_NAME="${{ github.event.pull_request.head.repo.full_name }}"
+        # If this is both a pull request and a fork, then don't push the image
+        if [[ ${{ github.event_name }} == pull_request ]]; then
+          if [[ $REPO_FULL_NAME != ContainerSolutions/externalsecret-operator ]]; then
+            PUSH_IMAGE=false
+          fi
+        fi
+
         echo ::set-output name=version::${VERSION}
         echo ::set-output name=tags::${TAGS}
         echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        echo ::set-output name=push_image::$PUSH_IMAGE
+
     - name: Check out the repo
       uses: actions/checkout@v2
       
@@ -91,6 +105,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_TOKEN }}
+      if: ${{ steps.prep.outputs.push_image == 'true' }}
 
     - name: Build and push
       id: docker_build
@@ -101,7 +116,7 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         platforms: linux/amd64,linux/arm/v7,linux/arm64
         tags: ${{ steps.prep.outputs.tags }}
-        push: true
+        push: ${{ steps.prep.outputs.push_image }}
         labels: |
           org.opencontainers.image.source=${{ github.event.repository.clone_url }}
           org.opencontainers.image.created=${{ steps.prep.outputs.created }}

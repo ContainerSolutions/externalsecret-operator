@@ -26,15 +26,15 @@ endif
 all: manager
 
 # Run tests
-test: generate fmt vet manifests
+test: generate fmt vet sec manifests
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
-manager: generate fmt vet
+manager: generate fmt vet sec
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: generate fmt vet sec manifests
 	go run ./main.go
 
 # Install CRDs into a cluster
@@ -61,6 +61,10 @@ fmt:
 # Run go vet against code
 vet:
 	go vet ./...
+
+# Run go gosec against code
+sec: gosec
+	${GOSEC} -exclude-dir 'legacy' -exclude 'G404' --quiet ./...
 
 # Generate code
 generate: controller-gen
@@ -89,6 +93,23 @@ ifeq (, $(shell which controller-gen))
 CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
+endif
+
+# find or download gosec
+# download gosec if necessary
+gosec:
+ifeq (, $(shell which gosec))
+	@{ \
+	set -e ;\
+	GOSEC_TMP_DIR=$$(mktemp -d) ;\
+	cd $$GOSEC_TMP_DIR ;\
+	go mod init tmp ;\
+	go get github.com/securego/gosec/v2/cmd/gosec@v2.4.0 ;\
+	rm -rf $$GOSEC_TMP_DIR ;\
+	}
+GOSEC=$(GOBIN)/gosec
+else
+GOSEC=$(shell which gosec)
 endif
 
 kustomize:
