@@ -91,12 +91,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// setupLog.Info("initializing backend")
-	// if err := backend.InitFromEnv(LeaderElectionID); err != nil {
-	// 	setupLog.Error(err, "Failed to initialize backend")
-	// 	os.Exit(1)
-	// }
-
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
