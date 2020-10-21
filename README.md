@@ -13,10 +13,10 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 * [Architecture](#architecture)
 * [Supported Backends](#secrets-backends)
   * [1-Password](#1password)
-    * [Pre-requisites](#1password-pre)
+    * [Prerequisites](#1password-pre)
     * [Deployment](#1password-deployment)
   * [Google Secrets Manager](#google-secret-manager)
-    * [Pre-requisites](#google-secret-manager-pre)
+    * [Prerequisites](#google-secret-manager-pre)
     * [Deployment](#google-secret-manager-deployment)
 * [Contributing](#contributing)
 
