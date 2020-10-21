@@ -15,9 +15,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-var (
-	log           = ctrl.Log.WithName("asm")
+const (
 	defaultRegion = "eu-west-2"
+)
+
+var (
+	log = ctrl.Log.WithName("asm")
 )
 
 // Backend represents a backend for AWS Secrets Manager
