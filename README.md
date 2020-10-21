@@ -31,6 +31,9 @@ It will watch for `ExternalSecrets` with `Backend: asm-example` resources in the
 Look for more deployment options in the [README.md](./deployments/helm/externalsecret-operator/README.md) of the helm chart. -->
 
 ### Manifests
+### Install CRDS
+- Run `make install` to install CRDS
+
 - Uncomment and update backend config to be used in `config/backend-config/kustomization.yaml` with valid valuess:
 
 ```yaml
