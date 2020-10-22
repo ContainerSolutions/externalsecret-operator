@@ -25,13 +25,22 @@ import (
 
 // StoreRef is a reference to the external secret SecretStore
 type StoreRef struct {
-	Name      string `json:"name,omitempty"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Type=string
+	Name string `json:"name,omitempty"`
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Type=string
 	Namespace string `json:"namespace,omitempty"`
 }
 
 // Secret contains Key/Name and Version of keys to be retrieved
 type Secret struct {
+
 	// The Key/Name of the secret held in the ExternalBackend
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
 	Key string `json:"key,omitempty"`
 	// Version of the secret to be retrieved
 	Version string `json:"version,omitempty"`
@@ -41,29 +50,23 @@ type Secret struct {
 type ExternalSecretSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
 	// Secrets
+	// +kubebuilder:validation:MaxItems=20
+	// +kubebuilder:validation:MinItems=1
 	Secrets []Secret `json:"secrets,omitempty"`
 	// SecretStore
 	StoreRef StoreRef `json:"store_ref,omitempty"`
-}
-
-// SecretCondition defines the condition(s) of secret
-type SecretCondition struct {
-	Type               string `json:"type,omitempty"`
-	Status             string `json:"status,omitempty"`
-	Reason             string `json:"reason,omitempty"`
-	Message            string `json:"message,omitempty"`
-	LastTransitionTime string `json:"last_transition_time,omitempty"`
-	LastSyncTime       string `json:"last_sync_time,omitempty"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
 type ExternalSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	// The Key of the secret held in the ExternalBackend
-	Phase      string            `json:"phase,omitempty"`
-	Conditions []SecretCondition `json:"conditions,omitempty"`
+	// Defines where the ExternalSecret is in its lifecycle
+	Phase string `json:"phase,omitempty"`
+	// Conditions represent the latest available observations of an object's state
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 // +kubebuilder:object:root=true
