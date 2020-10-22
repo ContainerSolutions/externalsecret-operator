@@ -15,7 +15,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
   * [1-Password](#1password)
     * [Prerequisites](#1password-pre)
     * [Deployment](#1password-deployment)
-  * [Google Secrets Manager](#google-secret-manager)
+  * [GCP Secret Manager](#google-secret-manager)
     * [Prerequisites](#google-secret-manager-pre)
     * [Deployment](#google-secret-manager-deployment)
 * [Contributing](#contributing)
@@ -122,7 +122,6 @@ apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
   name: externalsecret-sample
-  namespace: system
 spec:
   store_ref: 
     name: externalsecret-operator-secretstore-sample
@@ -238,7 +237,6 @@ apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
   name: externalsecret-sample
-  namespace: system
 spec:
   store_ref: 
     name: externalsecret-operator-secretstore-sample
@@ -323,7 +321,6 @@ apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
 kind: ExternalSecret
 metadata:
   name: externalsecret-sample
-  namespace: system
 spec:
   store_ref: 
     name: externalsecret-operator-secretstore-sample
