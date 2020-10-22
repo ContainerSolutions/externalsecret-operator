@@ -28,25 +28,21 @@ import (
 type SecretStoreSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Type=string
 	Controller string               `json:"controller,omitempty"`
 	Store      runtime.RawExtension `json:"store,omitempty"`
-}
-
-// StoreCondition defines current condition of a Store
-type StoreCondition struct {
-	Type               string `json:"type,omitempty"`
-	Status             string `json:"status,omitempty"`
-	Reason             string `json:"reason,omitempty"`
-	Message            string `json:"message,omitempty"`
-	LastTransitionTime string `json:"last_transition_time,omitempty"`
 }
 
 // SecretStoreStatus defines the observed state of SecretStore
 type SecretStoreStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Phase      string           `json:"phase,omitempty"`
-	Conditions []StoreCondition `json:"conditions,omitempty"`
+	// Defines where the SecretStore is in its lifecycle
+	Phase string `json:"phase,omitempty"`
+	// Conditions represent the latest available observations of an object's state
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 // +kubebuilder:object:root=true
