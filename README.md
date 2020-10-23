@@ -204,7 +204,7 @@ resources:
 operator-credentials.json: |-
     {
       "secretKey": "${OP_SECRET_KEY}",
-      "masterPassword": "${OP_MASTER_PASSWORD}",
+      "masterPassword": "${OP_MASTER_PASSWORD}"
     }
 
 ```
