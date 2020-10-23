@@ -54,6 +54,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log := r.Log.WithValues("externalsecret", req.NamespacedName)
 
 	log.Info("Reconciling ExternalSecret")
+	defer log.Info("Reconcile ExternalSecret Complete")
 
 	// Fetch the ExternalSecret instance
 	externalSecret := &secretsv1alpha1.ExternalSecret{}
@@ -89,26 +90,46 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	}
 
 	// Check if this Secret already exists
-	found := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Name, Namespace: externalSecret.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		// Define a new Secret object
-		secret, err := r.newSecretForCR(externalSecret, secretStore)
-		if err != nil {
-			log.Error(err, "Failed to create Secret")
-			return ctrl.Result{RequeueAfter: time.Second * 5}, err
-		}
-		log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
-		err = r.Create(ctx, secret)
-		if err != nil {
-			log.Error(err, "Failed to create Secret", "secret", secret)
-			return ctrl.Result{}, err
-		}
+	foundSecret := &corev1.Secret{}
+	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Name, Namespace: externalSecret.Namespace}, foundSecret)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Define a new Secret object
+			secret, err := r.newSecretForCR(externalSecret, secretStore)
+			if err != nil {
+				log.Error(err, "Failed to create Secret")
+				return ctrl.Result{RequeueAfter: time.Second * 30}, err
+			}
 
-		// Secret created successfully - return and requeue
-		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
+			log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
+			err = r.Create(ctx, secret)
+			if err != nil {
+				log.Error(err, "Failed to create Secret", "secret", secret)
+				return ctrl.Result{}, err
+			}
+
+			// Secret created successfully - return and requeue
+			return ctrl.Result{Requeue: true}, nil
+		}
+		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get Secret")
+		return ctrl.Result{}, err
+	}
+
+	// update Secret if it already exists
+	secretMap, err := r.backendGet(externalSecret, secretStore)
+	if err != nil {
+		log.Error(err, "backendGet")
+		return ctrl.Result{}, err
+	}
+
+	updateLabels := makeLabels(secretStore.Spec.Controller, externalSecret.Spec.StoreRef.Name)
+
+	foundSecret.ObjectMeta.Labels = updateLabels
+	foundSecret.Data = secretMap
+	err = r.Update(ctx, foundSecret)
+	if err != nil {
+		log.Error(err, "Failed to update secret")
 		return ctrl.Result{}, err
 	}
 
@@ -137,6 +158,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 		Data: secretMap,
 	}
 
+	// Allows deleted objects to be garbage collected.
 	err = ctrl.SetControllerReference(s, secretObject, r.Scheme)
 	if err != nil {
 		log.Error(err, "Error setting owner references", secretObject)
