@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 	"github.com/go-logr/logr"
@@ -49,6 +50,9 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ctx := context.Background()
 	log := r.Log.WithValues("secretstore", req.NamespacedName)
 
+	log.Info("Reconciling SecretStore")
+	defer log.Info("Reconcile SecretStore Complete")
+
 	// Fetch the SecretStore instance
 	secretStore := &storev1alpha1.SecretStore{}
 	err := r.Get(ctx, req.NamespacedName, secretStore)
@@ -76,18 +80,13 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	secretRef := config.Auth["secretRef"].(map[string]interface{})
 
-	// Check if this credential Secret exists
+	// Fetch credential Secret
 	credentialsSecret := &corev1.Secret{}
 	err = r.Get(ctx, types.NamespacedName{Name: secretRef["name"].(string), Namespace: secretRef["namespace"].(string)}, credentialsSecret)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			return ctrl.Result{}, nil
-		}
+		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
-		return ctrl.Result{}, err
+		return ctrl.Result{RequeueAfter: time.Second * 30}, err
 	}
 
 	credentials := credentialsSecret.Data["operator-credentials.json"]
