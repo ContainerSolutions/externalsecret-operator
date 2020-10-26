@@ -83,11 +83,20 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	secretRef := config.Auth["secretRef"].(map[string]interface{})
+	secretRefName := secretRef["name"].(string)
+	secretRefNamespace := secretRef["namespace"].(string)
 
 	// Fetch credential Secret
 	credentialsSecret := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: secretRef["name"].(string), Namespace: secretRef["namespace"].(string)}, credentialsSecret)
+	err = r.Get(ctx, types.NamespacedName{Name: secretRefName, Namespace: secretRefNamespace}, credentialsSecret)
 	if err != nil {
+		// Log Info for IsNotFound rather than an error
+		if errors.IsNotFound(err) {
+			// Request object not found, could be that the credential secret doesnt exist yet,
+			// Return and Requeue
+			log.Info("Credential Secret not found.", "Secret Name:", secretRefName, "Secret Namepace:", secretRefNamespace)
+			return ctrl.Result{RequeueAfter: defaulRetryPeriod}, nil
+		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
 		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
