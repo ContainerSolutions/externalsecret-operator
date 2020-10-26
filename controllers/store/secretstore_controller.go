@@ -36,8 +36,7 @@ import (
 )
 
 const (
-	// seconds
-	defaulRetryPeriod = 30
+	defaulRetryPeriod = time.Second * 30
 )
 
 // SecretStoreReconciler reconciles a SecretStore object
@@ -91,7 +90,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
-		return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
+		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
 	}
 
 	credentials := credentialsSecret.Data["operator-credentials.json"]

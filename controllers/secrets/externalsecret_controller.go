@@ -38,8 +38,7 @@ import (
 )
 
 const (
-	// seconds
-	defaulRetryPeriod = 30
+	defaulRetryPeriod = time.Second * 30
 )
 
 // ExternalSecretReconciler reconciles a ExternalSecret object
@@ -83,7 +82,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get SecretStore")
-		return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
+		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
 	}
 
 	// Check if this Secret already exists
@@ -95,7 +94,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			secret, err := r.newSecretForCR(externalSecret, secretStore)
 			if err != nil {
 				log.Error(err, "Failed to create Secret")
-				return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
+				return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
 			}
 
 			log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
