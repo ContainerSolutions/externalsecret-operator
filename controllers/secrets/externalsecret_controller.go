@@ -37,6 +37,11 @@ import (
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 )
 
+const (
+	// seconds
+	defaulRetryPeriod = 30
+)
+
 // ExternalSecretReconciler reconciles a ExternalSecret object
 type ExternalSecretReconciler struct {
 	client.Client
@@ -75,18 +80,10 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// Fetch referenced store
 	secretStore := &storev1alpha1.SecretStore{}
 	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Spec.StoreRef.Name, Namespace: externalSecret.Spec.StoreRef.Namespace}, secretStore)
-	if err != nil && errors.IsNotFound(err) {
-		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			log.Info("SecretStore not found")
-			return ctrl.Result{}, nil
-		}
+	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get SecretStore")
-		return ctrl.Result{}, err
-
+		return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
 	}
 
 	// Check if this Secret already exists
@@ -98,7 +95,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			secret, err := r.newSecretForCR(externalSecret, secretStore)
 			if err != nil {
 				log.Error(err, "Failed to create Secret")
-				return ctrl.Result{RequeueAfter: time.Second * 30}, err
+				return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
 			}
 
 			log.Info("Creating a new Secret", "Secret.Namespace", secret.Namespace, "Secret.Name", secret.Name)
