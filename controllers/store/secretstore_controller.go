@@ -35,6 +35,11 @@ import (
 	config "github.com/containersolutions/externalsecret-operator/pkg/config"
 )
 
+const (
+	// seconds
+	defaulRetryPeriod = 30
+)
+
 // SecretStoreReconciler reconciles a SecretStore object
 type SecretStoreReconciler struct {
 	client.Client
@@ -86,7 +91,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
-		return ctrl.Result{RequeueAfter: time.Second * 30}, err
+		return ctrl.Result{RequeueAfter: time.Second * defaulRetryPeriod}, err
 	}
 
 	credentials := credentialsSecret.Data["operator-credentials.json"]
