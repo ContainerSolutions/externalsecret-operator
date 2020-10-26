@@ -82,12 +82,6 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	secretStore := &storev1alpha1.SecretStore{}
 	err = r.Get(ctx, types.NamespacedName{Name: secretStoreRef.Name, Namespace: secretStoreRef.Namespace}, secretStore)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// Request object not found, could be that the store doesnt exist yet,
-			// Return and Requeue
-			log.Info("SecretStore not found.", "Store Name:", secretStoreRef.Name, "Store Namepace:", secretStoreRef.Namespace)
-			return ctrl.Result{RequeueAfter: defaulRetryPeriod}, nil
-		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get SecretStore")
 		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err

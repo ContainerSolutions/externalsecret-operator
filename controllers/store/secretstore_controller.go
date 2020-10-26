@@ -90,13 +90,6 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	credentialsSecret := &corev1.Secret{}
 	err = r.Get(ctx, types.NamespacedName{Name: secretRefName, Namespace: secretRefNamespace}, credentialsSecret)
 	if err != nil {
-		// Log Info for IsNotFound rather than an error
-		if errors.IsNotFound(err) {
-			// Request object not found, could be that the credential secret doesnt exist yet,
-			// Return and Requeue
-			log.Info("Credential Secret not found.", "Secret Name:", secretRefName, "Secret Namepace:", secretRefNamespace)
-			return ctrl.Result{RequeueAfter: defaulRetryPeriod}, nil
-		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
 		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
@@ -106,7 +99,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	err = backend.InitFromCtrl(contrl, config, credentials)
 	if err != nil {
-		log.Error(err, "Failed to intialize backend")
+		log.Error(err, "Backend initialization failed")
 		return ctrl.Result{}, err
 	}
 
