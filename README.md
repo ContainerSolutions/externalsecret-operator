@@ -72,21 +72,21 @@ Given a secret defined in AWS Secrets Manager:
   --secret-string='this string is a secret'
 ```
 
-and updated aws backend credentials to be used in `config/backend-credentials/kustomization.yaml` with valid values:
+and updated aws credentials to be used in `config/credentials/kustomization.yaml` with valid values:
 
 ```yaml
-%cat config/backend-credentials/kustomization.yaml
+%cat config/credentials/kustomization.yaml
 resources:
-# - backend-credentials-gsm.yaml
-- backend-credentials-asm.yaml
-# - backend-credentials-dummy.yaml
-# - backend-credentials-onepassword.yaml
+# - credentials-gsm.yaml
+- credentials-asm.yaml
+# - credentials-dummy.yaml
+# - credentials-onepassword.yaml
 ```
 
 ```yaml
-%cat config/backend-credentials/backend-credentials-asm.yaml
+%cat config/credentials/credentials-asm.yaml
 ...
-operator-credentials.json: |-
+credentials.json: |-
     {
       "accessKeyID": "AKIA...",
       "secretAccessKey": "cmFuZG9tS2VZb25Eb2Nz...",
@@ -186,22 +186,22 @@ We would like to support as many backends as possible and it should be rather ea
 
 #### Deployment
 
-- Uncomment and update backend credentials to be used in `config/backend-credentials/kustomization.yaml`:
+- Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
 
 ```yaml
 resources:
-# - backend-credentials-gsm.yaml
-# - backend-credentials-asm.yaml
-# - backend-credentials-dummy.yaml
-- backend-credentials-onepassword.yaml
+# - credentials-gsm.yaml
+# - credentials-asm.yaml
+# - credentials-dummy.yaml
+- credentials-onepassword.yaml
 ```
 
-- Update the onepassword backend credentials `config/backend-credentials/backend-credentials-onepassword.yaml`  service account key JSON
+- Update the onepassword credentials `config/credentials/credentials-onepassword.yaml` with valid  `secretKey` and `masterPassword`
 
 ```yaml
-%cat config/backend-credentials/backend-credentials-gsm.yaml
+%cat config/credentials/credentials-onepassword.yaml
 ...
-operator-credentials.json: |-
+credentials.json: |-
     {
       "secretKey": "${OP_SECRET_KEY}",
       "masterPassword": "${OP_MASTER_PASSWORD}"
@@ -273,22 +273,22 @@ secret:
 
 #### Deployment
 
-- Uncomment and update backend credentials to be used in `config/backend-credentials/kustomization.yaml`:
+- Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
 
 ```yaml
 resources:
-- backend-credentials-gsm.yaml
-# - backend-credentials-asm.yaml
-# - backend-credentials-dummy.yaml
-# - backend-credentials-onepassword.yaml
+- credentials-gsm.yaml
+# - credentials-asm.yaml
+# - credentials-dummy.yaml
+# - credentials-onepassword.yaml
 ```
 
-- Update the gsm backend credentials `config/backend-credentials/backend-credentials-gsm.yaml`  service account key JSON
+- Update the gsm credentials `config/credentials/credentials-gsm.yaml`  service account key JSON
 
 ```yaml
-%cat config/backend-credentials/backend-credentials-gsm.yaml
+%cat config/credentials/credentials-gsm.yaml
 ...
-operator-credentials.json: |-
+credentials.json: |-
     {
       "type": "service_account"
       ....
