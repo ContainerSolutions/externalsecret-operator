@@ -95,7 +95,7 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
 	}
 
-	credentials := credentialsSecret.Data["operator-credentials.json"]
+	credentials := credentialsSecret.Data["credentials.json"]
 
 	err = backend.InitFromCtrl(contrl, config, credentials)
 	if err != nil {

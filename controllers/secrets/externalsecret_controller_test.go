@@ -66,7 +66,7 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				StringData: map[string]string{
-					"operator-config.json": `{
+					"credentials.json": `{
 						"Credential": "-dummyvalue"
 					}`,
 				},

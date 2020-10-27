@@ -57,7 +57,7 @@ var _ = Describe("SecretstoreController", func() {
 					Namespace: SecretStoreNamespace,
 				},
 				StringData: map[string]string{
-					"operator-credentials.json": `{
+					"credentials.json": `{
 						"Credential": "-dummyvalue"
 					}`,
 				},
