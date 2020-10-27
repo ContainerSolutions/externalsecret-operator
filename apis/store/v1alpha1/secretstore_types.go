@@ -31,8 +31,8 @@ type SecretStoreSpec struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:Type=string
-	Controller string               `json:"controller,omitempty"`
-	Store      runtime.RawExtension `json:"store,omitempty"`
+	Controller string               `json:"controller"`
+	Store      runtime.RawExtension `json:"store"`
 }
 
 // SecretStoreStatus defines the observed state of SecretStore
@@ -53,7 +53,7 @@ type SecretStore struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SecretStoreSpec   `json:"spec,omitempty"`
+	Spec   SecretStoreSpec   `json:"spec"`
 	Status SecretStoreStatus `json:"status,omitempty"`
 }
 

@@ -28,11 +28,11 @@ type StoreRef struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:Type=string
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Type=string
-	Namespace string `json:"namespace,omitempty"`
+	Namespace string `json:"namespace"`
 }
 
 // Secret contains Key/Name and Version of keys to be retrieved
@@ -41,7 +41,7 @@ type Secret struct {
 	// The Key/Name of the secret held in the ExternalBackend
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
-	Key string `json:"key,omitempty"`
+	Key string `json:"key"`
 	// Version of the secret to be retrieved
 	Version string `json:"version,omitempty"`
 }
@@ -52,11 +52,13 @@ type ExternalSecretSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Secrets
+	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MaxItems=20
 	// +kubebuilder:validation:MinItems=1
-	Secrets []Secret `json:"secrets,omitempty"`
+	Secrets []Secret `json:"secrets"`
 	// SecretStore
-	StoreRef StoreRef `json:"store_ref,omitempty"`
+	// +kubebuilder:validation:Required
+	StoreRef StoreRef `json:"store_ref"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
@@ -77,7 +79,7 @@ type ExternalSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ExternalSecretSpec   `json:"spec,omitempty"`
+	Spec   ExternalSecretSpec   `json:"spec"`
 	Status ExternalSecretStatus `json:"status,omitempty"`
 }
 
