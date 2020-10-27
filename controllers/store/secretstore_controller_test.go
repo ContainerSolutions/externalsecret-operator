@@ -32,7 +32,7 @@ var _ = Describe("SecretstoreController", func() {
 		// duration = time.Second * 10
 		interval = time.Millisecond * 250
 
-		StoreConfig = `
+		storeConfig = `
 		{
 			"type": "dummy",
 			"auth": {
@@ -85,7 +85,7 @@ var _ = Describe("SecretstoreController", func() {
 			secretStore.Spec = storev1alpha1.SecretStoreSpec{
 				Controller: SecretStoreControllerName,
 				Store: runtime.RawExtension{
-					Raw: []byte(StoreConfig),
+					Raw: []byte(storeConfig),
 				},
 			}
 
@@ -122,6 +122,17 @@ var _ = Describe("SecretstoreController", func() {
 				return secretValue
 			}, timeout, interval).Should(Equal("test-store-secrettest-store-versionTestParameter"))
 
+			By("Deleting the SecretStore")
+			Eventually(func() error {
+				ss := &storev1alpha1.SecretStore{}
+				k8sClient.Get(context.Background(), secretStoreLookupKey, ss)
+				return k8sClient.Delete(context.Background(), ss)
+			}, timeout, interval).Should(Succeed())
+
+			Eventually(func() error {
+				ss := &storev1alpha1.SecretStore{}
+				return k8sClient.Get(context.Background(), secretStoreLookupKey, ss)
+			}, timeout, interval).ShouldNot(Succeed())
 		})
 	})
 
@@ -143,10 +154,10 @@ var _ = Describe("SecretstoreController", func() {
 		})
 	})
 
-	Context("When creating a SecretStore", func() {
+	Context("When creating a SecretStore then", func() {
 		ctx := context.Background()
 
-		StoreConfig2 := `
+		storeConfig2 := `
 		{
 			"type": "dummy",
 			"auth": {
@@ -175,7 +186,7 @@ var _ = Describe("SecretstoreController", func() {
 			secretStore.Spec = storev1alpha1.SecretStoreSpec{
 				Controller: SecretStoreControllerName,
 				Store: runtime.RawExtension{
-					Raw: []byte(StoreConfig2),
+					Raw: []byte(storeConfig2),
 				},
 			}
 
@@ -200,7 +211,7 @@ var _ = Describe("SecretstoreController", func() {
 	Context("When creating a SecretStore", func() {
 		ctx := context.Background()
 		// blank params trigger error during dummy Init()
-		StoreConfig3 := `
+		storeConfig3 := `
 		{
 			"type": "dummy",
 			"auth": {
@@ -227,7 +238,7 @@ var _ = Describe("SecretstoreController", func() {
 			secretStore.Spec = storev1alpha1.SecretStoreSpec{
 				Controller: SecretStoreControllerName,
 				Store: runtime.RawExtension{
-					Raw: []byte(StoreConfig3),
+					Raw: []byte(storeConfig3),
 				},
 			}
 
