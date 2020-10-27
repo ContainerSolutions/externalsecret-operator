@@ -37,7 +37,7 @@ var (
 	paramSecretKey      = "secretKey"
 	paramMasterPassword = "masterPassword"
 	paramVault          = "vault"
-	paramKeys           = []string{paramDomain, paramEmail, paramSecretKey, paramMasterPassword, paramVault}
+	paramKeys           = []string{paramDomain, paramEmail, paramVault}
 	errSigninFailed     = errors.New("could not sign in to 1password")
 )
 
@@ -70,7 +70,7 @@ func (b *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 	opCreds := &OnePasswordCredentials{}
 	if err := json.Unmarshal(credentials, opCreds); err != nil {
 		log.Error(err, "Unmarshalling failed")
-		return err
+		return &ErrInitFailed{message: err.Error()}
 	}
 
 	err = b.OnePassword.Authenticate(parameters[paramDomain].(string), parameters[paramEmail].(string), opCreds.MasterPassword, opCreds.SecretKey)
