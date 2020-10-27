@@ -66,8 +66,6 @@ func TestGet_ErrGet(t *testing.T) {
 func TestInit(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 	vault := "production"
 
 	backend := &Backend{}
@@ -78,11 +76,9 @@ func TestInit(t *testing.T) {
 	backend.OnePassword = &MockOnePassword{signInOk: true}
 
 	params := map[string]interface{}{
-		"domain":         domain,
-		"email":          email,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
-		"vault":          vault,
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
 	}
 
 	err := backend.Init(params, []byte(credentials))
@@ -92,11 +88,37 @@ func TestInit(t *testing.T) {
 	}
 }
 
+func TestInitInvalidCredentials(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	vault := "production"
+
+	backend := &Backend{}
+	credentials := `{"random string"}`
+	backend.OnePassword = &MockOnePassword{signInOk: true}
+
+	params := map[string]interface{}{
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
+	}
+	err := backend.Init(params, []byte(credentials))
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: invalid character '}' after object key"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+	}
+}
+
 func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 	vault := "production"
 
 	backend := &Backend{}
@@ -108,11 +130,9 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 	backend.OnePassword = &MockOnePassword{signInOk: false}
 
 	params := map[string]interface{}{
-		"domain":         domain,
-		"email":          email,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
-		"vault":          vault,
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
 	}
 
 	err := backend.Init(params, []byte(credentials))
@@ -132,16 +152,12 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 
 func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 
 	backend := NewBackend()
 	credentials := make([]byte, 1, 1)
 
 	params := map[string]interface{}{
-		"domain":         domain,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
+		"domain": domain,
 	}
 
 	err := backend.Init(params, credentials)
@@ -149,6 +165,31 @@ func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
 	case *ErrInitFailed:
 		actual := err.Error()
 		expected := "1password backend init failed: expected parameter 'email'"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+		fmt.Println("expected init failed error")
+	}
+}
+
+func TestInit_ErrInitFailed_ParameterBlank(t *testing.T) {
+	domain := ""
+
+	backend := NewBackend()
+	credentials := make([]byte, 1, 1)
+
+	params := map[string]interface{}{
+		"domain": domain,
+	}
+
+	err := backend.Init(params, credentials)
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: parameter 'domain' is empty"
 		if actual != expected {
 			t.Fail()
 			fmt.Printf("expected '%s' got '%s'", expected, actual)
