@@ -72,7 +72,7 @@ Given a secret defined in AWS Secrets Manager:
   --secret-string='this string is a secret'
 ```
 
-and updated aws credentials to be used in `config/credentials/kustomization.yaml` with valid values:
+and updated aws credentials to be used in `config/credentials/kustomization.yaml` with valid AWS credentials:
 
 ```yaml
 %cat config/credentials/kustomization.yaml
@@ -283,7 +283,7 @@ resources:
 # - credentials-onepassword.yaml
 ```
 
-- Update the gsm credentials `config/credentials/credentials-gsm.yaml`  service account key JSON
+- Update the gsm credentials `config/credentials/credentials-gsm.yaml` with service account key JSON
 
 ```yaml
 %cat config/credentials/credentials-gsm.yaml
