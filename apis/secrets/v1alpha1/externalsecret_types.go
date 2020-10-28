@@ -18,13 +18,14 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// StoreRef is a reference to the external secret SecretStore
-type StoreRef struct {
+// ExternalSecretStoreRef is a reference to the external secret SecretStore
+type ExternalSecretStoreRef struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:Type=string
@@ -35,9 +36,20 @@ type StoreRef struct {
 	Namespace string `json:"namespace"`
 }
 
-// Secret contains Key/Name and Version of keys to be retrieved
-type Secret struct {
+// ExternalSecretTarget ...
+type ExternalSecretTarget struct {
+	//  Name of the target Secret Resource
+	//  defaults to .metadata.name of the ExternalSecret. immutable.
+	// +kubebuilder:validation:Optional
+	Name string `json:"name,omitempty"`
+	// +kubebuilder:validation:Optional
+	CreationPolicy string `json:"creationPolicy,omitempty"`
+	// +kubebuilder:validation:Optional
+	Template runtime.RawExtension `json:"template,omitempty"`
+}
 
+// ExternalSecretData contains Key/Name and Version of keys to be retrieved
+type ExternalSecretData struct {
 	// The Key/Name of the secret held in the ExternalBackend
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MinLength=1
@@ -55,10 +67,15 @@ type ExternalSecretSpec struct {
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:MaxItems=20
 	// +kubebuilder:validation:MinItems=1
-	Secrets []Secret `json:"secrets"`
+	Data []ExternalSecretData `json:"data"`
 	// SecretStore
 	// +kubebuilder:validation:Required
-	StoreRef StoreRef `json:"store_ref"`
+	StoreRef ExternalSecretStoreRef `json:"storeRef"`
+
+	// +kubebuilder:validation:Optional
+	RefreshInterval string `json:"refreshInterval,omitempty"`
+	// +kubebuilder:validation:Optional
+	Target ExternalSecretTarget `json:"target,omitempty"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
