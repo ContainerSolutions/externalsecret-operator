@@ -4,6 +4,27 @@ maintainers:
 - frankscholten
 - iamcaleberic
 - mircea-cosbuc
-# Allows for the /label command
+# Allows the /label command
 labels: true
 # Checks if an issue or an Pull request has a description
+empty_description_check:
+  enabled: true
+  enforced: true
+# Settings for branch destroyer
+# branch destroyer will not delete your default branch
+# set other "protected" branches here
+branch_destroyer:
+  enabled: true
+  protected_branches:
+  - master
+pull_requests:
+  limit_pull_requests:
+    max_number: 7
+  open_message: |
+    Greetings!
+    Thank you for contributing to this project!
+    If this is your first time contributing to this project, please make
+    sure to read the CONTRIBUTING.md
+  cats_enabled: true
+  dogs_enabled: true
+  allow_approval: true
