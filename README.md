@@ -123,10 +123,10 @@ kind: ExternalSecret
 metadata:
   name: externalsecret-sample
 spec:
-  store_ref: 
+  storeRef: 
     name: externalsecret-operator-secretstore-sample
     namespace: externalsecret-operator-system
-  secrets:
+  data:
     - key: example-externalsecret-key
       version: latest
 ```
@@ -238,10 +238,10 @@ kind: ExternalSecret
 metadata:
   name: externalsecret-sample
 spec:
-  store_ref: 
+  storeRef: 
     name: externalsecret-operator-secretstore-sample
     namespace: externalsecret-operator-system
-  secrets:
+  data:
     - key: example-externalsecret-key
       version: latest
 ```
@@ -322,10 +322,10 @@ kind: ExternalSecret
 metadata:
   name: externalsecret-sample
 spec:
-  store_ref: 
+  storeRef: 
     name: externalsecret-operator-secretstore-sample
     namespace: externalsecret-operator-system
-  secrets:
+  data:
     - key: example-externalsecret-key
       version: latest
 ```
