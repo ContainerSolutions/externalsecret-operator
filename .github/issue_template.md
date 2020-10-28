@@ -6,7 +6,7 @@ Explain the value that it adds. e.g. "Secret refreshing will make internal secre
 
 **Give us examples of the outcome**
 
-Provide templates if you are proposing changes in the CRD. Provide example workflows ou code snippets if they make sense to present.
+Provide templates if you are proposing changes in the CRD. Provide example workflows or code snippets if they make sense to present.
 
 **Observations (Constraints, Context, etc):**
 
