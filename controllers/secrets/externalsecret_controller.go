@@ -56,6 +56,7 @@ type ExternalSecretReconciler struct {
 func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("externalsecret", req.NamespacedName)
+	var secretLookupName string
 
 	log.Info("Reconciling ExternalSecret")
 	defer log.Info("Reconcile ExternalSecret Complete")
@@ -87,9 +88,14 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{RequeueAfter: defaulRetryPeriod}, err
 	}
 
+	secretLookupName = externalSecret.Spec.Target.Name
+	if secretLookupName == "" {
+		secretLookupName = externalSecret.Name
+	}
+
 	// Check if this Secret already exists
 	foundSecret := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: externalSecret.Name, Namespace: externalSecret.Namespace}, foundSecret)
+	err = r.Get(ctx, types.NamespacedName{Name: secretLookupName, Namespace: externalSecret.Namespace}, foundSecret)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Define a new Secret object
@@ -135,6 +141,12 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 }
 
 func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (*corev1.Secret, error) {
+	var secretObjName string
+	secretObjName = s.Spec.Target.Name
+	if secretObjName == "" {
+		secretObjName = s.Name
+	}
+
 	secretMap, err := r.backendGet(s, st)
 	if err != nil {
 		log.Error(err, "backendGet")
@@ -149,7 +161,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      s.Name,
+			Name:      secretObjName,
 			Namespace: s.Namespace,
 			Labels:    secretLabels,
 		},
@@ -167,7 +179,7 @@ func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSec
 }
 
 func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (map[string][]byte, error) {
-	secrets := s.Spec.Secrets
+	secrets := s.Spec.Data
 	secretMap := make(map[string][]byte)
 
 	stCtrl := st.Spec.Controller

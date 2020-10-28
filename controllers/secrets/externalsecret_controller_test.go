@@ -31,6 +31,7 @@ var _ = Describe("ExternalsecretController", func() {
 		SecretStoreName        = "test-externalsecret-store"
 		StoreControllerName    = "test-externalsecret-ctrl"
 		CredentialSecretName   = "credential-secret-external-secret"
+		TargetName             = "test-secret-target"
 
 		timeout = time.Second * 30
 		// duration = time.Second * 10
@@ -118,11 +119,16 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					StoreRef: secretsv1alpha1.StoreRef{
+					StoreRef: secretsv1alpha1.ExternalSecretStoreRef{
 						Name:      SecretStoreName,
 						Namespace: ExternalSecretNamespace,
 					},
-					Secrets: []secretsv1alpha1.Secret{
+					Target: secretsv1alpha1.ExternalSecretTarget{
+						Template: runtime.RawExtension{
+							Raw: []byte(`{}`),
+						},
+					},
+					Data: []secretsv1alpha1.ExternalSecretData{
 						{
 							Key:     ExternalSecretKey,
 							Version: ExternalSecretVersion,
@@ -154,16 +160,16 @@ var _ = Describe("ExternalsecretController", func() {
 				return true
 			}, timeout, interval).Should(BeTrue())
 
-			Expect(len(createdExternalSecret.Spec.Secrets)).Should(BeNumerically("==", 3))
+			Expect(len(createdExternalSecret.Spec.Data)).Should(BeNumerically("==", 3))
 
-			Expect(createdExternalSecret.Spec.Secrets[0].Key).Should(Equal(ExternalSecretKey))
-			Expect(createdExternalSecret.Spec.Secrets[0].Version).Should(Equal(ExternalSecretVersion))
+			Expect(createdExternalSecret.Spec.Data[0].Key).Should(Equal(ExternalSecretKey))
+			Expect(createdExternalSecret.Spec.Data[0].Version).Should(Equal(ExternalSecretVersion))
 
-			Expect(createdExternalSecret.Spec.Secrets[1].Key).Should(Equal(ExternalSecret2Key))
-			Expect(createdExternalSecret.Spec.Secrets[1].Version).Should(Equal(ExternalSecret2Version))
+			Expect(createdExternalSecret.Spec.Data[1].Key).Should(Equal(ExternalSecret2Key))
+			Expect(createdExternalSecret.Spec.Data[1].Version).Should(Equal(ExternalSecret2Version))
 
-			Expect(createdExternalSecret.Spec.Secrets[2].Key).Should(Equal(ExternalSecret3Key))
-			Expect(createdExternalSecret.Spec.Secrets[2].Version).Should(Equal(ExternalSecret3Version))
+			Expect(createdExternalSecret.Spec.Data[2].Key).Should(Equal(ExternalSecret3Key))
+			Expect(createdExternalSecret.Spec.Data[2].Version).Should(Equal(ExternalSecret3Version))
 
 			By("Creating a new secret with correct values")
 			secret := &corev1.Secret{}
@@ -198,6 +204,74 @@ var _ = Describe("ExternalsecretController", func() {
 		})
 	})
 
+	Context("When target Name is provided", func() {
+		It("Should use it as name for the secret resource", func() {
+			ctx := context.Background()
+			randomObjSafeStr, err := utils.RandomStringObjectSafe(32)
+			Expect(err).To(BeNil())
+			randomSecretStoreName := SecretStoreName + randomObjSafeStr
+			randomControllerName := StoreControllerName + randomObjSafeStr
+			secretStore := &storev1alpha1.SecretStore{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      randomSecretStoreName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: storev1alpha1.SecretStoreSpec{
+					Controller: randomControllerName,
+					Store: runtime.RawExtension{
+						Raw: []byte(StoreConfig),
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, secretStore)).Should(Succeed())
+
+			externalSecret := &secretsv1alpha1.ExternalSecret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ExternalSecretName,
+					Namespace: ExternalSecretNamespace,
+				},
+				Spec: secretsv1alpha1.ExternalSecretSpec{
+					StoreRef: secretsv1alpha1.ExternalSecretStoreRef{
+						Name:      secretStore.ObjectMeta.Name,
+						Namespace: ExternalSecretNamespace,
+					},
+					Target: secretsv1alpha1.ExternalSecretTarget{
+						Name: TargetName,
+						Template: runtime.RawExtension{
+							Raw: []byte(`{}`),
+						},
+					},
+					Data: []secretsv1alpha1.ExternalSecretData{
+						{
+							Key:     ExternalSecretKey,
+							Version: ExternalSecretVersion,
+						},
+						{
+							Key:     ExternalSecret2Key,
+							Version: ExternalSecret3Version,
+						},
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, externalSecret)).Should(Succeed())
+
+			secretLookupKey := types.NamespacedName{Name: TargetName, Namespace: ExternalSecretNamespace}
+			secret := &corev1.Secret{}
+
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, secretLookupKey, secret)
+				if err != nil {
+					return false
+				}
+				return true
+			}, timeout, interval).Should(BeTrue())
+
+			Expect(secret.ObjectMeta.Name).Should(Equal(TargetName))
+		})
+	})
+
 	Context("SecretStore does not exist", func() {
 		ctx := context.Background()
 		It("Should handle gracefully", func() {
@@ -210,11 +284,16 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					StoreRef: secretsv1alpha1.StoreRef{
+					StoreRef: secretsv1alpha1.ExternalSecretStoreRef{
 						Name:      "NonExistentStore",
 						Namespace: ExternalSecretNamespace,
 					},
-					Secrets: []secretsv1alpha1.Secret{
+					Target: secretsv1alpha1.ExternalSecretTarget{
+						Template: runtime.RawExtension{
+							Raw: []byte(`{}`),
+						},
+					},
+					Data: []secretsv1alpha1.ExternalSecretData{
 						{
 							Key:     ExternalSecretKey,
 							Version: ExternalSecretVersion,
@@ -260,11 +339,16 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					StoreRef: secretsv1alpha1.StoreRef{
+					StoreRef: secretsv1alpha1.ExternalSecretStoreRef{
 						Name:      secretStore.ObjectMeta.Name,
 						Namespace: ExternalSecretNamespace,
 					},
-					Secrets: []secretsv1alpha1.Secret{
+					Target: secretsv1alpha1.ExternalSecretTarget{
+						Template: runtime.RawExtension{
+							Raw: []byte(`{}`),
+						},
+					},
+					Data: []secretsv1alpha1.ExternalSecretData{
 						{
 							Key:     ExternalSecretKey,
 							Version: ExternalSecretVersion,
@@ -322,11 +406,16 @@ var _ = Describe("ExternalsecretController", func() {
 					Namespace: ExternalSecretNamespace,
 				},
 				Spec: secretsv1alpha1.ExternalSecretSpec{
-					StoreRef: secretsv1alpha1.StoreRef{
+					StoreRef: secretsv1alpha1.ExternalSecretStoreRef{
 						Name:      randomSecretStoreName,
 						Namespace: ExternalSecretNamespace,
 					},
-					Secrets: []secretsv1alpha1.Secret{
+					Target: secretsv1alpha1.ExternalSecretTarget{
+						Template: runtime.RawExtension{
+							Raw: []byte(`{}`),
+						},
+					},
+					Data: []secretsv1alpha1.ExternalSecretData{
 						{
 							Key:     "",
 							Version: "",
