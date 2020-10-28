@@ -1,0 +1,9 @@
+maintainers:
+- knelasevero
+- riccardomc
+- frankscholten
+- iamcaleberic
+- mircea-cosbuc
+# Allows for the /label command
+labels: true
+# Checks if an issue or an Pull request has a description
