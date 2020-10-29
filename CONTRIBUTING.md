@@ -13,7 +13,7 @@ project.
 ## Local development
 
 To add new features to this project @riccardomc suggests to develop locally using
-[minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or
+[minikube](https://minikube.sigs.k8s.io/docs/start/) or
 [k3s](https://k3s.io/) (or [k3d](https://github.com/rancher/k3d)) to check your changes
 live. If you have better ideas, feel free to do so and please reach out with suggestions.
 
