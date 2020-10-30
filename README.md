@@ -113,6 +113,7 @@ The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
+% make install
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
@@ -265,6 +266,7 @@ spec:
 secret:
 
 ```shell
+% make install
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.your-secret-key}' | base64 -d
