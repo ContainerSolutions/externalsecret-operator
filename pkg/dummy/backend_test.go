@@ -52,6 +52,15 @@ func TestGet(t *testing.T) {
 
 			})
 		})
+
+		Convey("When mock error key is provided", func() {
+			_, err := backend.Get("ErroredKey", "")
+			Convey("An  error is returned when key is a mock error key", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "Mocked error")
+
+			})
+		})
 	})
 }
 

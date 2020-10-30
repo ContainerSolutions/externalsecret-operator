@@ -53,5 +53,9 @@ func (d *Backend) Get(key string, version string) (string, error) {
 		return "", fmt.Errorf("empty key provided")
 	}
 
+	if key == "ErroredKey" {
+		return "", fmt.Errorf("Mocked error")
+	}
+
 	return key + version + d.suffix, nil
 }
