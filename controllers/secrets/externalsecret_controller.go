@@ -38,7 +38,8 @@ import (
 )
 
 const (
-	defaulRetryPeriod = time.Second * 30
+	defaulRetryPeriod      = time.Second * 30
+	defaultRefreshInterval = time.Hour * 1
 )
 
 // ExternalSecretReconciler reconciles a ExternalSecret object
@@ -54,9 +55,12 @@ type ExternalSecretReconciler struct {
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	log := r.Log.WithValues("externalsecret", req.NamespacedName)
-	var secretLookupName string
+	var (
+		ctx              = context.Background()
+		log              = r.Log.WithValues("externalsecret", req.NamespacedName)
+		secretLookupName string
+		refreshInterval  time.Duration
+	)
 
 	log.Info("Reconciling ExternalSecret")
 	defer log.Info("Reconcile ExternalSecret Complete")
@@ -77,11 +81,17 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
+	refreshInterval, err = r.parseRefreshInterval(externalSecret.Spec.RefreshInterval)
+	if err != nil {
+		log.Error(err, "Unable to parse refreshInterval")
+		return ctrl.Result{}, err
+	}
+
 	secretStoreRef := externalSecret.Spec.StoreRef
 
 	// Fetch referenced store
 	secretStore := &storev1alpha1.SecretStore{}
-	err = r.Get(ctx, types.NamespacedName{Name: secretStoreRef.Name, Namespace: secretStoreRef.Namespace}, secretStore)
+	err = r.Get(ctx, types.NamespacedName{Name: secretStoreRef.Name, Namespace: externalSecret.Namespace}, secretStore)
 	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get SecretStore")
@@ -112,8 +122,8 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 				return ctrl.Result{}, err
 			}
 
-			// Secret created successfully - return and requeue
-			return ctrl.Result{Requeue: true}, nil
+			// Secret created successfully - return and requeue after refreshInterval
+			return ctrl.Result{RequeueAfter: refreshInterval}, nil
 		}
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get Secret")
@@ -137,7 +147,7 @@ func (r *ExternalSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: refreshInterval}, nil
 }
 
 func (r *ExternalSecretReconciler) newSecretForCR(s *secretsv1alpha1.ExternalSecret, st *storev1alpha1.SecretStore) (*corev1.Secret, error) {
@@ -200,6 +210,23 @@ func (r *ExternalSecretReconciler) backendGet(s *secretsv1alpha1.ExternalSecret,
 	}
 
 	return secretMap, nil
+}
+
+func (r *ExternalSecretReconciler) parseRefreshInterval(refreshIntervalString string) (time.Duration, error) {
+	var refreshIntervalValue time.Duration
+	var err error
+
+	if refreshIntervalString == "" {
+		refreshIntervalValue = defaultRefreshInterval
+	} else {
+		refreshIntervalValue, err = time.ParseDuration(refreshIntervalString)
+		if err != nil {
+			log.Error(err, "Unable to parse refreshInterval")
+			return 0, err
+		}
+	}
+
+	return refreshIntervalValue, nil
 }
 
 func makeLabels(contrl string, storeRef string) map[string]string {
