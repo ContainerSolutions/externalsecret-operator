@@ -37,8 +37,7 @@ var _ = Describe("SecretstoreController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret-store",
-					"namespace": "default"
+					"name": "credential-secret-store"
 				}
 			},
 			"parameters": {
@@ -162,8 +161,7 @@ var _ = Describe("SecretstoreController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret-non-existent",
-					"namespace": "default"
+					"name": "credential-secret-non-existent"
 				}
 			},
 			"parameters": {
@@ -216,8 +214,7 @@ var _ = Describe("SecretstoreController", func() {
 			"type": "dummy",
 			"auth": {
 				"secretRef": {
-					"name": "credential-secret-store",
-					"namespace": "default"
+					"name": "credential-secret-store"
 				}
 			},
 			"parameters": {}

@@ -84,11 +84,10 @@ func (r *SecretStoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	secretRef := config.Auth["secretRef"].(map[string]interface{})
 	secretRefName := secretRef["name"].(string)
-	secretRefNamespace := secretRef["namespace"].(string)
 
 	// Fetch credential Secret
 	credentialsSecret := &corev1.Secret{}
-	err = r.Get(ctx, types.NamespacedName{Name: secretRefName, Namespace: secretRefNamespace}, credentialsSecret)
+	err = r.Get(ctx, types.NamespacedName{Name: secretRefName, Namespace: secretStore.Namespace}, credentialsSecret)
 	if err != nil {
 		// Error reading the object - requeue the request.
 		log.Error(err, "Failed to get credentials Secret")
