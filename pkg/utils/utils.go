@@ -28,7 +28,7 @@ func RandomInt() (int64, error) {
 	return randomInt.Int64(), nil
 }
 
-// RandomStringObjectSafe returns a random string that is safe to use as and k8s object Name
+// RandomStringObjectSafe returns a random string that is safe to use as an k8s object Name
 //  https://kubernetes.io/docs/concepts/overview/working-with-objects/names/
 func RandomStringObjectSafe(n int) (string, error) {
 	b, err := RandomBytes(n)
