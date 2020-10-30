@@ -30,10 +30,6 @@ type ExternalSecretStoreRef struct {
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:Type=string
 	Name string `json:"name"`
-	// +kubebuilder:validation:MinLength=1
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Type=string
-	Namespace string `json:"namespace"`
 }
 
 // ExternalSecretTarget ...
@@ -68,11 +64,13 @@ type ExternalSecretSpec struct {
 	// +kubebuilder:validation:MaxItems=20
 	// +kubebuilder:validation:MinItems=1
 	Data []ExternalSecretData `json:"data"`
-	// SecretStore
+	// SecretStore reference
 	// +kubebuilder:validation:Required
 	StoreRef ExternalSecretStoreRef `json:"storeRef"`
 
 	// +kubebuilder:validation:Optional
+	// Secret Rotation Period;
+	// Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 	RefreshInterval string `json:"refreshInterval,omitempty"`
 	// +kubebuilder:validation:Optional
 	Target ExternalSecretTarget `json:"target,omitempty"`
