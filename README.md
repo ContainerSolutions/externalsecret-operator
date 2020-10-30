@@ -31,7 +31,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 <!-- ## Helm
 
-Here's how you can deploy the External Secret Operator in the `default` namespace.
+Here's how you can deploy the External Secret Operator in the `default`.
 
 ```shell
 export AWS_ACCESS_KEY_ID="AKIAYOURSECRETKEYID"
@@ -109,7 +109,6 @@ spec:
       auth: 
         secretRef: 
           name: externalsecret-operator-credentials
-          namespace: externalsecret-operator-system
       parameters:
         region: eu-west-2
 ```
@@ -125,7 +124,6 @@ metadata:
 spec:
   storeRef: 
     name: externalsecret-operator-secretstore-sample
-    namespace: externalsecret-operator-system
   data:
     - key: example-externalsecret-key
       version: latest
@@ -222,7 +220,6 @@ spec:
     auth: 
       secretRef: 
         name: externalsecret-operator-credentials
-        namespace: externalsecret-operator-system
     parameters:
       vault: Personal
       email: email@email-provider.com
@@ -240,7 +237,6 @@ metadata:
 spec:
   storeRef: 
     name: externalsecret-operator-secretstore-sample
-    namespace: externalsecret-operator-system
   data:
     - key: example-externalsecret-key
       version: latest
@@ -309,7 +305,6 @@ spec:
     auth: 
       secretRef: 
         name: externalsecret-operator-credentials
-        namespace: externalsecret-operator-system
     parameters:
       projectID: external-secrets-operator
 ```
@@ -324,7 +319,6 @@ metadata:
 spec:
   storeRef: 
     name: externalsecret-operator-secretstore-sample
-    namespace: externalsecret-operator-system
   data:
     - key: example-externalsecret-key
       version: latest
