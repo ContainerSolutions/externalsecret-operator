@@ -133,6 +133,7 @@ The operator fetches the secret from AWS Secrets Manager and injects it as a
 secret:
 
 ```shell
+% make install
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
@@ -142,7 +143,7 @@ this string is a secret
 
 ## Architecture
 
-In [this](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkEmDFo5GWNzJ2N398cI) you can find more information about the architecture and design choices. 
+In [this article](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkEmDFo5GWNzJ2N398cI) you can find more information about the architecture and design choices. 
 
 Here's a high-level diagram of how things are put together.
 
@@ -154,11 +155,11 @@ Here's a high-level diagram of how things are put together.
 
 We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
 
-* AWS Secrets Manager
-* 1Password
-* Keybase
-* Git
-* GCP Secret Manager
+* [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)
+* [1Password](https://1password.com/security/)
+* [Keybase](https://keybase.io/)
+* [Git-secret](https://git-secret.io/)
+* [GCP Secret Manager](https://cloud.google.com/secret-manager)
 
 <!-- A contributing guide is coming soon! -->
 
@@ -328,6 +329,7 @@ spec:
 secret:
 
 ```shell
+% make install
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
