@@ -11,6 +11,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 * [Kustomize](#kustomize)
 * [What does it do?](#what-does-it-do)
 * [Architecture](#architecture)
+* [Spec](#spec)
 * [Supported Backends](#secrets-backends)
   * [1-Password](#1password)
     * [Prerequisites](#1password-pre)
@@ -148,6 +149,14 @@ In [this article](https://docs.google.com/document/d/1hA6eM0TbRYcsDybiHU4kFYIqkE
 Here's a high-level diagram of how things are put together.
 
 ![architecture](./assets/architecture.png)
+
+<a name="spec"></a>
+
+## CRDs Spec
+
+- See the CRD spec
+  - [ExternalSecret](./docs/spec/ExternalSecret.md)
+  - [SecretStore](./docs/spec/SecretStore.md)
 
 <a name="secrets-backends"></a>
 
