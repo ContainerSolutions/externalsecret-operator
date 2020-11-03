@@ -15,10 +15,12 @@ func TestNewBackend(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	secretKey := "secret"
-	keyVersion := "latest"
-	testSuffix := "test-suffix"
-	expectedValue := secretKey + keyVersion + testSuffix
+	var (
+		secretKey     = "secret"
+		keyVersion    = "latest"
+		testSuffix    = "test-suffix"
+		expectedValue = secretKey + keyVersion + testSuffix
+	)
 
 	Convey("Given an uninitialized dummy backend", t, func() {
 		backend := Backend{}
@@ -50,30 +52,42 @@ func TestGet(t *testing.T) {
 
 			})
 		})
+
+		Convey("When mock error key is provided", func() {
+			_, err := backend.Get("ErroredKey", "")
+			Convey("An  error is returned when key is a mock error key", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "Mocked error")
+
+			})
+		})
 	})
 }
 
 func TestInit(t *testing.T) {
-	params := make(map[string]string)
+	var (
+		params      = make(map[string]interface{})
+		credentials = []byte{}
+	)
 
 	params["Suffix"] = "dummy init"
-
 	Convey("Should initialize backend", t, func() {
 		backend := Backend{}
-		err := backend.Init(params)
+		credentials = []byte{}
+		err := backend.Init(params, credentials)
 		So(err, ShouldBeNil)
 	})
 
 	Convey("Should fail initialize backend with invalid config", t, func() {
 		backend := Backend{}
-		err := backend.Init(make(map[string]string))
+		err := backend.Init(make(map[string]interface{}), credentials)
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldEqual, "empty or invalid parameters")
 	})
 
 	Convey("Should fail initialize backend with invalid parameter suffix", t, func() {
 		backend := Backend{}
-		err := backend.Init(map[string]string{"uknown": "fail"})
+		err := backend.Init(map[string]interface{}{"unknown": "fail"}, credentials)
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldEqual, "missing parameters")
 	})

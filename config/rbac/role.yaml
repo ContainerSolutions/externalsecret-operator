@@ -38,3 +38,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - store.externalsecret-operator.container-solutions.com
+  resources:
+  - secretstores
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - store.externalsecret-operator.container-solutions.com
+  resources:
+  - secretstores/status
+  verbs:
+  - get
+  - patch
+  - update

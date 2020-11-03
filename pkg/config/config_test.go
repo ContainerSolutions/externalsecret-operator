@@ -21,7 +21,7 @@ func TestBackendConfigFromJSON(t *testing.T) {
 			So(err, ShouldBeNil)
 			Convey("The data in Config is as expected", func() {
 				So(backendConfig.Type, ShouldEqual, "dummy")
-				So(backendConfig.Parameters, ShouldResemble, map[string]string{"Suffix": "-ohlord"})
+				So(backendConfig.Parameters, ShouldResemble, map[string]interface{}{"Suffix": "-ohlord"})
 			})
 		})
 
@@ -34,16 +34,51 @@ func TestBackendConfigFromJSON(t *testing.T) {
 	})
 }
 
+func TestBackendConfigFromCtrl(t *testing.T) {
+	Convey("Given a JSON RawMessage backend config string", t, func() {
+		configData := `{
+			"type": "dummy",
+			"auth": {
+				"secretRef": {
+					"name": "credential-secret",
+					"namespace": "default"
+				}
+			},
+			"parameters": {
+				"Suffix": "I am definitely a param"
+			}
+		}`
+
+		Convey("When creating a Config object", func() {
+			backendConfig, err := ConfigFromCtrl([]byte(configData))
+			So(err, ShouldBeNil)
+			Convey("The data in Config is as expected", func() {
+				So(backendConfig.Type, ShouldEqual, "dummy")
+				So(backendConfig.Parameters, ShouldResemble, map[string]interface{}{"Suffix": "I am definitely a param"})
+			})
+		})
+
+		Convey("When creating a Config object from invalid JSON RawMessage", func() {
+
+			_, err := ConfigFromCtrl([]byte{})
+			So(err, ShouldNotBeNil)
+
+		})
+	})
+}
+
 func TestConfigFromEnv(t *testing.T) {
 	Convey("When backend config from env", t, func() {
 		Convey("When creating a Config object from env", func() {
-			value := `{
-				"Type": "dummy",
-				"Parameters": {
-					"Suffix": "-ohlord"
-				}
-			}`
-			key := "OPERATOR_CONFIG"
+			var (
+				value = `{
+					"Type": "dummy",
+					"Parameters": {
+						"Suffix": "-ohlord"
+					}
+				}`
+				key = "OPERATOR_CONFIG"
+			)
 
 			os.Setenv(key, value)
 
@@ -53,14 +88,15 @@ func TestConfigFromEnv(t *testing.T) {
 			So(err, ShouldBeNil)
 			Convey("The data in Config is as expected", func() {
 				So(backendConfig.Type, ShouldEqual, "dummy")
-				So(backendConfig.Parameters, ShouldResemble, map[string]string{"Suffix": "-ohlord"})
+				So(backendConfig.Parameters, ShouldResemble, map[string]interface{}{"Suffix": "-ohlord"})
 			})
 		})
 
 		Convey("When creating a Config object from a blank env val", func() {
-			value := ""
-			key := "OPERATOR_CONFIG"
-
+			var (
+				value = ""
+				key   = "OPERATOR_CONFIG"
+			)
 			os.Setenv(key, value)
 
 			So(os.Getenv(key), ShouldBeBlank)

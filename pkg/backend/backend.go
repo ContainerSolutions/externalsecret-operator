@@ -6,15 +6,14 @@ import (
 	"sync"
 
 	config "github.com/containersolutions/externalsecret-operator/pkg/config"
-
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-var log = logf.Log.WithName("backend")
+var log = ctrl.Log.WithName("backend")
 
 // Backend is an abstract backend interface
 type Backend interface {
-	Init(map[string]string) error
+	Init(map[string]interface{}, []byte) error
 	Get(string, string) (string, error)
 }
 
@@ -34,23 +33,24 @@ func Instantiate(name string, backendType string) error {
 
 	function, found := Functions[backendType]
 	if !found {
+		log.Error(fmt.Errorf("error"), fmt.Sprintf("unknown backend type: '%v'", backendType))
 		return fmt.Errorf("unknown backend type: '%v'", backendType)
 	}
 
-	log.Info("instantiate", "name", name, "type", backendType)
+	log.Info("Instantiate", "name", name, "type", backendType)
 	Instances[name] = function()
 
 	return nil
 }
 
-// Register registers a new backend type with name `name`
+// Register registers a new backend type with name `name`staging
 // function is a function that returns a backend of that type
 func Register(name string, function func() Backend) {
 	if Functions == nil {
 		Functions = make(map[string]func() Backend)
 	}
 
-	log.Info("register", "type", name)
+	log.Info("Register", "type", name)
 	Functions[name] = function
 }
 
@@ -58,7 +58,7 @@ func Register(name string, function func() Backend) {
 func InitFromEnv(leaderID string) error {
 	initLock.Lock()
 	defer initLock.Unlock()
-	log.Info("initFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
+	log.Info("InitFromEnv", "availableBackends", strings.Join(availableBackends(), ","))
 
 	config, err := config.ConfigFromEnv()
 	if err != nil {
@@ -67,11 +67,30 @@ func InitFromEnv(leaderID string) error {
 
 	err = Instantiate(leaderID, config.Type)
 	if err != nil {
+		log.Error(err, "")
 		return err
 	}
 
-	log.Info("initialize", "name", leaderID)
-	err = Instances[leaderID].Init(config.Parameters)
+	log.Info("Initialize", "name", leaderID)
+	err = Instances[leaderID].Init(config.Parameters, []byte(""))
+
+	return err
+}
+
+// InitFromCtrl initializes within a controller
+func InitFromCtrl(contrl string, config *config.Config, credentials []byte) error {
+	initLock.Lock()
+	defer initLock.Unlock()
+	log.Info("InitFromCtrl", "availableBackends", strings.Join(availableBackends(), ","))
+
+	err := Instantiate(contrl, config.Type)
+	if err != nil {
+		log.Error(err, "")
+		return err
+	}
+
+	log.Info("Initialize", "name", contrl)
+	err = Instances[contrl].Init(config.Parameters, credentials)
 
 	return err
 }

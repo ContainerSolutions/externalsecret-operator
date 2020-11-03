@@ -66,47 +66,76 @@ func TestGet_ErrGet(t *testing.T) {
 func TestInit(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 	vault := "production"
 
 	backend := &Backend{}
+	credentials := `{
+		"secretKey": "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ",
+		"masterPassword": "MasterPassword12346!"
+	}`
 	backend.OnePassword = &MockOnePassword{signInOk: true}
 
-	params := map[string]string{
-		"domain":         domain,
-		"email":          email,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
-		"vault":          vault,
+	params := map[string]interface{}{
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, []byte(credentials))
 	if err != nil {
 		t.Fail()
 		fmt.Println("expected signin to succeed")
 	}
 }
 
-func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
+func TestInitInvalidCredentials(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
 	email := "externalsecretoperator@example.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 	vault := "production"
 
 	backend := &Backend{}
+	credentials := `{"random string"}`
+	backend.OnePassword = &MockOnePassword{signInOk: true}
+
+	params := map[string]interface{}{
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
+	}
+	err := backend.Init(params, []byte(credentials))
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: invalid character '}' after object key"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+	}
+}
+
+func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
+	domain := "https://externalsecretoperator.1password.com"
+	email := "externalsecretoperator@example.com"
+	vault := "production"
+
+	backend := &Backend{}
+	credentials := `{
+		"secretKey": "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ",
+		"masterPassword": "MasterPassword12346!"
+	}`
+
 	backend.OnePassword = &MockOnePassword{signInOk: false}
 
-	params := map[string]string{
-		"domain":         domain,
-		"email":          email,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
-		"vault":          vault,
+	params := map[string]interface{}{
+		"domain": domain,
+		"email":  email,
+		"vault":  vault,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, []byte(credentials))
 	switch err.(type) {
 	case *ErrInitFailed:
 		actual := err.Error()
@@ -123,22 +152,44 @@ func TestInit_ErrInitFailed_SignInFailed(t *testing.T) {
 
 func TestInit_ErrInitFailed_ParameterMissing(t *testing.T) {
 	domain := "https://externalsecretoperator.1password.com"
-	secretKey := "AA-BB-CC-DD-EE-FF-GG-HH-II-JJ"
-	masterPassword := "MasterPassword12346!"
 
 	backend := NewBackend()
+	credentials := make([]byte, 1, 1)
 
-	params := map[string]string{
-		"domain":         domain,
-		"secretKey":      secretKey,
-		"masterPassword": masterPassword,
+	params := map[string]interface{}{
+		"domain": domain,
 	}
 
-	err := backend.Init(params)
+	err := backend.Init(params, credentials)
 	switch err.(type) {
 	case *ErrInitFailed:
 		actual := err.Error()
 		expected := "1password backend init failed: expected parameter 'email'"
+		if actual != expected {
+			t.Fail()
+			fmt.Printf("expected '%s' got '%s'", expected, actual)
+		}
+	default:
+		t.Fail()
+		fmt.Println("expected init failed error")
+	}
+}
+
+func TestInit_ErrInitFailed_ParameterBlank(t *testing.T) {
+	domain := ""
+
+	backend := NewBackend()
+	credentials := make([]byte, 1, 1)
+
+	params := map[string]interface{}{
+		"domain": domain,
+	}
+
+	err := backend.Init(params, credentials)
+	switch err.(type) {
+	case *ErrInitFailed:
+		actual := err.Error()
+		expected := "1password backend init failed: parameter 'domain' is empty"
 		if actual != expected {
 			t.Fail()
 			fmt.Printf("expected '%s' got '%s'", expected, actual)

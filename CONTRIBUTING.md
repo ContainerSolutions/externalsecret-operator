@@ -41,17 +41,17 @@ This flow allows you to deploy your changes with an acceptably short feedback lo
 ```
 minikube start --driver=docker
 eval $(minikube -p minikube docker-env)
-make build
-make deploy
+make docker-build
+IMG=<name+tag> make deploy
 
 * make your changes *
 
-make build
+make docker-build
 kubectl get pods -n externalsecret-operator-system | grep externalsecret-operator | awk '{print $1}' | xargs kubectl delete pods
 
 * make more changes *
 
-make build
+make docker-build
 kubectl get pods -n externalsecret-operator-system | grep externalsecret-operator | awk '{print $1}' | xargs kubectl delete pods
 
 ...
@@ -63,14 +63,14 @@ A similar result can be obtained by building the images using the local Docker d
 copying images to minikube cache:
 
 ```
-make build
+make docker-build
 minikube cache add containersol/externalsecret-operator
 kubectl get pods | grep externalsecret-operator | awk '{print $1}' | xargs kubectl delete pods
 ```
 
 or k3d:
 ```
-make build
+make docker-build
 k3d import-images --name mycluster containersol/externalsecret-operator
 kubectl get pods | grep externalsecret-operator | awk '{print $1}' | xargs kubectl delete pods
 ```

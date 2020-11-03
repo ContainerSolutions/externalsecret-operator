@@ -78,11 +78,7 @@ tags
 # Coverage
 coverage.txt
 operator-sdk
-secrets/onepassword/secret-*
-conf*
-manager
-
-
+# conf*
 # Binaries for programs and plugins
 bin
 
@@ -101,3 +97,8 @@ bin
 *.swp
 *.swo
 *~
+conf-dummy.json
+conf-op.json
+conf.json
+encrypt.key
+encrypt.key.enc

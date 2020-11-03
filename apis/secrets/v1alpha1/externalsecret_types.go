@@ -18,34 +18,72 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// ExternalSecretStoreRef is a reference to the external secret SecretStore
+type ExternalSecretStoreRef struct {
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:Type=string
+	Name string `json:"name"`
+}
+
+// ExternalSecretTarget ...
+type ExternalSecretTarget struct {
+	//  Name of the target Secret Resource
+	//  defaults to .metadata.name of the ExternalSecret. immutable.
+	// +kubebuilder:validation:Optional
+	Name string `json:"name,omitempty"`
+	// +kubebuilder:validation:Optional
+	CreationPolicy string `json:"creationPolicy,omitempty"`
+	// +kubebuilder:validation:Optional
+	Template runtime.RawExtension `json:"template,omitempty"`
+}
+
+// ExternalSecretData contains Key/Name and Version of keys to be retrieved
+type ExternalSecretData struct {
+	// The Key/Name of the secret held in the ExternalBackend
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	Key string `json:"key"`
+	// Version of the secret to be retrieved
+	Version string `json:"version,omitempty"`
+}
 
 // ExternalSecretSpec defines the desired state of ExternalSecret
 type ExternalSecretSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// The Key of the secret held in the ExternalBackend
-	Key string `json:"key,omitempty"`
-	// Version of the secret to be retrieved
-	Version string `json:"version,omitempty"`
-	// The Backend to use to retrieve the secret
-	Backend string `json:"backend,omitempty"`
+	// Secrets
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MaxItems=20
+	// +kubebuilder:validation:MinItems=1
+	Data []ExternalSecretData `json:"data"`
+	// SecretStore reference
+	// +kubebuilder:validation:Required
+	StoreRef ExternalSecretStoreRef `json:"storeRef"`
+
+	// +kubebuilder:validation:Optional
+	// Secret Rotation Period;
+	// Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+	RefreshInterval string `json:"refreshInterval,omitempty"`
+	// +kubebuilder:validation:Optional
+	Target ExternalSecretTarget `json:"target,omitempty"`
 }
 
 // ExternalSecretStatus defines the observed state of ExternalSecret
 type ExternalSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	// The Key of the secret held in the ExternalBackend
-	// Key string `json:"key,omitempty"`
-	// // Version of the secret to be retrieved
-	// Version string `json:"version,omitempty"`
-	// // The Backend to use to retrieve the secret
-	// Backend string `json:"backend,omitempty"`
+	// Defines where the ExternalSecret is in its lifecycle
+	Phase string `json:"phase,omitempty"`
+	// Conditions represent the latest available observations of an object's state
+	Conditions []metav1.Condition `json:"conditions"`
 }
 
 // +kubebuilder:object:root=true
@@ -56,7 +94,7 @@ type ExternalSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ExternalSecretSpec   `json:"spec,omitempty"`
+	Spec   ExternalSecretSpec   `json:"spec"`
 	Status ExternalSecretStatus `json:"status,omitempty"`
 }
 

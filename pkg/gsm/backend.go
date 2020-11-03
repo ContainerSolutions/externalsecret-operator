@@ -3,7 +3,6 @@ package gsm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"cloud.google.com/go/iam"
@@ -16,13 +15,16 @@ import (
 
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	iampb "google.golang.org/genproto/googleapis/iam/v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 	// iampb "google.golang.org/genproto/googleapis/iam/v1"
 )
 
 const (
 	cloudPlatformRole = "https://www.googleapis.com/auth/cloud-platform"
+	defaultVersion    = "latest"
 )
+
+var log = ctrl.Log.WithName("gsm")
 
 type GoogleSecretManagerClient interface {
 	AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error)
@@ -45,8 +47,6 @@ type GoogleSecretManagerClient interface {
 	Close() error
 }
 
-var log = logf.Log.WithName("gsm")
-
 // Backend for Google Secrets Manager
 type Backend struct {
 	projectID           string
@@ -62,28 +62,22 @@ func NewBackend() backend.Backend {
 	return &Backend{}
 }
 
-// Init initializes Google secretsmanager backend
-func (g *Backend) Init(parameters map[string]string) error {
+// Init initializes Google secretmanager backend
+func (g *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	ctx := context.Background()
 
-	if len(parameters) == 0 {
-		return fmt.Errorf("invalid or empty Config")
+	if len(parameters) == 0 || len(credentials) == 0 {
+		return fmt.Errorf("credentials or parameters invalid")
 	}
 
-	projectID, ok := parameters["projectID"]
+	projectID, ok := parameters["projectID"].(string)
 	if !ok {
-		return fmt.Errorf("invalid parameters")
+		return fmt.Errorf("parameters invalid")
 	}
 
 	g.projectID = projectID
 
-	sAccount := serviceAccount{}
-	jsonCredentials, err := sAccount.Marshal(parameters)
-	if err != nil {
-		return err
-	}
-
-	config, err := google.JWTConfigFromJSON(jsonCredentials, cloudPlatformRole)
+	config, err := google.JWTConfigFromJSON(credentials, cloudPlatformRole)
 	if err != nil {
 		return err
 	}
@@ -100,20 +94,20 @@ func (g *Backend) Init(parameters map[string]string) error {
 	return nil
 }
 
-// Get a key and returns a value
+// Get retrieves key from Google SecretManager
 func (g *Backend) Get(key string, version string) (string, error) {
 	ctx := context.Background()
 
-	if g.SecretManagerClient == nil {
+	if g.SecretManagerClient == nil || g.projectID == "" {
+		log.Error(fmt.Errorf("error"), "backend is not initialized")
 		return "", fmt.Errorf("backend is not initialized")
 	}
 
-	validVersion := version
-	if validVersion == "" {
-		validVersion = "latest"
+	if version == "" {
+		version = defaultVersion
 	}
 
-	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, validVersion)
+	name := fmt.Sprintf("projects/%s/secrets/%s/versions/%s", g.projectID, key, version)
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: name,
@@ -125,32 +119,4 @@ func (g *Backend) Get(key string, version string) (string, error) {
 	}
 
 	return string(result.Payload.Data), nil
-}
-
-type serviceAccount struct {
-	AuthType                string `json:"type"`
-	ProjectID               string `json:"project_id"`
-	PrivateKeyID            string `json:"private_key_id"`
-	PrivateKey              string `json:"private_key"`
-	ClientEmail             string `json:"client_email"`
-	ClientID                string `json:"client_id"`
-	AuthURI                 string `json:"auth_uri"`
-	TokenURI                string `json:"token_uri"`
-	AuthProviderX509CertURL string `json:"auth_provider_x509_cert_url"`
-	ClientX509CertURL       string `json:"client_x509_cert_url"`
-}
-
-func (s *serviceAccount) Marshal(param map[string]string) ([]byte, error) {
-	s.AuthType = param["type"]
-	s.ProjectID = param["projectID"]
-	s.PrivateKeyID = param["privateKeyID"]
-	s.PrivateKey = param["privateKey"]
-	s.ClientEmail = param["clientEmail"]
-	s.ClientID = param["clientID"]
-	s.AuthURI = param["authURI"]
-	s.TokenURI = param["tokenURI"]
-	s.AuthProviderX509CertURL = param["authProviderX509CertURL"]
-	s.ClientX509CertURL = param["clientX509CertURL"]
-
-	return json.Marshal(s)
 }

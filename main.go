@@ -30,8 +30,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	secretsv1alpha1 "github.com/containersolutions/externalsecret-operator/apis/secrets/v1alpha1"
+	storev1alpha1 "github.com/containersolutions/externalsecret-operator/apis/store/v1alpha1"
 	secretscontroller "github.com/containersolutions/externalsecret-operator/controllers/secrets"
-	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	storecontroller "github.com/containersolutions/externalsecret-operator/controllers/store"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -44,13 +45,14 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(secretsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(storev1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
-	var LeaderElectionID = "36af4962.externalsecret-operator.container-solutions.com"
+	// var LeaderElectionID = "36af4962.externalsecret-operator.container-solutions.com"
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
@@ -64,10 +66,19 @@ func main() {
 		MetricsBindAddress: metricsAddr,
 		Port:               9443,
 		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   LeaderElectionID,
+		LeaderElectionID:   "36af4962.externalsecret-operator.container-solutions.com",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
+	if err = (&storecontroller.SecretStoreReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("SecretStore"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SecretStore")
 		os.Exit(1)
 	}
 
@@ -77,12 +88,6 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ExternalSecret")
-		os.Exit(1)
-	}
-
-	setupLog.Info("initializing backend")
-	if err := backend.InitFromEnv(LeaderElectionID); err != nil {
-		setupLog.Error(err, "Failed to initialize backend")
 		os.Exit(1)
 	}
 

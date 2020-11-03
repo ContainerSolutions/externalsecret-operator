@@ -2,8 +2,7 @@ package gsm
 
 import (
 	"context"
-	"errors"
-	"strings"
+	"fmt"
 	"testing"
 
 	"cloud.google.com/go/iam"
@@ -19,13 +18,15 @@ import (
 type mockGoogleSecretManagerClient struct{}
 
 func (g *mockGoogleSecretManagerClient) AccessSecretVersion(ctx context.Context, req *secretmanagerpb.AccessSecretVersionRequest, opts ...gax.CallOption) (*secretmanagerpb.AccessSecretVersionResponse, error) {
-	if strings.Contains(req.Name, "invalid") {
-		return nil, errors.New("mock error")
+	secretName := req.Name
+	if secretName == "projects/test-project-gsm/secrets/SecretKeyError/versions/latest" {
+		return nil, fmt.Errorf("Mocked errror")
 	}
+
 	return &secretmanagerpb.AccessSecretVersionResponse{
-		Name: "test",
+		Name: secretName,
 		Payload: &secretmanagerpb.SecretPayload{
-			Data: []byte("Testing"),
+			Data: []byte(secretName),
 		},
 	}, nil
 }
@@ -105,8 +106,12 @@ func TestNewBackend(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	secretKey := "secret"
-	keyVersion := "latest"
+	var (
+		secretKey      = "SecretKey"
+		secretKeyError = "SecretKeyError"
+		keyVersion     = "latest"
+		testProject    = "test-project-gsm"
+	)
 
 	Convey("Given an uninitialized GoogleSecretsManager", t, func() {
 		backend := Backend{}
@@ -121,32 +126,39 @@ func TestGet(t *testing.T) {
 
 	Convey("Given an initialized GoogleSecretManger Client", t, func() {
 		backend := Backend{}
+		backend.projectID = testProject
 		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
 		Convey("When retrieving a secret", func() {
 			actualValue, err := backend.Get(secretKey, keyVersion)
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, "Testing")
+				So(actualValue, ShouldEqual, "projects/test-project-gsm/secrets/SecretKey/versions/latest")
 			})
 		})
 	})
 
 	Convey("Given an initialized GoogleSecretManger Client", t, func() {
 		backend := Backend{}
+		backend.projectID = testProject
 		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
 		Convey("When retrieving a secret with a empty version", func() {
 			actualValue, err := backend.Get(secretKey, "")
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
-				So(actualValue, ShouldEqual, "Testing")
+				So(actualValue, ShouldEqual, "projects/test-project-gsm/secrets/SecretKey/versions/latest")
 			})
 		})
+	})
 
-		Convey("When an error occurs while retrieving external secret", func() {
-			actualValue, err := backend.Get("invalid", keyVersion)
+	Convey("Given an initialized GoogleSecretManger Client", t, func() {
+		backend := Backend{}
+		backend.projectID = testProject
+		backend.SecretManagerClient = &mockGoogleSecretManagerClient{}
+		Convey("When GetSecretValue() fails", func() {
+			_, err := backend.Get(secretKeyError, "")
 			Convey("Then an error is returned", func() {
-				So(err.Error(), ShouldEqual, "failed to access secret version: mock error")
-				So(actualValue, ShouldBeEmpty)
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "failed to access secret version: Mocked errror")
 			})
 		})
 	})
@@ -156,67 +168,106 @@ func TestGet(t *testing.T) {
 func TestInit(t *testing.T) {
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]string)
+		var (
+			backend     = Backend{}
+			params      = make(map[string]interface{})
+			credentials = make([]byte, 1, 1)
+		)
 
 		Convey("When parameters are blank", func() {
-			err := backend.Init(params)
+			err := backend.Init(params, credentials)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid or empty Config")
+				So(err.Error(), ShouldEqual, "credentials or parameters invalid")
 			})
 		})
 	})
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]string)
+		var (
+			backend     = Backend{}
+			params      = make(map[string]interface{})
+			credentials = make([]byte, 1, 1)
+		)
+
 		params["invalid"] = "invalid value"
 
 		Convey("When parameters are invalid", func() {
-			err := backend.Init(params)
+			err := backend.Init(params, credentials)
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, "invalid parameters")
+				So(err.Error(), ShouldEqual, "parameters invalid")
 			})
 		})
 	})
 
 	Convey("During initilization", t, func() {
-		backend := Backend{}
-		params := make(map[string]string)
+		var (
+			backend = Backend{}
+			params  = make(map[string]interface{})
+		)
+
 		params["projectID"] = "test-project"
 
-		Convey("When service account values are blank or invalid", func() {
-			err := backend.Init(params)
+		Convey("When service account values are blank", func() {
+			err := backend.Init(params, []byte{})
 			Convey("Then an error is returned", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldContainSubstring, "google: read JWT from JSON credentials:")
+				So(err.Error(), ShouldContainSubstring, "credentials or parameters invalid")
 			})
 		})
 	})
 
-}
+	Convey("During initilization", t, func() {
+		var (
+			serviceAccount = `{
+				"project_id": "external-secrets-operator",
+				"private_key_id": ""
+			}`
+			backend = Backend{}
+			params  = make(map[string]interface{})
+		)
 
-func TestSeviceAccountMarshal(t *testing.T) {
-	Convey("When creating marshalling a service account", t, func() {
-		params := map[string]string{
-			"projectID":               "external-secrets-operator",
-			"type":                    "service_account",
-			"privateKeyID":            "pid",
-			"privateKey":              "-----BEGIN PRIVATE KEY-----\nsome-key----END PRIVATE KEY-----\n",
-			"clientEmail":             "operator-service-account@externalsecrets-operator.iam.gserviceaccount.com",
-			"clientID":                "0000505056969",
-			"authURI":                 "https://accounts.google.com/o/oauth2/auth",
-			"tokenURI":                "https://oauth2.googleapis.com/token",
-			"authProviderX509CertURL": "https://www.googleapis.com/oauth2/v1/certs",
-			"clientX509CertURL":       "https://www.googleapis.com/robot/v1/metadata/x509/operator-service-account%40externalsecrets-operator.iam.gserviceaccount.com",
-		}
+		params["projectID"] = "test-project"
 
-		sAccount := serviceAccount{}
-		jsonCredentials, _ := sAccount.Marshal(params)
-
-		So(jsonCredentials, ShouldNotBeNil)
-
+		Convey("When a service account is invalid", func() {
+			err := backend.Init(params, []byte(serviceAccount))
+			Convey("Then an error is returned", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldContainSubstring, "google: read JWT from JSON credentials")
+			})
+		})
 	})
+
+	Convey("During initilization", t, func() {
+		var (
+			serviceAccount = `{
+				"type": "service_account",
+				"project_id": "test-project",
+				"private_key_id": "",
+				"private_key": "-----BEGIN PRIVATE KEY-----\nA KEy\n-----END PRIVATE KEY-----\n",
+				"client_email": "test-service-account@test-project.iam.gserviceaccount.com",
+				"client_id": "",
+				"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+				"token_uri": "https://oauth2.googleapis.com/token",
+				"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+				"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/operator-service-account%40external-secrets-operator.iam.gserviceaccount.com"
+			}`
+			backend    = Backend{}
+			testClient = secretmanager.Client{}
+			params     = make(map[string]interface{})
+		)
+
+		params["projectID"] = "test-project"
+
+		Convey("When a service account is valid", func() {
+			err := backend.Init(params, []byte(serviceAccount))
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+				So(backend.SecretManagerClient, ShouldNotBeNil)
+				So(backend.SecretManagerClient, ShouldHaveSameTypeAs, &testClient)
+			})
+		})
+	})
+
 }
