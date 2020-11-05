@@ -3,7 +3,7 @@ package onepassword
 import (
 	"fmt"
 
-	op "github.com/ameier38/onepassword"
+	op "github.com/ContainerSolutions/onepassword"
 )
 
 var executablePath = "/usr/local/bin/op"
