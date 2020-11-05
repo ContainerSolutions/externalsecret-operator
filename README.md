@@ -229,7 +229,7 @@ spec:
     type: onepassword
     auth: 
       secretRef: 
-        name: externalsecret-operator-credentials
+        name: externalsecret-operator-credentials-onepassword
     parameters:
       vault: Personal
       email: email@email-provider.com
@@ -314,7 +314,7 @@ spec:
     type: gsm
     auth: 
       secretRef: 
-        name: externalsecret-operator-credentials
+        name: externalsecret-operator-credentials-gsm
     parameters:
       projectID: external-secrets-operator
 ```
