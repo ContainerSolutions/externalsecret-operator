@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.66.0
-	github.com/ameier38/onepassword v0.0.0-20190617150606-e03d3c5c7592
+	github.com/ContainerSolutions/onepassword v0.1.0
 	github.com/aws/aws-sdk-go v1.34.29
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect

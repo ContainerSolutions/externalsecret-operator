@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	op "github.com/ameier38/onepassword"
+	op "github.com/ContainerSolutions/onepassword"
 
 	. "github.com/containersolutions/externalsecret-operator/pkg/internal"
 )
