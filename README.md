@@ -106,12 +106,12 @@ metadata:
 spec:
   controller: staging
   store:
-      type: asm
-      auth: 
-        secretRef: 
-          name: externalsecret-operator-credentials
-      parameters:
-        region: eu-west-2
+    type: asm
+    auth: 
+      secretRef: 
+        name: externalsecret-operator-credentials-asm
+    parameters:
+      region: eu-west-2
 ```
 
 and an `ExternalSecret` resource definition like this one:
