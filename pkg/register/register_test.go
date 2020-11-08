@@ -10,7 +10,7 @@ var expectedRegisteredBackends = []string{
 	"asm",
 	"dummy",
 	"onepassword",
-	"gitlab"
+	"gitlab",
 	"gsm",
 }
 
