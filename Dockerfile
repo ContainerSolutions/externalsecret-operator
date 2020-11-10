@@ -37,7 +37,7 @@ RUN cd /tmp; gpg --verify /tmp/op.sig /usr/local/bin/op || (echo "ERROR: Incorre
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM --platform=${TARGETPLATFORM:-linux/amd64}  gcr.io/distroless/base-debian10
+FROM --platform=${TARGETPLATFORM:-linux/amd64}  gcr.io/distroless/base-debian10@sha256:abe4b6cd34fed3ade2e89ed1f2ce75ddab023ea0d583206cfa4f960b74572c67
 WORKDIR /
 COPY --from=builder /workspace/manager .
 
