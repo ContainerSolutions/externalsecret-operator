@@ -9,7 +9,6 @@ import (
 var expectedRegisteredBackends = []string{
 	"asm",
 	"dummy",
-	"onepassword",
 	"gsm",
 }
 

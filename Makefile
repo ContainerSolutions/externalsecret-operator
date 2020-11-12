@@ -64,7 +64,7 @@ vet:
 
 # Run go gosec against code
 sec: gosec
-	${GOSEC} -exclude-dir 'legacy' --quiet ./...
+	${GOSEC} --quiet ./...
 
 # Generate code
 generate: controller-gen
