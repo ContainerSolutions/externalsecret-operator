@@ -13,9 +13,6 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 * [Architecture](#architecture)
 * [Spec](#spec)
 * [Supported Backends](#secrets-backends)
-  * [1-Password](#1password)
-    * [Prerequisites](#1password-pre)
-    * [Deployment](#1password-deployment)
   * [GCP Secret Manager](#google-secret-manager)
     * [Prerequisites](#google-secret-manager-pre)
     * [Deployment](#google-secret-manager-deployment)
@@ -81,7 +78,6 @@ resources:
 # - credentials-gsm.yaml
 - credentials-asm.yaml
 # - credentials-dummy.yaml
-# - credentials-onepassword.yaml
 ```
 
 ```yaml
@@ -165,101 +161,9 @@ Here's a high-level diagram of how things are put together.
 We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
 
 * [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)
-* [1Password](https://1password.com/security/)
 * [Keybase](https://keybase.io/)
 * [Git-secret](https://git-secret.io/)
 * [GCP Secret Manager](https://cloud.google.com/secret-manager)
-
-<!-- A contributing guide is coming soon! -->
-
-<a name="1password"></a>
-
-### 1Password [REVIEWING]
-
-<a name="1password-pre"></a>
-
-#### Prerequisites
-
-* An existing 1Password team account.
-* A 1Password account specifically for the operator. Tip: Setup an email with the `+` convention: `john.doe+operator@example.org`
-* Store the _secret key_, _master password_, _email_ and _url_ of the _operator_ account in your existing 1Password account. This screenshot shows which fields should be used to store this information.
-* Our naming convention for the item account is 'External Secret Operator' concatenated with name of the Kubernetes cluster for instance 'External Secret Operator minikube'. This item name is also used for development.
-  
-- Install CRDs 
-```
-  make install
-```
-
-<a name="1password-deployment"></a>
-
-#### Deployment
-
-- Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
-
-```yaml
-resources:
-# - credentials-gsm.yaml
-# - credentials-asm.yaml
-# - credentials-dummy.yaml
-- credentials-onepassword.yaml
-```
-
-- Update the onepassword credentials `config/credentials/credentials-onepassword.yaml` with valid  `secretKey` and `masterPassword`
-
-```yaml
-%cat config/credentials/credentials-onepassword.yaml
-...
-credentials.json: |-
-    {
-      "secretKey": "${OP_SECRET_KEY}",
-      "masterPassword": "${OP_MASTER_PASSWORD}"
-    }
-
-```
--  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
-```yaml
-% cat  `config/samples/store_v1alpha1_secretstore.yaml
-apiVersion: store.externalsecret-operator.container-solutions.com/v1alpha1
-kind: SecretStore
-metadata:
-  name: secretstore-sample
-spec:
-  controller: staging
-  store:
-    type: onepassword
-    auth: 
-      secretRef: 
-        name: externalsecret-operator-credentials-onepassword
-    parameters:
-      vault: Personal
-      email: email@email-provider.com
-      domain: domain.onepassword.com
-
-```
-
--  Update the `ExternalSecret` resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
-```yaml
-% cat config/samples/secrets_v1alpha1_externalsecret.yaml
-apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
-kind: ExternalSecret
-metadata:
-  name: externalsecret-sample
-spec:
-  storeRef: 
-    name: externalsecret-operator-secretstore-sample
-  data:
-    - key: example-externalsecret-key
-      version: latest
-```
-
-- The operator fetches the secret from 1password and injects it as a
-secret:
-
-```shell
-% make deploy
-% kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
-  -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
-```
 
 <a name="google-secret-manager"></a>
 
@@ -286,7 +190,6 @@ resources:
 - credentials-gsm.yaml
 # - credentials-asm.yaml
 # - credentials-dummy.yaml
-# - credentials-onepassword.yaml
 ```
 
 - Update the gsm credentials `config/credentials/credentials-gsm.yaml` with service account key JSON

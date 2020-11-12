@@ -7,7 +7,6 @@ RUN apt update && apt install unzip -y
 ENV CGO_ENABLED=0 
 ENV GOOS=linux 
 ENV GO111MODULE=on
-ENV ONEPASSWORD_CLI_VERSION=v1.8.0
 
 ARG TARGETPLATFORM
 RUN go env
@@ -29,19 +28,11 @@ COPY pkg/ pkg/
 # Build
 RUN go build -a -o manager main.go
 
-# install 1password binary
-RUN cd /tmp; curl https://cache.agilebits.com/dist/1P/op/pkg/${ONEPASSWORD_CLI_VERSION}/op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip -o op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip; unzip op_linux_amd64_${ONEPASSWORD_CLI_VERSION}.zip; mv ./op /usr/local/bin/
-RUN gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 3FEF9748469ADBE15DA7CA80AC2D62742012EA22
-RUN cd /tmp; gpg --verify /tmp/op.sig /usr/local/bin/op || (echo "ERROR: Incorrect GPG signature for 1password op binary." && exit 1)
-
-
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM --platform=${TARGETPLATFORM:-linux/amd64}  gcr.io/distroless/base-debian10@sha256:abe4b6cd34fed3ade2e89ed1f2ce75ddab023ea0d583206cfa4f960b74572c67
 WORKDIR /
 COPY --from=builder /workspace/manager .
-
-COPY --from=builder /usr/local/bin/op  /usr/local/bin/ 
 
 USER nonroot:nonroot
 

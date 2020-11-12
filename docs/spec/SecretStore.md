@@ -30,16 +30,5 @@ spec:
     #   parameters:
     #     projectID: external-secrets-operator
 
-    # Onepassword
-    # store:
-    #   type: onepassword
-    #   auth: 
-    #     secretRef: 
-    #       name: externalsecret-operator-credentials-onepassword
-    #   parameters:
-    #     vault: Personal
-    #     email: email@email-provider.com
-    #     domain: domain.onepassword.com
-
 status: {}
 ```
