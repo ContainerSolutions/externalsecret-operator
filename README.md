@@ -12,7 +12,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 * [What does it do?](#what-does-it-do)
 * [Architecture](#architecture)
 * [Spec](#spec)
-* [Supported Backends](#secrets-backends)
+* [Another Supported Backends](#secrets-backends)
   * [GCP Secret Manager](#google-secret-manager)
     * [Prerequisites](#google-secret-manager-pre)
     * [Deployment](#google-secret-manager-deployment)
@@ -156,7 +156,7 @@ Here's a high-level diagram of how things are put together.
 
 <a name="secrets-backends"></a>
 
-## Supported Backends
+## Another Supported Backends
 
 We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
 
