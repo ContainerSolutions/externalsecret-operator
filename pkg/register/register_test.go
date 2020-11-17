@@ -9,6 +9,7 @@ import (
 var expectedRegisteredBackends = []string{
 	"asm",
 	"dummy",
+	"gitlab",
 	"gsm",
 }
 
