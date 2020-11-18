@@ -18,6 +18,8 @@ branch_destroyer:
   protected_branches:
   - master
 pull_requests:
+  # The Setting to enable automaed merges
+  automated_merge: true
   limit_pull_requests:
     max_number: 7
   open_message: |
