@@ -185,10 +185,11 @@ make test
 ## Other Supported Backends
 
 We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported backends are:
-
-* [AWS Secrets Manager Info](https://aws.amazon.com/secrets-manager/), [AWS Secrets Manager Backend Docs](#what-does-it-do)
-* [GCP Secret Manager Info](https://cloud.google.com/secret-manager), [GCP Secret Manager Backend Docs](docs/backends/gsm.md)
-* [Gitlab CI/CD Variables Info](https://docs.gitlab.com/ce/ci/variables/), [Gitlab CI/CD Variables Backend Docs](docs/backends/gitlab.md)
+| Provider                                                           | Backend Doc                                                        |
+|--------------------------------------------------------------------|--------------------------------------------------------------------|
+|[AWS Secrets Manager Info](https://aws.amazon.com/secrets-manager/) | [AWS Secrets Manager Backend Docs](#what-does-it-do)               |
+|[GCP Secret Manager Info](https://cloud.google.com/secret-manager)  | [GCP Secret Manager Backend Docs](docs/backends/gsm.md)            |
+|[Gitlab CI/CD Variables Info](https://docs.gitlab.com/ce/ci/variables/) | [Gitlab CI/CD Variables Backend Docs](docs/backends/gitlab.md) |
 
 <a name="contributing"></a>
 
