@@ -7,10 +7,12 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 
 # Table of Contents
 
+* [Features](#features)
 * [Quick start](#quick-start) 
 * [Kustomize](#kustomize)
 * [What does it do?](#what-does-it-do)
 * [Architecture](#architecture)
+* [Running Tests](#running-tests)
 * [Spec](#spec)
 * [Other Supported Backends](#secrets-backends)
   * [GCP Secret Manager](#google-secret-manager)
@@ -21,6 +23,17 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
     * [Deployment](#gitlab-cicd-variables-deployment)
 * [Contributing](#contributing)
 
+
+<a name="features"></a>
+
+## Features
+
+- Secrets are refreshed from time to time allowing you to rotate secrets in your providers and still keep everything up to date inside your k8s cluster.
+- Change the refresh interval of the secrets to match your needs. You can even make it 10s if you need to debug something (beware of API rate limits).
+- For the AWS Backend we support both simple secrets and binfiles.
+- You can get speciffic versions of the secrets or just get latest versions of them.
+- If you change something in your ExternalSecret CR, the operator will reconcile it (Even if your refresh interval is big).
+- AWS Secret Manager, Google Secret Manager and Gitlab backends supported currently!
 
 <a name="quick-start"></a>
 
@@ -149,6 +162,22 @@ Here's a high-level diagram of how things are put together.
 
 ![architecture](./assets/architecture.png)
 
+
+<a name="running-tests"></a>
+
+## Running tests
+
+Requirements:
+
+- Golang 1.15 or later
+- [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed at `/usr/local/kubebuilder`
+
+Then just:
+
+```bash
+make test
+```
+
 <a name="spec"></a>
 
 ## CRDs Spec
@@ -161,178 +190,12 @@ Here's a high-level diagram of how things are put together.
 
 ## Other Supported Backends
 
-We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported or planned backends are:
+We would like to support as many backends as possible and it should be rather easy to write new ones. Currently supported backends are:
 
-* [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)
-* [Keybase](https://keybase.io/)
-* [Git-secret](https://git-secret.io/)
-* [GCP Secret Manager](https://cloud.google.com/secret-manager)
-* [Gitlab CI/CD Variables](https://gitlab.com)
+* [AWS Secrets Manager Info](https://aws.amazon.com/secrets-manager/), [AWS Secrets Manager Backend Docs](#what-does-it-do)
+* [GCP Secret Manager Info](https://cloud.google.com/secret-manager), [GCP Secret Manager Backend Docs](docs/backends/gsm.md)
+* [Gitlab CI/CD Variables Info](https://docs.gitlab.com/ce/ci/variables/), [Gitlab CI/CD Variables Backend Docs](docs/backends/gitlab.md)
 
-<a name="google-secret-manager"></a>
-
-## GCP Secret Manager
-
-<a name="google-secret-manager-pre"></a>
-
-#### Prerequisites
-- Enabled and configured secret manager API on your GCP project. [Secret Manager Docs](https://cloud.google.com/secret-manager/docs/configuring-secret-manager)
-
-- Install CRDs 
-```
-  make install
-```
-
-<a name="google-secret-manager-deployment"></a>
-
-#### Deployment
-
-- Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
-
-```yaml
-resources:
-- credentials-gsm.yaml
-# - credentials-asm.yaml
-# - credentials-dummy.yaml
-# - credentials-gitlab.yaml
-```
-
-- Update the gsm credentials `config/credentials/credentials-gsm.yaml` with service account key JSON
-
-```yaml
-%cat config/credentials/credentials-gsm.yaml
-...
-credentials.json: |-
-    {
-      "type": "service_account"
-      ....
-    }
-
-```
--  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
-```yaml
-% cat  `config/samples/store_v1alpha1_secretstore.yaml
-apiVersion: store.externalsecret-operator.container-solutions.com/v1alpha1
-kind: SecretStore
-metadata:
-  name: secretstore-sample
-spec:
-  controller: staging
-  store:
-    type: gsm
-    auth: 
-      secretRef: 
-        name: externalsecret-operator-credentials-gsm
-    parameters:
-      projectID: external-secrets-operator
-```
-
--  Update the `ExternalSecret` resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
-```yaml
-% cat config/samples/secrets_v1alpha1_externalsecret.yaml
-apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
-kind: ExternalSecret
-metadata:
-  name: externalsecret-sample
-spec:
-  storeRef: 
-    name: externalsecret-operator-secretstore-sample
-  data:
-    - key: example-externalsecret-key
-      version: latest
-```
-
-- The operator fetches the secret from GCP Secret Manager and injects it as a
-secret:
-
-```shell
-% make deploy
-% kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
-  -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
-```
-
-<a name="gitlab-cicd-variables"></a>
-
-## Gitlab CI/CD Variables
-
-<a name="gitlab-cicd-variables-pre"></a>
-
-#### Prerequisites
-- A Gitlab project with a CI/CD variable, who's key is `example_externalsecret_key`
-- The project ID which you can find at the top of the main page of the project, right below the project name.
-- A [Gitlab personal access token](https://gitlab.com/-/profile/personal_access_tokens) with `read_api` permissions
-
-- Install CRDs
-```
-  make install
-```
-
-<a name="gitlab-cicd-variables-deployment"></a>
-
-#### Deployment
-
-- Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
-
-```yaml
-resources:
-# - credentials-gsm.yaml
-# - credentials-asm.yaml
-# - credentials-dummy.yaml
-- credentials-gitlab.yaml
-```
-
-- Update the gitlab credentials `config/credentials/credentials-gitlab.yaml` with your personal access token
-
-```yaml
-%cat config/credentials/credentials-gitlab.yaml
-...
-credentials.json: |-
-    {
-      "token": "abcdef12345"
-    }
-
-```
--  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
-```yaml
-% cat  `config/samples/store_v1alpha1_secretstore.yaml
-apiVersion: store.externalsecret-operator.container-solutions.com/v1alpha1
-kind: SecretStore
-metadata:
-  name: secretstore-sample
-spec:
-  controller: staging
-  store:
-    type: gitlab
-    auth:
-      secretRef:
-        name: externalsecret-operator-credentials-gitlab
-    parameters:
-      baseURL: https://gitlab.com
-      projectID: 12345678
-```
-
--  Update the `ExternalSecret` resource definition `config/samples/secrets_v1alpha1_externalsecret.yaml`
-```yaml
-% cat config/samples/secrets_v1alpha1_externalsecret.yaml
-apiVersion: secrets.externalsecret-operator.container-solutions.com/v1alpha1
-kind: ExternalSecret
-metadata:
-  name: externalsecret-sample
-spec:
-  storeRef:
-    name: externalsecret-operator-secretstore-sample
-  data:
-    - key: example_externalsecret_key
-      version: latest
-```
-
-- The operator fetches the CI/CD variable from Gitlab and injects it as a secret:
-
-```shell
-% make deploy
-% kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
-  -o jsonpath='{.data.example_externalsecret_key}' | base64 -d
-```
 <a name="contributing"></a>
 
 ## Contributing
