@@ -15,12 +15,6 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 * [Running Tests](#running-tests)
 * [Spec](#spec)
 * [Other Supported Backends](#secrets-backends)
-  * [GCP Secret Manager](#google-secret-manager)
-    * [Prerequisites](#google-secret-manager-pre)
-    * [Deployment](#google-secret-manager-deployment)
-  * [Gitlab CI/CD Variables](#gitlab-cicd-variables)
-    * [Prerequisites](#gitlab-cicd-variables-pre)
-    * [Deployment](#gitlab-cicd-variables-deployment)
 * [Contributing](#contributing)
 
 
