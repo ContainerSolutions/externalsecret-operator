@@ -4,6 +4,10 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.66.0
+	github.com/Azure/azure-sdk-for-go v48.2.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3 // indirect
+	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
 	github.com/aws/aws-sdk-go v1.34.29
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
