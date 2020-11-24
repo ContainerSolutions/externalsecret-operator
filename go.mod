@@ -8,6 +8,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.3 // indirect
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
 	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
+	github.com/apex/log v1.9.0
 	github.com/aws/aws-sdk-go v1.34.29
 	github.com/go-logr/logr v0.2.1
 	github.com/go-logr/zapr v0.2.0 // indirect
@@ -16,6 +17,7 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/prometheus/common v0.13.0
 	github.com/smartystreets/goconvey v1.6.4
+	github.com/versent/unicreds v1.5.0
 	github.com/xanzy/go-gitlab v0.39.0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	google.golang.org/api v0.32.0

@@ -3,15 +3,14 @@ package asm
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
+	"github.com/containersolutions/externalsecret-operator/pkg/utils"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -42,7 +41,7 @@ func NewBackend() backend.Backend {
 func (s *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	var err error
 
-	s.session, err = getAWSSession(parameters, credentials)
+	s.session, err = utils.GetAWSSession(parameters, credentials, defaultRegion)
 	if err != nil {
 		return err
 	}
@@ -89,42 +88,4 @@ func (s *Backend) Get(key string, version string) (string, error) {
 		secretValue = string(decodedBinarySecretBytes[:len])
 	}
 	return secretValue, nil
-}
-
-// AWSCredentials represents expected credentials
-type AWSCredentials struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	SessionToken    string
-}
-
-/* getAWSSession returns an aws.session.Session based on the parameters or environment variables
-* If parameters are not present or incomplete (secret key, access key AND region)
-* then let default config loading order to go on:
-* https://docs.aws.amazon.com/sdk-for-go/api/aws/session/
- */
-func getAWSSession(parameters map[string]interface{}, creds []byte) (*session.Session, error) {
-	awsCreds := &AWSCredentials{}
-	if err := json.Unmarshal(creds, awsCreds); err != nil {
-		log.Error(err, "Unmarshalling failed")
-		return nil, err
-	}
-
-	region, ok := parameters["region"].(string)
-	if !ok {
-		log.Error(nil, "AWS region parameter missing")
-		return nil, fmt.Errorf("AWS region parameter missing")
-	}
-
-	if region == "" {
-		region = defaultRegion
-	}
-
-	return session.NewSession(&aws.Config{
-		Region: aws.String(region),
-		Credentials: credentials.NewStaticCredentials(
-			awsCreds.AccessKeyID,
-			awsCreds.SecretAccessKey,
-			awsCreds.SessionToken),
-	})
 }
