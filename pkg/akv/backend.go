@@ -15,12 +15,13 @@ import (
 
 var log = ctrl.Log.WithName("akv")
 
+// Backend is the needed structure to access the Azure Key Vault service
 type Backend struct {
 	client   keyvault.BaseClient
 	keyvault string
 }
 
-// NewBackend gives you a new gitlab backend
+// NewBackend gives you a new akv.Backend
 func NewBackend() backend.Backend {
 	return &Backend{}
 }
@@ -29,6 +30,7 @@ func init() {
 	backend.Register("akv", NewBackend)
 }
 
+// Init will initialize and authorize a local client responsible for accessing the Azure Key Vault service
 func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 
 	akvCred := AzureCredentials{}
@@ -50,13 +52,12 @@ func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 		return err
 	}
 
-	//Remove this after this issue gets fixed https://github.com/Azure/azure-sdk-for-go/issues/13641
+	//Remove this after/if this issue gets fixed: https://github.com/Azure/azure-sdk-for-go/issues/13641
 	if err := os.Setenv("AZURE_AUTH_LOCATION", file.Name()); err != nil {
 		log.Error(err, "")
 		return err
 	}
-
-	//end remove
+	//end Remove
 
 	authorizer, err := kvauth.NewAuthorizerFromFile(file.Name())
 	if err != nil {
@@ -71,6 +72,7 @@ func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 	return nil
 }
 
+// Get is responsible for getting the actual secret value from Azure Key Vault
 func (a *Backend) Get(key string, version string) (string, error) {
 
 	secretResp, err := a.client.GetSecret(context.Background(), "https://"+a.keyvault+".vault.azure.net", key, version)

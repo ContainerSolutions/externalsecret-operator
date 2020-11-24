@@ -1,6 +1,6 @@
 # Azure Key Vault
 
-This are the needed steps to use Azure Key Vault as a backend.
+These are the needed steps to use Azure Key Vault as a backend.
 The External Secret Operator (ESO) will impersonate an application you must register in your Azure Active Directory.
 
 Make sure you add the Azure Key Vault user_impersonation permission to the application. 
