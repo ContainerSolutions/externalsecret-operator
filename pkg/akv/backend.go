@@ -4,6 +4,7 @@ package akv
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -75,7 +76,7 @@ func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 // Get is responsible for getting the actual secret value from Azure Key Vault
 func (a *Backend) Get(key string, version string) (string, error) {
 
-	secretResp, err := a.client.GetSecret(context.Background(), "https://"+a.keyvault+".vault.azure.net", key, version)
+	secretResp, err := a.client.GetSecret(context.Background(), fmt.Sprintf("https://%s.vault.azure.net", a.keyvault), key, version)
 	if err != nil {
 		log.Error(err, "")
 		return "", err
