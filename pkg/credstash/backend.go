@@ -93,23 +93,22 @@ func (s *Backend) Get(key string, version string) (string, error) {
 		}
 
 		return creds.Secret, nil
-	} else {
-		formattedVersion, err := formatCredstashVersion(version)
-		if err != nil {
-			log.Error(err, "Failed formatting secret version",
-				"Secret.Key", key, "Secret.Version", version, "Secret.Table", table, "Secret.Context", configEncryptionContext)
-			return "", err
-		}
-
-		creds, err := unicreds.GetSecret(aws.String(table), key, formattedVersion, encryptionContext)
-		if err != nil {
-			log.Error(err, "Failed fetching secret from credstash",
-				"Secret.Key", key, "Secret.Version", formattedVersion, "Secret.Table", table, "Secret.Context", configEncryptionContext)
-			return "", err
-		}
-
-		return creds.Secret, nil
 	}
+	formattedVersion, err := formatCredstashVersion(version)
+	if err != nil {
+		log.Error(err, "Failed formatting secret version",
+			"Secret.Key", key, "Secret.Version", version, "Secret.Table", table, "Secret.Context", configEncryptionContext)
+		return "", err
+	}
+
+	creds, err := unicreds.GetSecret(aws.String(table), key, formattedVersion, encryptionContext)
+	if err != nil {
+		log.Error(err, "Failed fetching secret from credstash",
+			"Secret.Key", key, "Secret.Version", formattedVersion, "Secret.Table", table, "Secret.Context", configEncryptionContext)
+		return "", err
+	}
+
+	return creds.Secret, nil
 }
 
 func formatCredstashVersion(inputVersion string) (string, error) {
