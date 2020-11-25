@@ -8,10 +8,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/containersolutions/externalsecret-operator/pkg/backend"
 	"github.com/containersolutions/externalsecret-operator/pkg/utils"
-	"github.com/versent/unicreds"
+	unicreds "github.com/versent/unicreds"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
@@ -26,9 +26,41 @@ var (
 	configEncryptionContext = make(map[string]string)
 )
 
+// SecretManagerClient will be our unicreds client
+type SecretManagerClient interface {
+	SetKMSConfig(config *aws.Config)
+	SetDynamoDBConfig(config *aws.Config)
+	GetHighestVersionSecret(tableName *string, name string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error)
+	GetSecret(tableName *string, name string, version string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error)
+}
+
+// SecretManagerClientStruct defining this struct to write methods for it
+type SecretManagerClientStruct struct {
+}
+
+// SetKMSConfig sets configuration for KMS access
+func (s SecretManagerClientStruct) SetKMSConfig(config *aws.Config) {
+	unicreds.SetKMSConfig(config)
+}
+
+// SetDynamoDBConfig sets configuration for DynamoDB access
+func (s SecretManagerClientStruct) SetDynamoDBConfig(config *aws.Config) {
+	unicreds.SetDynamoDBConfig(config)
+}
+
+// GetHighestVersionSecret gets a secret with latest version from credstash
+func (s SecretManagerClientStruct) GetHighestVersionSecret(tableName *string, name string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
+	return unicreds.GetHighestVersionSecret(tableName, name, encContext)
+}
+
+// GetSecret gets a secret with specific version from credstash
+func (s SecretManagerClientStruct) GetSecret(tableName *string, name string, version string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
+	return unicreds.GetSecret(tableName, name, version, encContext)
+}
+
 // Backend represents a backend for Credstash
 type Backend struct {
-	SecretsManager secretsmanageriface.SecretsManagerAPI
+	SecretsManager SecretManagerClient
 	session        *session.Session
 }
 
@@ -61,8 +93,9 @@ func (s *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 		log.Info("Not using security encryption context. Consider using it")
 	}
 
-	unicreds.SetKMSConfig(s.session.Config)
-	unicreds.SetDynamoDBConfig(s.session.Config)
+	s.SecretsManager = SecretManagerClientStruct{}
+	s.SecretsManager.SetKMSConfig(s.session.Config)
+	s.SecretsManager.SetDynamoDBConfig(s.session.Config)
 	return nil
 }
 
@@ -84,7 +117,7 @@ func (s *Backend) Get(key string, version string) (string, error) {
 		}
 	}
 	if version == "" {
-		creds, err := unicreds.GetHighestVersionSecret(aws.String(table), key, encryptionContext)
+		creds, err := s.SecretsManager.GetHighestVersionSecret(aws.String(table), key, encryptionContext)
 		if err != nil {
 			log.Error(err, "Failed fetching secret from credstash",
 				"Secret.Key", key, "Secret.Version", "latest", "Secret.Table", table, "Secret.Context", configEncryptionContext)
@@ -101,7 +134,7 @@ func (s *Backend) Get(key string, version string) (string, error) {
 		return "", err
 	}
 
-	creds, err := unicreds.GetSecret(aws.String(table), key, formattedVersion, encryptionContext)
+	creds, err := s.SecretsManager.GetSecret(aws.String(table), key, formattedVersion, encryptionContext)
 	if err != nil {
 		log.Error(err, "Failed fetching secret from credstash",
 			"Secret.Key", key, "Secret.Version", formattedVersion, "Secret.Table", table, "Secret.Context", configEncryptionContext)
