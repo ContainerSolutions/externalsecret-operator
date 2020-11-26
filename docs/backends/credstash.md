@@ -14,6 +14,13 @@ Assign the credstash alias to the key using the key id printed when you created 
 aws --region ap-southeast-2 --profile [yourawsprofile] kms create-alias --alias-name 'alias/credstash' --target-key-id "xxxx-xxxx-xxxx-xxx
 ```
 
+Use a credstash client to create a secret (Using security context securityKey=securityValue here).
+
+```
+credstash put example-externalsecret-key  secretValue securityKey=securityValue
+```
+
+
 - Install CRDs 
 ```
   make install
