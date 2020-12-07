@@ -2,23 +2,59 @@
 
 #### Prerequisites
 
-- Create an Azure Key Vault resource with a secret who's name is `example-externalsecret-key`
-- In your Azure Active Directory, create an app under App Registration and assign the 
-- In your recently created app go to API Permissions and assign the `Azure Key Vault/user_impersonation` permission.
-- Under Certificates & secretes create a client secret.
-- Go back to your Key Vault resource and under Access policies, create an access policy for the app. Make sure you at least select 'Get' under 'Secret Management Operations'.
-- To authenticate you will need: (to learn more about the authentication process take a look at [Authenticate to Azure Key Vault](https://docs.microsoft.com/en-us/azure/key-vault/general/authentication))
-    - The Application (client) ID.
-    - The Client Secret (also from the application)
-    - The Tennant ID.
-    - The Azure Key Vault service name.
-- Install CRDs
+You need to have a Key Vault instance with a secret and an application registered in your Azure Active directory with Read access to the Vault's secrets.
+
+The following script creates everything needed for sample purposes. It assumes you have Azure ClI installed and it is already authenticated.  
+For more information about Azure CLI refer to Azure CLI's [documentation](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
+
+```bash
+# The tennatId will be needed to get the secrets
+TENANT_ID=$(az account show --query tenantId | tr -d \")
+
+# Name and location of the Resource Group
+RESOURCE_GROUP="MyKeyVaultResourceGroup"
+LOCATION="westus"
+
+# Create the Resource Group
+az group create --location $LOCATION --name $RESOURCE_GROUP
+
+VAULT_NAME="eso-akv-test"
+
+# Create the Key Vault
+az keyvault create --name $VAULT_NAME --resource-group $RESOURCE_GROUP
+
+SECRET_NAME="example-externalsecret-key"
+SECRET_VAlUE="This is our secret now!"
+
+# Add a secret to the vault
+az keyvault secret set --name $SECRET_NAME --vault-name $VAULT_NAME --value "$SECRET_VAlUE"
+
+# Now you need to create an app to access the Key Vault
+APP_NAME="ExtSectret Query App"
+APP_ID=$(az ad app create --display-name "$APP_NAME" --query appId | tr -d \")
+
+# A Service Principal must also be created
+SERVICE_PRINCIPAL=$(az ad sp create --id $APP_ID --query objectId | tr -d \")
+
+# Add permission to your App to query the Key Vault
+# The --api-permission refers to the Azure Key Vault user_impersonation permission (do not modify)
+# The --api refers to the Azure Key Vault API (do not modify)
+az ad app permission add --id $APP_ID --api-permissions f53da476-18e3-4152-8e01-aec403e6edc0=Scope --api cfa8b339-82a2-471a-a3c9-0fc0be7a4093
+
+APP_PASSWORD="ThisisMyStrongPassword"
+# A password must be created for the app
+az ad app credential reset --id $APP_ID --password "$APP_PASSWORD"
+
+# Finnaly, the Key Vault must have an Access Policy for the created app
+az keyvault set-policy --name $VAULT_NAME --object-id $SERVICE_PRINCIPAL --secret-permissions get
+```
+
+For a detailed view on how to create the above mentioned resources in the Azure Portal, please go to: [How To Access Azure Key Vault Secrets Through Rest API Using Postman](https://www.c-sharpcorner.com/article/how-to-access-azure-key-vault-secrets-through-rest-api-using-postman/)
+
+- Now you're ready to tnstall CRDs
 ```
   make install
 ```
-
-For a detailed view on how to create the above mentioned resources, please go to: [How To Access Azure Key Vault Secrets Through Rest API Using Postman](Ref: https://www.c-sharpcorner.com/article/how-to-access-azure-key-vault-secrets-through-rest-api-using-postman/)
-
 
 #### Deployment
 
@@ -35,14 +71,23 @@ resources:
 ```
 
 - Update the Azure Key Vault backend credentials `config/credentials/credentials-akv.yaml` with your personal access token
-
 ```json
 {
-    "tennant_id": "<Active Directory's Tennant ID>",
-    "client_id": "<Application (client) ID>",
-    "client_secret": "<Application's secret value>",
+    "tenantId": "<Active Directory's Tenant ID>",
+    "clientId": "<Application (client) ID>",
+    "clientSecret": "<Application's secret value>",
     "keyvault": "<Key Vault name>"
 }
+```
+
+You can run the following script that will generate the above mentioned json object  
+```bash
+echo -e "{ \n \
+  \"tenantId\": \"$TENANT_ID\", \n \
+  \"clientId\": \"$APP_ID\", \n \
+  \"clientSecret\": \"$APP_PASSWORD\", \n \
+  \"keyvault\": \"$VAULT_NAME\" \n \
+}"
 ```
 
 -  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
