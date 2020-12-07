@@ -35,10 +35,10 @@ func init() {
 func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 
 	akvCred := AzureCredentials{}
-	jsonErr := json.Unmarshal(credentials, &akvCred)
-	if jsonErr != nil {
-		log.Error(jsonErr, "")
-		return jsonErr
+	err := json.Unmarshal(credentials, &akvCred)
+	if err != nil {
+		log.Error(err, "")
+		return err
 	}
 
 	file, err := ioutil.TempFile("/tmp", "akv")
@@ -53,12 +53,10 @@ func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 		return err
 	}
 
-	//Remove this after/if this issue gets fixed: https://github.com/Azure/azure-sdk-for-go/issues/13641
 	if err := os.Setenv("AZURE_AUTH_LOCATION", file.Name()); err != nil {
-		log.Error(err, "")
+		log.Error(err, "error setting AZURE_AUTH_LOCATION environment variable")
 		return err
 	}
-	//end Remove
 
 	authorizer, err := kvauth.NewAuthorizerFromFile(file.Name())
 	if err != nil {
@@ -89,8 +87,8 @@ func (a *Backend) Get(key string, version string) (string, error) {
 
 //AzureCredentials needed to access the Key Vault service
 type AzureCredentials struct {
-	TennantID    string `json:"tennant_id"`
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	Keyvault     string `json:"akvName"`
+	TenantID     string `json:"tenantId"`
+	ClientID     string `json:"clientId"`
+	ClientSecret string `json:"clientSecret"`
+	Keyvault     string `json:"keyvault"`
 }
