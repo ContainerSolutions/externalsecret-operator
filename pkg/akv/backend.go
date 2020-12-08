@@ -4,6 +4,7 @@ package akv
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,13 +17,17 @@ import (
 
 var log = ctrl.Log.WithName("akv")
 
-// Backend is the needed structure to access the Azure Key Vault service
+type ClientInterface interface {
+	GetSecret(context context.Context, url string, key string, version string) (keyvault.SecretBundle, error)
+}
+
+// Backend represents a backend for Azure Key Vault
 type Backend struct {
-	client   keyvault.BaseClient
+	Client   ClientInterface
 	keyvault string
 }
 
-// NewBackend gives you a new akv.Backend
+// NewBackend returns an uninitialized Backend for AWS Secret Manager
 func NewBackend() backend.Backend {
 	return &Backend{}
 }
@@ -31,7 +36,7 @@ func init() {
 	backend.Register("akv", NewBackend)
 }
 
-// Init will initialize and authorize a local client responsible for accessing the Azure Key Vault service
+// Init initializes the Backend for Azure Key Vault
 func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 
 	akvCred := AzureCredentials{}
@@ -64,17 +69,22 @@ func (a *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 		return err
 	}
 
-	a.client = keyvault.New()
-	a.client.Authorizer = authorizer
+	client := keyvault.New()
+	client.Authorizer = authorizer
+	a.Client = client
 	a.keyvault = akvCred.Keyvault
 
 	return nil
 }
 
-// Get is responsible for getting the actual secret value from Azure Key Vault
+// Get retrieves the secret associated with key from Azure Key Vault
 func (a *Backend) Get(key string, version string) (string, error) {
 
-	secretResp, err := a.client.GetSecret(context.Background(), fmt.Sprintf("https://%s.vault.azure.net", a.keyvault), key, version)
+	if a.Client == nil {
+		return "", errors.New("Azure Key Vault backend not initialized")
+	}
+
+	secretResp, err := a.Client.GetSecret(context.Background(), fmt.Sprintf("https://%s.vault.azure.net", a.keyvault), key, version)
 	if err != nil {
 		log.Error(err, "")
 		return "", err
@@ -85,7 +95,7 @@ func (a *Backend) Get(key string, version string) (string, error) {
 	return *secretResp.Value, nil
 }
 
-//AzureCredentials needed to access the Key Vault service
+// AzureCredentials represents expected credentials
 type AzureCredentials struct {
 	TenantID     string `json:"tenantId"`
 	ClientID     string `json:"clientId"`
