@@ -1,11 +1,11 @@
 ## Azure Key Vault secrets
 
-#### Prerequisites
+### Prerequisites
 
 You need to have a Key Vault instance with a secret and an application registered in your Azure Active directory with Read access to the Vault's secrets.
 
 The following script creates everything needed for sample purposes. It assumes you have Azure ClI installed and it is already authenticated.  
-For more information about Azure CLI refer to Azure CLI's [documentation](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
+For more information about Azure CLI refer to the Azure CLI's [documentation page](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
 
 ```bash
 # The tennatId will be needed to get the secrets
@@ -56,7 +56,7 @@ For a detailed view on how to create the above mentioned resources in the Azure 
   make install
 ```
 
-#### Deployment
+### Deployment
 
 - Uncomment and update credentials to be used in `config/credentials/kustomization.yaml`:
 
@@ -89,6 +89,8 @@ echo -e "{ \n \
   \"keyvault\": \"$VAULT_NAME\" \n \
 }"
 ```
+> Beware of the indentation if you paste the output from above into your file.
+
 
 -  Update the `SecretStore` resource definition `config/samples/store_v1alpha1_secretstore.yaml`
 ```yaml
@@ -128,4 +130,18 @@ spec:
 % make deploy
 % kubectl get secret externalsecret-operator-externalsecret-sample -n externalsecret-operator-system \
   -o jsonpath='{.data.example-externalsecret-key}' | base64 -d
+```
+
+### Clean up
+
+- Delete the resource group (it willa lso delete the Kay Vault created)
+
+```bash
+az group delete --name $RESOURCE_GROUP 
+```
+
+- Delete the Active Directory application
+
+```bash
+az ad app delete --id $APP_ID
 ```
