@@ -17,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/prometheus/common v0.13.0
 	github.com/smartystreets/goconvey v1.6.4
-	github.com/versent/unicreds v1.5.0
+	github.com/versent/unicreds v1.5.1-0.20180327234242-7135c859e003
 	github.com/xanzy/go-gitlab v0.39.0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	google.golang.org/api v0.32.0

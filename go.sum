@@ -599,6 +599,8 @@ github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtX
 github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
 github.com/versent/unicreds v1.5.0 h1:ad9QWGahpc/Ra0gjTtxhPD/2zZ6Ly4k48owUxWz2qqs=
 github.com/versent/unicreds v1.5.0/go.mod h1:WGxBysez8YlQVyZy3+p7JpgFnNEQVasqcHRVH8ICG/8=
+github.com/versent/unicreds v1.5.1-0.20180327234242-7135c859e003 h1:RPAOPj8OLmwZEPeggLPXkp9chvfroheXnzLRjPKEfgI=
+github.com/versent/unicreds v1.5.1-0.20180327234242-7135c859e003/go.mod h1:WGxBysez8YlQVyZy3+p7JpgFnNEQVasqcHRVH8ICG/8=
 github.com/xanzy/go-gitlab v0.39.0 h1:7aiZ03fJfCdqoHFhsZq/SoVYp2lR91hfYWmiXLOU5Qo=
 github.com/xanzy/go-gitlab v0.39.0/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=

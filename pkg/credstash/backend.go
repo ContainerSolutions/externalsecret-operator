@@ -26,41 +26,41 @@ var (
 	configEncryptionContext = make(map[string]string)
 )
 
-// SecretManagerClient will be our unicreds client
-type SecretManagerClient interface {
+// SecretManagerClientProvider will be our unicreds client
+type SecretManagerClientProvider interface {
 	SetKMSConfig(config *aws.Config)
 	SetDynamoDBConfig(config *aws.Config)
 	GetHighestVersionSecret(tableName *string, name string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error)
 	GetSecret(tableName *string, name string, version string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error)
 }
 
-// SecretManagerClientStruct defining this struct to write methods for it
-type SecretManagerClientStruct struct {
+// SecretManagerClient defining this struct to write methods for it
+type SecretManagerClient struct {
 }
 
 // SetKMSConfig sets configuration for KMS access
-func (s SecretManagerClientStruct) SetKMSConfig(config *aws.Config) {
+func (s SecretManagerClient) SetKMSConfig(config *aws.Config) {
 	unicreds.SetKMSConfig(config)
 }
 
 // SetDynamoDBConfig sets configuration for DynamoDB access
-func (s SecretManagerClientStruct) SetDynamoDBConfig(config *aws.Config) {
+func (s SecretManagerClient) SetDynamoDBConfig(config *aws.Config) {
 	unicreds.SetDynamoDBConfig(config)
 }
 
 // GetHighestVersionSecret gets a secret with latest version from credstash
-func (s SecretManagerClientStruct) GetHighestVersionSecret(tableName *string, name string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
+func (s SecretManagerClient) GetHighestVersionSecret(tableName *string, name string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
 	return unicreds.GetHighestVersionSecret(tableName, name, encContext)
 }
 
 // GetSecret gets a secret with specific version from credstash
-func (s SecretManagerClientStruct) GetSecret(tableName *string, name string, version string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
+func (s SecretManagerClient) GetSecret(tableName *string, name string, version string, encContext *unicreds.EncryptionContextValue) (*unicreds.DecryptedCredential, error) {
 	return unicreds.GetSecret(tableName, name, version, encContext)
 }
 
 // Backend represents a backend for Credstash
 type Backend struct {
-	SecretsManager SecretManagerClient
+	SecretsManager SecretManagerClientProvider
 	session        *session.Session
 }
 
@@ -76,6 +76,7 @@ func NewBackend() backend.Backend {
 // Init initializes the Backend for Credstash
 func (s *Backend) Init(parameters map[string]interface{}, credentials []byte) error {
 	var err error
+	s.SecretsManager = SecretManagerClient{}
 
 	s.session, err = utils.GetAWSSession(parameters, credentials, defaultRegion)
 	if err != nil {
@@ -93,7 +94,6 @@ func (s *Backend) Init(parameters map[string]interface{}, credentials []byte) er
 		log.Info("Not using security encryption context. Consider using it")
 	}
 
-	s.SecretsManager = SecretManagerClientStruct{}
 	s.SecretsManager.SetKMSConfig(s.session.Config)
 	s.SecretsManager.SetDynamoDBConfig(s.session.Config)
 	return nil
