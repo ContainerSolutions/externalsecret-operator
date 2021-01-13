@@ -27,7 +27,7 @@ like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM]
 - For the AWS Backend we support both simple secrets and binfiles.
 - You can get speciffic versions of the secrets or just get latest versions of them.
 - If you change something in your ExternalSecret CR, the operator will reconcile it (Even if your refresh interval is big).
-- AWS Secret Manager, Google Secret Manager, Gitlab and Azure Key Vault backends supported currently!
+- AWS Secret Manager, Credstash (AWS KMS), Azure Key Vault, Google Secret Manager and Gitlab backends supported currently!
 
 <a name="quick-start"></a>
 
@@ -189,6 +189,7 @@ We would like to support as many backends as possible and it should be rather ea
 | Provider                                                           | Backend Doc                                                        |
 |--------------------------------------------------------------------|--------------------------------------------------------------------|
 |[AWS Secrets Manager Info](https://aws.amazon.com/secrets-manager/) | [AWS Secrets Manager Backend Docs](#what-does-it-do)               |
+|[Credstash Info](https://github.com/fugue/credstash/) | [Credstash (AWS KMS) Docs](docs/backends/credstash.md)               |
 |[GCP Secret Manager Info](https://cloud.google.com/secret-manager)  | [GCP Secret Manager Backend Docs](docs/backends/gsm.md)            |
 |[Gitlab CI/CD Variables Info](https://docs.gitlab.com/ce/ci/variables/) | [Gitlab CI/CD Variables Backend Docs](docs/backends/gitlab.md) |
 |[Azure Key Vault Info](https://docs.microsoft.com/en-us/azure/key-vault/) | [Azure Key Vault Backend Docs](docs/backends/akv.md) |

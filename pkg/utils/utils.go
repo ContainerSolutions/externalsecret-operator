@@ -2,10 +2,21 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
+	"fmt"
 	"math/big"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const validObjChars = "0123456789abcdefghijklmnopqrstuvwxyz"
+
+var (
+	log = ctrl.Log.WithName("asm")
+)
 
 // RandomBytes generate random bytes
 func RandomBytes(n int) ([]byte, error) {
@@ -45,4 +56,42 @@ func RandomStringObjectSafe(n int) (string, error) {
 	}
 	return string(b), nil
 
+}
+
+// AWSCredentials represents expected credentials
+type AWSCredentials struct {
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+}
+
+/* GetAWSSession returns an aws.session.Session based on the parameters or environment variables
+* If parameters are not present or incomplete (secret key, access key AND region)
+* then let default config loading order to go on:
+* https://docs.aws.amazon.com/sdk-for-go/api/aws/session/
+ */
+func GetAWSSession(parameters map[string]interface{}, creds []byte, defaultRegion string) (*session.Session, error) {
+	awsCreds := &AWSCredentials{}
+	if err := json.Unmarshal(creds, awsCreds); err != nil {
+		log.Error(err, "Unmarshalling failed")
+		return nil, err
+	}
+
+	region, ok := parameters["region"].(string)
+	if !ok {
+		log.Error(nil, "AWS region parameter missing")
+		return nil, fmt.Errorf("AWS region parameter missing")
+	}
+
+	if region == "" {
+		region = defaultRegion
+	}
+
+	return session.NewSession(&aws.Config{
+		Region: aws.String(region),
+		Credentials: credentials.NewStaticCredentials(
+			awsCreds.AccessKeyID,
+			awsCreds.SecretAccessKey,
+			awsCreds.SessionToken),
+	})
 }
