@@ -56,7 +56,7 @@ jobs:
     - name: Prepare
       id: prep
       run: |
-        DOCKER_IMAGE=containersol/externalsecret-operator
+        DOCKER_IMAGE=ghcr.io/ContainerSolutions/externalsecret-operator
 
         VERSION=edge
         if [[ $GITHUB_REF == refs/tags/* ]]; then
