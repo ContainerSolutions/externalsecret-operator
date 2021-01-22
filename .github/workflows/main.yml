@@ -56,19 +56,29 @@ jobs:
     - name: Prepare
       id: prep
       run: |
+        IS_LATEST=false
         IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
         DOCKER_IMAGE=ghcr.io/${IMAGE_REPOSITORY}
-
         VERSION=edge
+        
         if [[ $GITHUB_REF == refs/tags/* ]]; then
           VERSION=${GITHUB_REF#refs/tags/}
+          IS_LATEST=true
         elif [[ $GITHUB_REF == refs/heads/* ]]; then
           VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+          if [[ $GITHUB_REF == refs/heads/master ]]; then
+            IS_LATEST=true
+          fi
         elif [[ $GITHUB_REF == refs/pull/* ]]; then
           VERSION=pr-${{ github.event.number }}
         fi
 
         TAGS="${DOCKER_IMAGE}:${VERSION}"
+
+        if [ "$IS_LATEST" = true ] ; then
+          TAGS="$TAGS,${DOCKER_IMAGE}:latest"
+        fi
+
         if [ "${{ github.event_name }}" = "push" ]; then
           TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
         fi
