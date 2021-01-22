@@ -56,7 +56,8 @@ jobs:
     - name: Prepare
       id: prep
       run: |
-        DOCKER_IMAGE=containersol/externalsecret-operator
+        IMAGE_REPOSITORY=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
+        DOCKER_IMAGE=ghcr.io/${IMAGE_REPOSITORY}
 
         VERSION=edge
         if [[ $GITHUB_REF == refs/tags/* ]]; then
@@ -76,7 +77,7 @@ jobs:
         REPO_FULL_NAME="${{ github.event.pull_request.head.repo.full_name }}"
         # If this is both a pull request and a fork, then don't push the image
         if [[ ${{ github.event_name }} == pull_request ]]; then
-          if [[ $REPO_FULL_NAME != ContainerSolutions/externalsecret-operator ]]; then
+          if [[ $REPO_FULL_NAME != ${{ github.repository }} ]]; then
             PUSH_IMAGE=false
           fi
         fi
@@ -98,13 +99,14 @@ jobs:
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v1
-      
-    - name: Login to DockerHub
+
+    - name: Login to Github Packages
       id: docker-login
       uses: docker/login-action@v1
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_TOKEN }}
+        registry: ghcr.io
+        username: ${{ secrets.GHCR_USERNAME }}
+        password: ${{ secrets.GHCR_TOKEN }}
       if: ${{ steps.prep.outputs.push_image == 'true' }}
 
     - name: Build and push
