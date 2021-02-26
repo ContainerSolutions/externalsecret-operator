@@ -4,7 +4,11 @@ maintainers:
 - frankscholten
 - iamcaleberic
 - mircea-cosbuc
-# Allows the /label command
+# Allows for the /label and /remove-label commands
+# usage: /label enhancement
+# usage: /remove-label enhancement
+# Will only add existing labels
+# Can be used on PR's or Issues
 labels: true
 # Checks if an issue or an Pull request has a description
 empty_description_check:
@@ -17,16 +21,26 @@ branch_destroyer:
   enabled: true
   protected_branches:
   - master
+  - main
 pull_requests:
-  # The Setting to enable automaed merges
+  # Specifies whether to allow for automated merging of Pull Requests
   automated_merge: true
+  # Paul will mark a pull request as "stale" if a Pull Request is not updated for this amount of days
+  # stale_time: 15
+  # This will limit the amount of PR's a single contributer can have
+  # Limits work in progress
   limit_pull_requests:
     max_number: 7
+  # This is the message that will displayed when a user opens a pull request
   open_message: |
     Greetings!
     Thank you for contributing to this project!
     If this is your first time contributing to this project, please make
     sure to read the CONTRIBUTING.md
+  # Enables the /cat command
   cats_enabled: true
+  # enables the /dog command
   dogs_enabled: true
+  # Allows any maintainer in the list to run /approve
+  # Paul will approve the PR (Does not merge it)
   allow_approval: true
