@@ -5,6 +5,12 @@
 This operator reads information from a third party service
 like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) or [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and automatically injects the values as [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
 
+### Disclaimer
+
+This project is still maintained, but we are trying to concentrate afforts on this new colaboration:
+
+[external-secrets/external-secrets](https://github.com/external-secrets/external-secrets)
+
 # Table of Contents
 
 * [Features](#features)
