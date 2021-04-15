@@ -11,6 +11,8 @@ This project is still maintained, but we are trying to concentrate afforts on th
 
 [external-secrets/external-secrets](https://github.com/external-secrets/external-secrets)
 
+Website: https://www.external-secrets.io/
+
 # Table of Contents
 
 * [Features](#features)
